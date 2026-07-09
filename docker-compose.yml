@@ -1,0 +1,23 @@
+services:
+  frontend:
+    build:
+      context: .
+      args:
+        # Baked into the build — rewrites destination and client bundle.
+        BACKEND_URL: ${BACKEND_URL:-http://localhost:5080}
+        NEXT_PUBLIC_API_BASE: ${NEXT_PUBLIC_API_BASE:-/api}
+        NEXT_PUBLIC_GA_ID: ${NEXT_PUBLIC_GA_ID:-}
+    image: techhub-frontend:${TAG:-latest}
+    restart: unless-stopped
+    ports:
+      - "${PORT:-3000}:3000"
+    environment:
+      # Runtime-only — read by server components, safe to change without rebuilding.
+      API_BASE_SERVER: ${API_BASE_SERVER:-http://localhost:5080/api}
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
+        reservations:
+          memory: 128M

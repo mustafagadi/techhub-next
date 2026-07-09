@@ -1,0 +1,381 @@
+'use client';
+import { useState, useEffect } from 'react';
+import { useParams } from 'next/navigation';
+import Header from '@/components/Header';
+import Footer from '@/components/Footer';
+import { getProduct, getProxyOperations, getProductSpec, getAuth, submitInterest, docFileExists, docFileUrl } from '@/lib/api';
+import styles from './detail.module.css';
+
+// يحلّ مرجع $ref إلى الكائن الفعلي داخل components.schemas
+function resolveRef(spec, ref) {
+  if (!ref || !ref.startsWith('#/')) return null;
+  const parts = ref.slice(2).split('/');
+  let node = spec;
+  for (const p of parts) {
+    node = node?.[p];
+    if (!node) return null;
+  }
+  return node;
+}
+
+// يستخرج العمليات من مواصفة OpenAPI (paths) مع schema الـ body إن وُجدت
+function operationsFromSpec(spec) {
+  if (!spec || !spec.paths) return [];
+  const ops = [];
+  for (const [path, methods] of Object.entries(spec.paths)) {
+    for (const [method, def] of Object.entries(methods)) {
+      // schema جسم الطلب (لعمليات POST عادةً)
+      let schema = null;
+      const ref = def.requestBody?.content?.['application/json']?.schema?.$ref;
+      if (ref) schema = resolveRef(spec, ref);
+      else schema = def.requestBody?.content?.['application/json']?.schema || null;
+
+      ops.push({
+        method: method.toUpperCase(),
+        path,
+        name: def.summary || def.operationId || '',
+        params: def.parameters || [],
+        schema,
+      });
+    }
+  }
+  return ops;
+}
+
+// يحوّل schema لعرض شجري مقروء (اسم: نوع، مع تداخل)
+function SchemaTree({ schema, depth = 0 }) {
+  if (!schema) return null;
+  if (schema.type === 'object' && schema.properties) {
+    return (
+      <div style={{ paddingRight: depth ? 16 : 0 }}>
+        {Object.entries(schema.properties).map(([key, val]) => (
+          <div key={key} style={{ padding: '3px 0' }}>
+            <span style={{ color: '#C9A227', fontWeight: 600 }}>{key}</span>
+            <span style={{ color: '#6FB3E0' }}>: {val.type || 'object'}</span>
+            {val.type === 'object' && <SchemaTree schema={val} depth={depth + 1} />}
+            {val.type === 'array' && val.items && (
+              <div style={{ paddingRight: 16 }}>
+                <span style={{ color: '#888' }}>[ ]</span>
+                <SchemaTree schema={val.items} depth={depth + 1} />
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    );
+  }
+  return <span style={{ color: '#6FB3E0' }}>{schema.type}</span>;
+}
+
+export default function ServiceDetail() {
+  const params = useParams();
+  const name = decodeURIComponent(params.name);
+  const [product, setProduct] = useState(null);
+  const [ops, setOps] = useState([]);
+  const [expanded, setExpanded] = useState(null);
+  const [tab, setTab] = useState('desc');
+  const [loading, setLoading] = useState(true);
+  const [isAuthed, setIsAuthed] = useState(false);
+  const [showInterest, setShowInterest] = useState(false);
+  const [interestSent, setInterestSent] = useState(false);
+  const [hasDocFile, setHasDocFile] = useState(false);
+
+  useEffect(() => { setIsAuthed(!!getAuth()?.token); }, []);
+  useEffect(() => {
+    docFileExists(name).then((r) => setHasDocFile(!!r?.exists)).catch(() => setHasDocFile(false));
+  }, [name]);
+
+  useEffect(() => {
+    async function load() {
+      const p = await getProduct(name).catch(() => null);
+      setProduct(p);
+
+      // [النهج ب] name هو اسم proxy — نجلب عملياته مباشرة من حزمته
+      let operations = [];
+      const proxyOps = await getProxyOperations(name).catch(() => null);
+      if (Array.isArray(proxyOps) && proxyOps.length) {
+        // الاستجابة: [{ serviceName, operations: [...] }]
+        operations = proxyOps.flatMap((s) => s.operations || s.Operations || []);
+      }
+
+      // احتياطيًا: المواصفة المخزّنة إن وُجدت (للخدمات التي رُفع لها Postman)
+      if (!operations.length) {
+        const spec = await getProductSpec(name).catch(() => null);
+        if (spec) operations = operationsFromSpec(spec);
+      }
+
+      setOps(operations);
+      setLoading(false);
+    }
+    load();
+  }, [name]);
+
+  const title = product?.displayName || product?.name || name;
+  const price = product?.price;
+
+  return (
+    <>
+      <Header />
+      <div className={styles.hero}>
+        <div className="container">
+          <div className={styles.crumb}>الرئيسية ‹ الخدمات ‹ {title}</div>
+          <h1>{title}</h1>
+          <p>{product?.description || 'واجهة برمجية موثّقة جاهزة للتكامل.'}</p>
+        </div>
+      </div>
+
+      <div className="container">
+        <div className={styles.layout}>
+          <div>
+            <div className={styles.panel}>
+              <div className={styles.panelHead}><span>الخدمات التقنية والعمليات</span><span className={styles.muted}>حسب البروكسي</span></div>
+              <div style={{ padding: '16px' }}>
+                {loading && <div className={styles.empty}>جارٍ التحميل…</div>}
+                {!loading && !(product?.apiProxies?.length) && <div className={styles.empty}>لا توجد خدمات تقنية معروضة.</div>}
+                {product?.apiProxies?.length > 0 && (
+                  <>
+                    <p className={styles.proxiesHint}>
+                      يشمل اشتراكك في هذا المنتج الوصول إلى الخدمات التقنية التالية. اضغط أيًّا منها لعرض عملياتها:
+                    </p>
+                    <ul className={styles.proxiesList}>
+                      {product.apiProxies.map((proxy, i) => (
+                        <ProxyRow key={i} proxyName={proxy} />
+                      ))}
+                    </ul>
+                  </>
+                )}
+              </div>
+            </div>
+
+            <div className={styles.panel}>
+              <div className={styles.tabs}>
+                {[['desc','الوصف'],['auth','المصادقة']].map(([k,l]) => (
+                  <button key={k} className={`${styles.tab} ${tab===k ? styles.activeTab : ''}`} onClick={() => setTab(k)}>{l}</button>
+                ))}
+                {isAuthed && (
+                  <a href={`/services/${encodeURIComponent(name)}/docs`} className={styles.tab} style={{ marginInlineStart: 'auto' }}>
+                    التوثيق الكامل ←
+                  </a>
+                )}
+              </div>
+              <div className={styles.tabBody}>
+                {tab === 'desc' && (
+                  <>
+                    <p>{product?.description || 'وصف الخدمة وعملياتها.'}</p>
+                    {hasDocFile ? (
+                      <a
+                        href={docFileUrl(name)}
+                        className="btn btn-primary"
+                        style={{ marginTop: 12, display: 'inline-block' }}
+                        download
+                      >
+                        تنزيل ملف التوثيق
+                      </a>
+                    ) : (
+                      <p style={{ color: '#5A6B82', fontSize: '0.9rem', marginTop: 12 }}>
+                        لا يوجد ملف توثيق مرفوع لهذه الخدمة.
+                      </p>
+                    )}
+                  </>
+                )}
+                {tab === 'auth' && (
+                  <>
+                    <p>تستخدم الخدمة مصادقة OAuth 2.0. أرسل رمز الوصول في رأس الطلب:</p>
+                    <pre className={styles.code}>Authorization: Bearer {'{access_token}'}</pre>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <aside className={styles.side}>
+            <div className={styles.buy}>
+              <div className={styles.price}>
+                {price ? <>{price.toLocaleString('ar-SA')} <small>ر.س</small></> : <span className={styles.free}>مجانية</span>}
+              </div>
+              {price ? <div className={styles.billing}>اشتراك حسب الباقة</div> : null}
+              {product?.quotaDescription && (
+                <div className={styles.quota}>
+                  <span className={styles.quotaIcon}>⚡</span>
+                  حدّ الاستخدام: {product.quotaDescription}
+                </div>
+              )}
+              {isAuthed ? (
+                <>
+                  <button
+                    className="btn btn-primary"
+                    style={{ width: '100%', justifyContent: 'center' }}
+                    onClick={() => { window.location.href = '/partner?product=' + encodeURIComponent(name); }}
+                  >
+                    {price ? 'اشترك في الخدمة' : 'أضف الخدمة'}
+                  </button>
+                  <p style={{ fontSize: '0.8rem', color: '#5A6B82', marginTop: '12px', textAlign: 'center' }}>
+                    {price ? 'ستُوجَّه لإتمام الدفع ثم تُفعّل الخدمة.' : 'ستُضاف الخدمة إلى تطبيقك مباشرة.'}
+                  </p>
+                </>
+              ) : (
+                <>
+                  <button
+                    className="btn btn-primary"
+                    style={{ width: '100%', justifyContent: 'center' }}
+                    onClick={() => setShowInterest(true)}
+                  >
+                    أبدِ اهتمامك بالخدمة
+                  </button>
+                  <p style={{ fontSize: '0.8rem', color: '#5A6B82', marginTop: '12px', textAlign: 'center' }}>
+                    سيتواصل معك الفريق لإتاحة الوصول للخدمة.
+                  </p>
+                </>
+              )}
+            </div>
+          </aside>
+        </div>
+      </div>
+
+      {showInterest && (
+        <InterestModal
+          serviceName={name}
+          onClose={() => setShowInterest(false)}
+          onDone={() => { setShowInterest(false); setInterestSent(true); }}
+        />
+      )}
+      {interestSent && (
+        <div style={{ position: 'fixed', bottom: 24, insetInlineStart: 24, background: '#E6F5EE', color: '#1E7A4D', padding: '14px 22px', borderRadius: 10, fontWeight: 600, boxShadow: '0 4px 16px rgba(0,0,0,0.12)', zIndex: 110 }}>
+          تم إرسال اهتمامك. سيتواصل معك الفريق قريبًا.
+        </div>
+      )}
+      <Footer />
+    </>
+  );
+}
+
+// نموذج إبداء الاهتمام بخدمة (proxy). يرسل بيانات التواصل للمسؤول.
+function InterestModal({ serviceName, onClose, onDone }) {
+  const [form, setForm] = useState({ fullName: '', phoneNumber: '', email: '', companyName: '' });
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState(null);
+
+  function update(field, value) { setForm((f) => ({ ...f, [field]: value })); }
+
+  async function handleSubmit() {
+    if (!form.fullName || !form.email || !form.phoneNumber || !form.companyName) {
+      setError('يرجى تعبئة كل الحقول.');
+      return;
+    }
+    setBusy(true);
+    setError(null);
+    try {
+      // ProductName يحمل اسم الـ proxy (النهج ب)
+      await submitInterest({
+        productName: serviceName,
+        fullName: form.fullName,
+        phoneNumber: form.phoneNumber,
+        email: form.email,
+        companyName: form.companyName,
+      });
+      onDone();
+    } catch (err) {
+      setError(err.message || 'تعذّر إرسال الطلب. حاول مجددًا.');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const overlay = { position: 'fixed', inset: 0, background: 'rgba(11,31,58,0.5)', display: 'grid', placeItems: 'center', zIndex: 100, padding: 24 };
+  const modal = { background: '#fff', borderRadius: 16, padding: 32, width: '100%', maxWidth: 440, boxShadow: '0 10px 40px rgba(0,0,0,0.2)' };
+  const label = { display: 'block', fontSize: '0.9rem', fontWeight: 600, marginBottom: 16 };
+  const input = { display: 'block', width: '100%', marginTop: 6, padding: '11px 14px', border: '1px solid #E2E7EE', borderRadius: 10, fontFamily: 'inherit', fontSize: '0.95rem', boxSizing: 'border-box' };
+
+  return (
+    <div style={overlay} onClick={onClose}>
+      <div style={modal} onClick={(e) => e.stopPropagation()}>
+        <h2 style={{ fontSize: '1.3rem', marginBottom: 8 }}>إبداء اهتمام بـ «{serviceName}»</h2>
+        <p style={{ fontSize: '0.88rem', color: '#5A6B82', marginBottom: 24 }}>
+          أدخل بياناتك وسيتواصل معك الفريق لإتاحة الوصول للخدمة.
+        </p>
+        <label style={label}>الاسم الكامل
+          <input style={input} value={form.fullName} onChange={(e) => update('fullName', e.target.value)} />
+        </label>
+        <label style={label}>الجهة / الشركة
+          <input style={input} value={form.companyName} onChange={(e) => update('companyName', e.target.value)} />
+        </label>
+        <label style={label}>البريد الإلكتروني
+          <input style={input} type="email" dir="ltr" value={form.email} onChange={(e) => update('email', e.target.value)} />
+        </label>
+        <label style={label}>رقم الجوال
+          <input style={input} type="tel" dir="ltr" value={form.phoneNumber} onChange={(e) => update('phoneNumber', e.target.value)} />
+        </label>
+        {error && <p style={{ color: '#C0392B', fontSize: '0.85rem', marginBottom: 14 }}>{error}</p>}
+        <div style={{ display: 'flex', gap: 12 }}>
+          <button className="btn btn-primary" onClick={handleSubmit} disabled={busy}>
+            {busy ? 'جارٍ الإرسال…' : 'إرسال'}
+          </button>
+          <button onClick={onClose} style={{ padding: '11px 22px', border: '1px solid #E2E7EE', borderRadius: 10, background: '#fff', cursor: 'pointer', fontFamily: 'inherit' }}>
+            إلغاء
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// صفّ بروكسي قابل للتوسيع — يجلب عملياته عند الفتح
+function ProxyRow({ proxyName }) {
+  const [open, setOpen] = useState(false);
+  const [ops, setOps] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  async function toggle() {
+    const next = !open;
+    setOpen(next);
+    // جلب العمليات أول مرة فقط
+    if (next && ops === null) {
+      setLoading(true);
+      try {
+        const data = await getProxyOperations(proxyName);
+        // الاستجابة: قائمة ServiceOperations، كل واحد فيه Operations[] — نفكّها لقائمة مسطّحة
+        const flat = [];
+        const groups = Array.isArray(data) ? data : (data?.services || data?.operations || []);
+        for (const g of groups) {
+          const inner = g.operations || g.Operations || [];
+          for (const o of inner) flat.push(o);
+        }
+        setOps(flat);
+      } catch {
+        setOps([]);
+      } finally {
+        setLoading(false);
+      }
+    }
+  }
+
+  return (
+    <li className={styles.proxyRow}>
+      <button className={styles.proxyToggle} onClick={toggle}>
+        <span className={styles.proxyDot} />
+        <span className={styles.proxyName}>{proxyName}</span>
+        <span className={styles.proxyChevron}>{open ? '▲' : '▼'}</span>
+      </button>
+      {open && (
+        <div className={styles.proxyOps}>
+          {loading ? (
+            <div className={styles.proxyLoading}>جارٍ تحميل العمليات…</div>
+          ) : ops && ops.length ? (
+            ops.map((op, i) => {
+              const method = (op.method || op.Method || 'GET').toUpperCase();
+              const path = op.path || op.Path || op.name || op.Name || '';
+              return (
+                <div key={i} className={styles.opLine}>
+                  <span className={`${styles.opMethod} ${styles['m_' + method]}`}>{method}</span>
+                  <span className={styles.opPath}>{path}</span>
+                </div>
+              );
+            })
+          ) : (
+            <div className={styles.proxyLoading}>لا توجد عمليات موثّقة لهذا البروكسي.</div>
+          )}
+        </div>
+      )}
+    </li>
+  );
+}

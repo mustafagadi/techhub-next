@@ -1,0 +1,87 @@
+.wrap {
+  position: relative;
+  width: 100%;
+}
+
+.trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 14px;
+  background: #fff;
+  border: 1px solid #D5DCE5;
+  border-radius: 10px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.95rem;
+  color: var(--navy, #0B1F3A);
+  text-align: right;
+  transition: border-color 0.15s;
+}
+.trigger:hover { border-color: #B4BECD; }
+.trigger:focus { outline: none; border-color: var(--copper, #C9A227); }
+
+.triggerText { flex: 1; text-align: right; }
+
+.arrow {
+  font-size: 0.7rem;
+  color: #8895A7;
+  flex-shrink: 0;
+}
+
+.list {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  left: 0;
+  z-index: 50;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  background: #fff;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  box-shadow: 0 12px 32px rgba(11, 31, 58, 0.12);
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 11px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.option:hover { background: #F1F5FB; }
+
+.optionSel { background: #EEF3FA; }
+
+.optName {
+  font-size: 0.9rem;
+  color: var(--navy, #0B1F3A);
+}
+
+.badgeFree,
+.badgePaid {
+  font-size: 0.75rem;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-weight: 600;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.badgeFree {
+  background: #EAF4EE;
+  color: #1d4d33;
+}
+
+.badgePaid {
+  background: #FBF1DC;
+  color: #8A6512;
+}

@@ -1,0 +1,14 @@
+.page { min-height: 70vh; padding: 48px 0 80px; background: var(--cloud); }
+.page h1 { font-size: 1.8rem; margin-bottom: 8px; }
+.sub { color: var(--muted); margin-bottom: 32px; }
+.state, .error { text-align: center; padding: 64px 24px; background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius); color: var(--muted); }
+.error { background: #FBEAE8; color: #C0392B; border-color: #F0C8C2; }
+.table { width: 100%; border-collapse: collapse; background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+.table th, .table td { padding: 14px 16px; text-align: right; font-size: 0.9rem; border-bottom: 1px solid var(--line); }
+.table th { background: var(--cloud); font-weight: 600; color: var(--muted); }
+.table tr:last-child td { border-bottom: none; }
+.badge { font-size: 0.78rem; padding: 4px 12px; border-radius: 100px; }
+.paid { background: #E6F5EE; color: #2E7D52; }
+.pending { background: #FBF3E2; color: #B7791F; }
+.failed { background: #FBEAE8; color: #C0392B; }
+.cancelled { background: #EEF1F5; color: #5A6B82; }

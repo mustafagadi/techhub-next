@@ -1,0 +1,18 @@
+.card { background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius); padding: 26px; transition: .25s; display: flex; flex-direction: column; color: inherit; }
+.card:hover { transform: translateY(-4px); box-shadow: var(--shadow); border-color: transparent; }
+.top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; }
+.tag { font-size: 0.76rem; color: var(--steel); background: #EAF1F9; padding: 4px 12px; border-radius: 100px; }
+.status { font-size: 0.72rem; padding: 3px 10px; border-radius: 100px; background: #E6F5EE; color: var(--green); }
+.card h3 { font-size: 1.18rem; margin-bottom: 8px; }
+.card p { color: var(--muted); font-size: 0.92rem; margin-bottom: 18px; flex: 1; }
+.meta { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; color: var(--muted); border-top: 1px solid var(--line); padding-top: 16px; }
+.price { color: var(--navy); font-weight: 700; }
+.free { color: var(--green); font-weight: 600; }
+
+.statusMuted { font-size: 0.72rem; padding: 4px 10px; border-radius: 100px; background: #EEF1F5; color: #5A6B82; }
+.muted { color: #5A6B82; font-size: 0.85rem; }
+
+.billing { font-size: 0.78rem; font-weight: 400; opacity: 0.75; }
+
+.sourceApic { font-size: 0.68rem; padding: 2px 8px; border-radius: 5px; background: #E7F0FA; color: #1f4e80; font-weight: 600; }
+.sourceApigee { font-size: 0.68rem; padding: 2px 8px; border-radius: 5px; background: #EAF4EE; color: #1d4d33; font-weight: 600; }

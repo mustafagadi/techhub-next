@@ -1,0 +1,12 @@
+.footer { background: var(--navy); color: #C7D2E0; padding: 60px 0 28px; margin-top: 80px; }
+.top { display: grid; grid-template-columns: 1.6fr 1fr 1fr; gap: 36px; padding-bottom: 40px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+.brand .logo { display: flex; align-items: center; gap: 12px; color: #fff; font-weight: 700; margin-bottom: 16px; }
+.mark { width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, var(--steel), var(--copper)); display: grid; place-items: center; }
+.brand p { font-size: 0.9rem; color: #9FB0C4; max-width: 300px; }
+.col h4 { color: #fff; font-size: 0.95rem; margin-bottom: 16px; }
+.col ul { list-style: none; }
+.col li { margin-bottom: 10px; }
+.col a { font-size: 0.9rem; color: #9FB0C4; transition: .2s; }
+.col a:hover { color: var(--copper-soft); }
+.bottom { padding-top: 24px; font-size: 0.85rem; color: #7C8DA3; }
+@media (max-width: 720px){ .top { grid-template-columns: 1fr; gap: 24px; } }

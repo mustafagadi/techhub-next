@@ -1,0 +1,28 @@
+.hero { position: relative; color: #fff; overflow: hidden;
+  background: radial-gradient(900px 500px at 85% -10%, rgba(201,162,39,0.18), transparent 60%), linear-gradient(160deg, var(--navy) 0%, var(--navy-soft) 60%, var(--steel) 140%); }
+.heroGrid { position: absolute; inset: 0; opacity: 0.4;
+  background-image: linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+  background-size: 56px 56px; mask-image: radial-gradient(700px 400px at 80% 0%, #000, transparent 75%); }
+.heroInner { position: relative; padding: 110px 0 120px; max-width: 760px; }
+.eyebrow { display: inline-flex; align-items: center; gap: 8px; font-size: 0.85rem; color: var(--copper-soft); font-weight: 600; border: 1px solid rgba(201,162,39,0.35); padding: 6px 14px; border-radius: 100px; margin-bottom: 24px; }
+.heroInner h1 { font-size: clamp(2rem, 5vw, 3.3rem); font-weight: 700; line-height: 1.25; margin-bottom: 20px; }
+.accent { color: var(--copper-soft); }
+.heroInner p { font-size: 1.15rem; color: #C7D2E0; max-width: 560px; margin-bottom: 36px; }
+.actions { display: flex; gap: 14px; flex-wrap: wrap; }
+
+.block { padding: 90px 0; }
+.cloud { background: var(--cloud); }
+.head { text-align: center; max-width: 640px; margin: 0 auto 56px; }
+.head h2 { font-size: clamp(1.6rem, 3.5vw, 2.4rem); font-weight: 700; margin-bottom: 14px; }
+.head p { color: var(--muted); font-size: 1.05rem; }
+.grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
+.more { text-align: center; margin-top: 40px; }
+
+.advGrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px; }
+.adv { text-align: center; padding: 28px 18px; }
+.advIcon { width: 60px; height: 60px; border-radius: 16px; margin: 0 auto 18px; background: linear-gradient(135deg, var(--navy), var(--steel)); }
+.adv h3 { font-size: 1.1rem; margin-bottom: 8px; }
+.adv p { color: var(--muted); font-size: 0.92rem; }
+
+@media (max-width: 920px){ .grid { grid-template-columns: repeat(2,1fr); } .advGrid { grid-template-columns: repeat(2,1fr); } .heroInner { padding: 70px 0 80px; } }
+@media (max-width: 560px){ .grid, .advGrid { grid-template-columns: 1fr; } }

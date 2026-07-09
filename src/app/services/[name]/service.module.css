@@ -1,0 +1,3 @@
+
+.quota { display: flex; align-items: center; gap: 6px; font-size: 0.85rem; color: #B7791F; background: #FBF3E2; padding: 8px 12px; border-radius: 8px; margin: 12px 0; }
+.quotaIcon { font-size: 0.9rem; }
