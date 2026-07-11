@@ -70,3 +70,10 @@
   font-size: 0.88rem;
 }
 .back:hover { color: var(--steel); }
+
+.devBox { margin-top: 20px; padding: 16px; border: 1px dashed var(--line); border-radius: 10px; background: var(--cloud); }
+.devLabel { font-size: 0.82rem; font-weight: 600; color: var(--muted); margin-bottom: 10px; text-align: center; }
+.devButtons { display: flex; gap: 10px; }
+.devBtn { flex: 1; padding: 9px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); font-family: inherit; font-size: 0.88rem; cursor: pointer; }
+.devBtn:hover { border-color: var(--steel); background: #fff; }
+.devHint { font-size: 0.72rem; color: var(--muted); text-align: center; margin-top: 8px; }

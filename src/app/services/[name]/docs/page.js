@@ -5,10 +5,12 @@ import Link from 'next/link';
 import RedocViewer from '@/components/RedocViewer';
 import SwaggerViewer from '@/components/SwaggerViewer';
 import { getAuth } from '@/lib/api';
+import { useI18n } from '@/lib/i18n';
 import styles from './docs.module.css';
 
 // صفحة توثيق كاملة مستقلة — للمسجّلين فقط. تعرض Redoc أو Swagger UI.
 export default function ServiceDocs() {
+  const { t } = useI18n();
   const params = useParams();
   const router = useRouter();
   const name = decodeURIComponent(params.name);
@@ -25,16 +27,16 @@ export default function ServiceDocs() {
   }, [router]);
 
   if (!authChecked) {
-    return <div style={{ padding: 60, textAlign: 'center', color: '#5A6B82' }}>جارٍ التحقّق…</div>;
+    return <div style={{ padding: 60, textAlign: 'center', color: '#5A6B82' }}>{t('require_auth.checking')}</div>;
   }
 
   return (
     <div className={styles.page}>
       <div className={styles.bar}>
         <Link href={`/services/${encodeURIComponent(name)}`} className={styles.back}>
-          ← العودة للخدمة
+          {t('service_docs.back_to_service')}
         </Link>
-        <span className={styles.title}>التوثيق الكامل — {name}</span>
+        <span className={styles.title}>{t('service_docs.full_docs_title', { name })}</span>
         <div className={styles.switch}>
           <button
             className={`${styles.switchBtn} ${viewer === 'swagger' ? styles.active : ''}`}

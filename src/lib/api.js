@@ -3,6 +3,14 @@
 
 // على المتصفح: مسار نسبي /api (يُوجَّه عبر next.config.js).
 // على الخادم (server components): يحتاج عنوانًا كاملًا، من API_BASE_SERVER.
+
+// رسالة الخطأ الاحتياطية بلغة الواجهة الحالية (تُستخدم فقط إن لم يُرجع الخادم رسالة)
+function fallbackError(status) {
+  let locale = 'en';
+  try { locale = localStorage.getItem('portal_locale') || 'en'; } catch {}
+  return locale === 'ar' ? `خطأ ${status}` : `Error ${status}`;
+}
+
 function resolveBase() {
   if (typeof window === 'undefined') {
     // بيئة الخادم: عنوان كامل للخلفية (عرّفه في .env.local)
@@ -31,25 +39,13 @@ export function getEnvironment() { return currentEnv; }
 // يُحفظ في الذاكرة + sessionStorage (يبقى عبر تحديث الصفحة، يُمسح بإغلاق التبويب).
 const TOKEN_KEY = 'portal_auth';
 
-// نسخة من الدور فقط (بدون الرمز) في كوكي عادية — يقرأها middleware.js على الخادم
-// ليمنع وصول غير المسجّلين لصفحات /admin و/partner قبل تحميل الصفحة، دفاعًا بالعمق.
-// هذه ليست الحماية الفعلية (تلك تتم عبر رمز الدخول في كل طلب API)، فقط تمنع تسريب هيكل الصفحة.
-const ROLE_COOKIE = 'portal_role';
-function setRoleCookie(role) {
-  if (typeof document === 'undefined') return;
-  document.cookie = role
-    ? `${ROLE_COOKIE}=${encodeURIComponent(role)}; path=/; SameSite=Lax`
-    : `${ROLE_COOKIE}=; path=/; max-age=0; SameSite=Lax`;
-}
-
-export function setAuth(token, email, role) {
+export function setAuth(token, email, role, permissions = []) {
   if (typeof window === 'undefined') return;
   if (token) {
-    sessionStorage.setItem(TOKEN_KEY, JSON.stringify({ token, email, role }));
+    sessionStorage.setItem(TOKEN_KEY, JSON.stringify({ token, email, role, permissions }));
   } else {
     sessionStorage.removeItem(TOKEN_KEY);
   }
-  setRoleCookie(token ? role : null);
 }
 
 export function getAuth() {
@@ -64,6 +60,14 @@ export function getAuth() {
 
 export function logout() { setAuth(null); }
 
+// المسؤول الفائق يملك كل الصلاحيات ضمنيًّا — دون الحاجة لتخزينها له فرديًّا.
+export function hasPermission(code) {
+  const auth = getAuth();
+  if (!auth) return false;
+  if (auth.role === 'portal-superadmin') return true;
+  return Array.isArray(auth.permissions) && auth.permissions.includes(code);
+}
+
 async function request(path, options = {}) {
   const headers = {
     'Content-Type': 'application/json',
@@ -76,7 +80,7 @@ async function request(path, options = {}) {
 
   const res = await fetch(`${resolveBase()}${path}`, { ...options, headers });
   if (!res.ok) {
-    let message = `خطأ ${res.status}`;
+    let message = fallbackError(res.status);
     try { const body = await res.json(); message = body.message || message; } catch {}
     const err = new Error(message);
     err.status = res.status;
@@ -92,8 +96,8 @@ export async function login(email, password) {
     method: 'POST',
     body: JSON.stringify({ email, password }),
   });
-  // الخلفية تعيد { token, email, role }
-  setAuth(res.token, res.email, res.role);
+  // الخلفية تعيد { token, email, role, permissions }
+  setAuth(res.token, res.email, res.role, res.permissions || []);
   return res;
 }
 
@@ -131,7 +135,7 @@ async function uploadFile(path, file, method = 'PUT') {
 
   const res = await fetch(`${resolveBase()}${path}`, { method, headers, body: form });
   if (!res.ok) {
-    let message = `خطأ ${res.status}`;
+    let message = fallbackError(res.status);
     try { const body = await res.json(); message = body.message || message; } catch {}
     const err = new Error(message);
     err.status = res.status;
@@ -229,7 +233,6 @@ export const getMyApps = async () => {
 // جلب تطبيق محدّد من بيئة stage
 export const getApp = (appName) => {
   const auth = getAuth();
-  if (!auth?.email) return Promise.reject(new Error('غير مصادق عليه.'));
   return request(`/partners/${encodeURIComponent(auth.email)}/apps/${encodeURIComponent(appName)}`, { ...STAGE });
 };
 
@@ -323,3 +326,25 @@ export const acceptInvite = (token, password) =>
 // ===== الصحة والبيئات =====
 export const getEnvironments = () => request('/health/environments');
 export const getApigeeHealth = () => request('/health/apigee');
+
+// ===== إدارة حسابات المسؤولين وصلاحياتهم (portal-superadmin فقط) =====
+export const getAdminUsers = async () => {
+  const res = await request('/admin/users');
+  if (Array.isArray(res)) return res;
+  return res?.users || [];
+};
+// يرسل دعوة بريدية لمسؤول جديد (بريد/دور/صلاحيات) — لا كلمة مرور هنا، المدعو يختارها بنفسه
+export const inviteAdminUser = (data) =>
+  request('/admin/users', { method: 'POST', body: JSON.stringify(data) });
+export const setAdminUserPermissions = (userId, permissions) =>
+  request(`/admin/users/${encodeURIComponent(userId)}/permissions`, {
+    method: 'PUT', body: JSON.stringify({ permissions }),
+  });
+
+// عرض بيانات دعوة مسؤول (عامّ — صفحة قبول الدعوة).
+export const getAdminInvite = (token) =>
+  request(`/admin/users/invites/${encodeURIComponent(token)}`);
+
+// قبول دعوة المسؤول وإنشاء كلمة المرور (عامّ).
+export const acceptAdminInvite = (token, password) =>
+  request('/admin/users/invites/accept', { method: 'POST', body: JSON.stringify({ token, password }) });

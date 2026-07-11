@@ -2,11 +2,13 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { login } from '@/lib/api';
+import { login, setAuth } from '@/lib/api';
+import { useI18n } from '@/lib/i18n';
 import styles from './login.module.css';
 
 export default function LoginPage() {
   const router = useRouter();
+  const { t } = useI18n();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -19,11 +21,12 @@ export default function LoginPage() {
     try {
       const res = await login(email, password);
       // توجيه حسب الدور
-      if (res.role === 'portal-admin') router.push('/admin');
+      if (res.role === 'portal-admin' || res.role === 'portal-superadmin') router.push('/admin');
       else if (res.role === 'portal-partner') router.push('/partner');
       else router.push('/');
     } catch (err) {
-      setError(err.message || 'فشل تسجيل الدخول.');
+      // رسائل الخلفية تعود بالعربية حاليًّا (النطاق: الواجهة فقط)
+      setError(err.message || t('login.failed'));
     } finally {
       setLoading(false);
     }
@@ -33,15 +36,14 @@ export default function LoginPage() {
     <div className={styles.page}>
       <div className={styles.card}>
         <Link href="/" className={styles.logo}>
-          <span className={styles.mark}>ب</span>
-          <span>TechHub Portal</span>
+          <span>{t('common.brand')}</span>
         </Link>
-        <h1>تسجيل الدخول</h1>
-        <p className={styles.sub}>ادخل بياناتك للوصول إلى حسابك.</p>
+        <h1>{t('login.title')}</h1>
+        <p className={styles.sub}>{t('login.subtitle')}</p>
 
         <form onSubmit={handleSubmit}>
           <label className={styles.label}>
-            البريد الإلكتروني
+            {t('login.email')}
             <input
               type="email"
               value={email}
@@ -52,7 +54,7 @@ export default function LoginPage() {
             />
           </label>
           <label className={styles.label}>
-            كلمة المرور
+            {t('login.password')}
             <input
               type="password"
               value={password}
@@ -66,11 +68,49 @@ export default function LoginPage() {
           {error && <div className={styles.error}>{error}</div>}
 
           <button type="submit" className="btn btn-primary" disabled={loading} style={{ width: '100%', justifyContent: 'center' }}>
-            {loading ? 'جارٍ الدخول…' : 'دخول'}
+            {loading ? t('login.submitting') : t('login.submit')}
           </button>
         </form>
 
-        <Link href="/" className={styles.back}>← العودة للرئيسية</Link>
+        {/* دخول سريع للتطوير المحلي فقط — يحفظ جلسة وهمية دون قاعدة بيانات. */}
+        <div className={styles.devBox}>
+          <div className={styles.devLabel}>{t('login.dev_quick')}</div>
+          <div className={styles.devButtons}>
+            <button
+              type="button"
+              className={styles.devBtn}
+              onClick={() => {
+                setAuth('localdev-token', 'partner@local.test', 'portal-partner');
+                router.push('/partner');
+              }}
+            >
+              {t('login.dev_as_partner')}
+            </button>
+            <button
+              type="button"
+              className={styles.devBtn}
+              onClick={() => {
+                setAuth('localdev-token', 'admin@local.test', 'portal-admin', []);
+                router.push('/admin');
+              }}
+            >
+              {t('login.dev_as_admin')}
+            </button>
+            <button
+              type="button"
+              className={styles.devBtn}
+              onClick={() => {
+                setAuth('localdev-token', 'superadmin@local.test', 'portal-superadmin', []);
+                router.push('/admin');
+              }}
+            >
+              {t('login.dev_as_superadmin')}
+            </button>
+          </div>
+          <div className={styles.devHint}>{t('login.dev_only')}</div>
+        </div>
+
+        <Link href="/" className={styles.back}>{t('common.back_home')}</Link>
       </div>
     </div>
   );

@@ -1,22 +1,27 @@
 import '@/styles/globals.css';
 import Analytics from '@/components/Analytics';
+import { I18nProvider } from '@/lib/i18n';
 
 export const metadata = {
-  title: 'بوابة المطوّرين | حلول تقنية عقارية',
-  description: 'منصّة واجهات برمجية موحّدة لربط أنظمتك بالخدمات العقارية والبلدية.',
+  title: 'Developer Portal | Municipal & Real-Estate API Solutions',
+  description: 'A unified API platform connecting your systems to municipal and real-estate services.',
 };
 
+// اللغة الافتراضية إنجليزية. المزوّد يصحّح lang/dir بعد التركيب
+// إن كان المستخدم قد اختار العربية سابقًا.
 export default function RootLayout({ children }) {
   return (
-    <html lang="ar" dir="rtl">
+    <html lang="en" dir="ltr">
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet" />
       </head>
       <body>
-        <Analytics />
-        {children}
+        <I18nProvider>
+          <Analytics />
+          {children}
+        </I18nProvider>
       </body>
     </html>
   );

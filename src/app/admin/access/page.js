@@ -1,21 +1,22 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
 import { getAccessRequests, approveAccess, rejectAccess } from '@/lib/api';
+import PermissionGate from '@/components/PermissionGate';
+import { useI18n } from '@/lib/i18n';
 import styles from '../admin.module.css';
 
 export default function AccessPage() {
+  const { t } = useI18n();
   const [access, setAccess] = useState([]);
   const [accessLoading, setAccessLoading] = useState(true);
-  const [loadError, setLoadError] = useState(false);
   const [busy, setBusy] = useState(null);
   const [toast, setToast] = useState(null);
 
   const loadAccess = useCallback(() => {
     setAccessLoading(true);
-    setLoadError(false);
     getAccessRequests()
       .then((d) => setAccess(Array.isArray(d) ? d : []))
-      .catch(() => setLoadError(true))
+      .catch(() => {})
       .finally(() => setAccessLoading(false));
   }, []);
   useEffect(() => { loadAccess(); }, [loadAccess]);
@@ -37,30 +38,30 @@ export default function AccessPage() {
       };
       if (approve) {
         await approveAccess(payload);
-        notify('تمت الموافقة على الطلب.');
+        notify(t('access.approved'));
       } else {
         await rejectAccess(payload);
-        notify('تم رفض الطلب.');
+        notify(t('access.rejected'));
       }
       loadAccess();
     } catch (err) {
-      notify(err.message || 'تعذّر تنفيذ العملية.', false);
+      notify(err.message || t('access.action_failed'), false);
     } finally {
       setBusy(null);
     }
   }
 
   return (
-    <>
+    <PermissionGate permission="access.approve">
       <div className={styles.topbar}>
-        <h1>طلبات الاشتراك</h1>
-        <span className={styles.env}>● بيئة prod</span>
+        <h1>{t('admin_nav.access')}</h1>
+        <span className={styles.env}>{t('overview.env_prod')}</span>
       </div>
       <div className={styles.content}>
         <div className={styles.card}>
-          <div className={styles.cardHead}><span>طلبات الاشتراك المعلّقة</span></div>
+          <div className={styles.cardHead}><span>{t('access.pending_title')}</span></div>
           <table className={styles.table}>
-            <thead><tr><th>المستخدم</th><th>التطبيق</th><th>الخدمة</th><th>الإجراء</th></tr></thead>
+            <thead><tr><th>{t('access.col_user')}</th><th>{t('orders.col_app')}</th><th>{t('orders.col_service')}</th><th>{t('access.col_action')}</th></tr></thead>
             <tbody>
               {access.map((a, i) => {
                 const id = a.id || a.consumerKey || `${a.developerEmail}-${a.appName}`;
@@ -71,20 +72,17 @@ export default function AccessPage() {
                     <td>{a.productName || '—'}</td>
                     <td>
                       <button className={styles.ok} onClick={() => handleAccess(a, true)} disabled={busy === id}>
-                        {busy === id ? '…' : 'موافقة'}
+                        {busy === id ? '…' : t('access.approve')}
                       </button>{' '}
                       <button className={styles.no} onClick={() => handleAccess(a, false)} disabled={busy === id}>
-                        رفض
+                        {t('access.reject')}
                       </button>
                     </td>
                   </tr>
                 );
               })}
-              {accessLoading && <tr><td colSpan="4" className={styles.empty}>جارٍ تحميل الطلبات…</td></tr>}
-              {!accessLoading && loadError && (
-                <tr><td colSpan="4" className={styles.empty}>تعذّر تحميل الطلبات. <button className={styles.priceBtn} onClick={loadAccess}>إعادة المحاولة</button></td></tr>
-              )}
-              {!accessLoading && !loadError && !access.length && <tr><td colSpan="4" className={styles.empty}>لا توجد طلبات معلّقة.</td></tr>}
+              {accessLoading && <tr><td colSpan="4" className={styles.empty}>{t('access.loading_requests')}</td></tr>}
+              {!accessLoading && !access.length && <tr><td colSpan="4" className={styles.empty}>{t('access.empty')}</td></tr>}
             </tbody>
           </table>
         </div>
@@ -95,6 +93,6 @@ export default function AccessPage() {
           {toast.message}
         </div>
       )}
-    </>
+    </PermissionGate>
   );
 }

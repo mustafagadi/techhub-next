@@ -1,10 +1,10 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
 import { getMyApps, createApp, addService, getProducts, ensureRegistered, saveProfile, getProfile, startPurchase, requestPromotion, getMyPromotions, getDeveloperProfile } from '@/lib/api';
-import { normalizePromotionStatus } from '@/lib/status';
 import ServicePicker from '@/components/ServicePicker';
 import RequireAuth from '@/components/RequireAuth';
 import Header from '@/components/Header';
+import { useI18n } from '@/lib/i18n';
 import styles from './partner.module.css';
 
 export default function PartnerPage() {
@@ -16,21 +16,19 @@ export default function PartnerPage() {
 }
 
 function PartnerDashboard() {
+  const { t } = useI18n();
   const [apps, setApps] = useState([]);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
   const [toast, setToast] = useState(null);
   const [preselectedProduct, setPreselectedProduct] = useState('');
   const [promotions, setPromotions] = useState([]);
 
   const loadApps = useCallback(() => {
-    setLoading(true);
-    setLoadError(false);
     getMyApps()
       .then((d) => setApps(Array.isArray(d) ? d : []))
-      .catch(() => setLoadError(true))
+      .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
 
@@ -56,10 +54,10 @@ function PartnerDashboard() {
   async function handlePromote(productName) {
     try {
       await requestPromotion(productName);
-      notify(`أُرسل طلب ترقية «${productName}» للإنتاج. بانتظار موافقة المسؤول.`);
+      notify(t('partner.promote_success', { name: productName }));
       loadPromotions();
     } catch (err) {
-      notify(err.message || 'تعذّر إرسال طلب الترقية.', false);
+      notify(err.message || t('partner.promote_failed'), false);
     }
   }
 
@@ -75,26 +73,22 @@ function PartnerDashboard() {
         <div className="container">
           <div className={styles.head}>
             <div>
-              <h1>تطبيقاتي</h1>
-              <p>أنشئ تطبيق للحصول على مفتاح وصول، واطلب إتاحة الخدمات التي تحتاجها.</p>
+              <h1>{t('partner.title')}</h1>
+              <p>{t('partner.subtitle')}</p>
             </div>
             <div style={{ display: 'flex', gap: '10px' }}>
-              <a href="/partner/orders" className="btn" style={{ border: '1px solid #E2E6EC' }}>طلباتي وفواتيري</a>
-              <button className="btn btn-primary" onClick={() => setShowCreate(true)}>+ طلب خدمة</button>
+              <a href="/partner/orders" className="btn" style={{ border: '1px solid #E2E6EC' }}>{t('orders.title')}</a>
+              <button className="btn btn-primary" onClick={() => setShowCreate(true)}>{t('partner.request_service')}</button>
             </div>
           </div>
 
           <ProfileCard />
 
           {loading ? (
-            <div className={styles.empty}>جارٍ التحميل…</div>
-          ) : loadError ? (
-            <div className={styles.empty}>
-              تعذّر تحميل تطبيقاتك. <button className="btn" style={{ border: '1px solid #E2E6EC' }} onClick={loadApps}>إعادة المحاولة</button>
-            </div>
+            <div className={styles.empty}>{t('common.loading')}</div>
           ) : apps.length === 0 ? (
             <div className={styles.empty}>
-              لا توجد تطبيقات بعد. اطلب أول تطبيق للبدء.
+              {t('partner.empty')}
             </div>
           ) : (
             <div className={styles.grid}>
@@ -114,7 +108,7 @@ function PartnerDashboard() {
           onClose={() => setShowCreate(false)}
           onCreated={(name) => {
             setShowCreate(false);
-            notify(`أُنشئ التطبيق «${name}».`);
+            notify(t('partner.app_created', { name }));
             loadApps();
           }}
           onError={(msg) => notify(msg, false)}
@@ -132,6 +126,7 @@ function PartnerDashboard() {
 
 // بطاقة تطبيق — تعرض اسمه ومفاتيحه والخدمات المرتبطة وحالة ترقيتها للإنتاج
 function AppCard({ app, promotions = [], onPromote }) {
+  const { t } = useI18n();
   const [showKey, setShowKey] = useState(false);
   const [busyProduct, setBusyProduct] = useState(null);
   const credentials = app.credentials || [];
@@ -139,12 +134,20 @@ function AppCard({ app, promotions = [], onPromote }) {
   const secret = credentials[0]?.consumerSecret || app.consumerSecret;
   const products = credentials[0]?.products || credentials[0]?.apiProducts || app.apiProducts || [];
 
+  // الخلفية قد تُرجع الحالة كرقم (0/1/2) أو كنص — نوحّدها.
+  const STATUS_BY_NUM = { 0: 'Pending', 1: 'Approved', 2: 'Rejected' };
+  function normStatus(s) {
+    if (typeof s === 'number') return STATUS_BY_NUM[s] ?? String(s);
+    if (typeof s === 'string' && /^[0-2]$/.test(s)) return STATUS_BY_NUM[Number(s)];
+    return s;
+  }
+
   // حالة ترقية خدمة معيّنة: Pending / Approved / Rejected / null
   function promotionOf(productName) {
     const r = promotions.find(
       (x) => (x.productName || '').toLowerCase() === (productName || '').toLowerCase()
     );
-    return r ? normalizePromotionStatus(r.status) : null;
+    return r ? normStatus(r.status) : null;
   }
 
   async function promote(productName) {
@@ -156,29 +159,29 @@ function AppCard({ app, promotions = [], onPromote }) {
     <div className={styles.card}>
       <div className={styles.cardHead}>
         <h3>{app.name || app.appName}</h3>
-        <span className={styles.status}>{app.status || 'نشط'}</span>
+        <span className={styles.status}>{app.status || t('partner.status_active')}</span>
       </div>
 
       {key && (
         <div className={styles.cred}>
-          <span className={styles.credLabel}>مفتاح الوصول</span>
+          <span className={styles.credLabel}>{t('partner.access_key')}</span>
           <code className={styles.credValue}>{key}</code>
         </div>
       )}
       {secret && (
         <div className={styles.cred}>
-          <span className={styles.credLabel}>السرّ</span>
+          <span className={styles.credLabel}>{t('partner.secret')}</span>
           <code className={styles.credValue}>
             {showKey ? secret : '••••••••••••'}
           </code>
           <button className={styles.reveal} onClick={() => setShowKey(!showKey)}>
-            {showKey ? 'إخفاء' : 'إظهار'}
+            {showKey ? t('partner.hide') : t('partner.show')}
           </button>
         </div>
       )}
 
       <div className={styles.products}>
-        <span className={styles.credLabel}>الخدمات المرتبطة (بيئة الاختبار)</span>
+        <span className={styles.credLabel}>{t('partner.linked_services')}</span>
         {products.length ? (
           <div className={styles.svcList}>
             {products.map((p, i) => {
@@ -188,23 +191,23 @@ function AppCard({ app, promotions = [], onPromote }) {
               return (
                 <div key={i} className={styles.svcRow}>
                   <span className={`${styles.chip} ${status === 'approved' ? styles.chipOk : styles.chipPending}`}>
-                    {name} {status === 'approved' ? '✓' : status === 'pending' ? '(معلّق)' : ''}
+                    {name} {status === 'approved' ? '✓' : status === 'pending' ? t('partner.pending_suffix') : ''}
                   </span>
 
                   {promo === 'Approved' ? (
-                    <span className={styles.promoLive}>في الإنتاج ✓</span>
+                    <span className={styles.promoLive}>{t('partner.promo_live')}</span>
                   ) : promo === 'Pending' ? (
-                    <span className={styles.promoPending}>بانتظار الموافقة</span>
+                    <span className={styles.promoPending}>{t('partner.promo_pending')}</span>
                   ) : promo === 'Rejected' ? (
-                    <span className={styles.promoRejected}>مرفوض</span>
+                    <span className={styles.promoRejected}>{t('partner.promo_rejected')}</span>
                   ) : (
                     <button
                       className={styles.promoBtn}
                       onClick={() => promote(name)}
                       disabled={busyProduct === name || status !== 'approved'}
-                      title={status !== 'approved' ? 'يجب أن تكون الخدمة مفعّلة في الاختبار أولًا' : 'اطلب إتاحتها في الإنتاج'}
+                      title={status !== 'approved' ? t('partner.promote_disabled_hint') : t('partner.promote_hint')}
                     >
-                      {busyProduct === name ? 'جارٍ الإرسال…' : 'اطلب الترقية للإنتاج'}
+                      {busyProduct === name ? t('partner.promote_sending') : t('partner.promote_btn')}
                     </button>
                   )}
                 </div>
@@ -212,25 +215,16 @@ function AppCard({ app, promotions = [], onPromote }) {
             })}
           </div>
         ) : (
-          <span className={styles.muted}>لا خدمات مرتبطة</span>
+          <span className={styles.muted}>{t('partner.no_linked_services')}</span>
         )}
       </div>
     </div>
   );
 }
 
-// يقبل فقط روابط http/https مطلقة — يمنع إعادة التوجيه لروابط javascript:/data: إن تلاعب أحد باستجابة الدفع
-function isSafePaymentUrl(url) {
-  try {
-    const parsed = new URL(url, window.location.href);
-    return parsed.protocol === 'http:' || parsed.protocol === 'https:';
-  } catch {
-    return false;
-  }
-}
-
 // نافذة إنشاء تطبيق — اسم + اختيار خدمة لطلب إتاحتها
 function CreateAppModal({ products, apps, initialProduct, onClose, onCreated, onError }) {
+  const { t } = useI18n();
   const [selectedProduct, setSelectedProduct] = useState(initialProduct || '');
   // إن جاء الشريك من صفحة خدمة محدّدة، الخدمة مقفلة (لا يعيد اختيارها من قائمة).
   const locked = !!initialProduct;
@@ -265,7 +259,7 @@ function CreateAppModal({ products, apps, initialProduct, onClose, onCreated, on
           const app = apps.find((a) => (a.name || a.appName) === selectedApp);
           consumerKey = app?.credentials?.[0]?.consumerKey || app?.consumerKey || '';
           if (!consumerKey) {
-            onError('تعذّر تحديد مفتاح التطبيق. حدّث الصفحة وحاول مجددًا.');
+            onError(t('partner.app_key_error'));
             return;
           }
         }
@@ -275,11 +269,11 @@ function CreateAppModal({ products, apps, initialProduct, onClose, onCreated, on
           consumerKey,
           createNewApp: !useExisting, // إن لم يختر تطبيقًا موجودًا، يُنشأ تطبيق جديد بعد الدفع
         });
-        if (session?.paymentUrl && isSafePaymentUrl(session.paymentUrl)) {
+        if (session?.paymentUrl) {
           window.location.href = session.paymentUrl; // توجيه لبوابة الدفع
           return;
         }
-        onError('تعذّر بدء عملية الدفع. حاول مجددًا.');
+        onError(t('partner.payment_start_failed'));
         return;
       }
 
@@ -287,7 +281,7 @@ function CreateAppModal({ products, apps, initialProduct, onClose, onCreated, on
       await addService(selectedProduct, appName, createNew);
       onCreated(selectedProduct);
     } catch (err) {
-      onError(err.message || 'تعذّر إضافة الخدمة.');
+      onError(err.message || t('partner.add_service_failed'));
     } finally {
       setBusy(false);
     }
@@ -296,9 +290,9 @@ function CreateAppModal({ products, apps, initialProduct, onClose, onCreated, on
   return (
     <div className={styles.overlay} onClick={onClose}>
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-        <h2>طلب خدمة جديدة</h2>
+        <h2>{t('partner.modal_title')}</h2>
         <label className={styles.label}>
-          الخدمة المطلوبة
+          {t('partner.modal_service_label')}
           {locked && lockedProduct ? (
             <div style={{
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -313,7 +307,7 @@ function CreateAppModal({ products, apps, initialProduct, onClose, onCreated, on
                 background: (lockedProduct.price > 0) ? '#FBF1DC' : '#EAF4EE',
                 color: (lockedProduct.price > 0) ? '#8A6512' : '#1d4d33',
               }}>
-                {(lockedProduct.price > 0) ? `${lockedProduct.price.toLocaleString('ar-SA')} ر.س` : 'مجانية'}
+                {(lockedProduct.price > 0) ? `${lockedProduct.price.toLocaleString('ar-SA')} ${t('service.currency')}` : t('partner.free')}
               </span>
             </div>
           ) : (
@@ -327,14 +321,14 @@ function CreateAppModal({ products, apps, initialProduct, onClose, onCreated, on
 
         {hasApps && (
           <div className={styles.label}>
-            أين تُضاف الخدمة؟
+            {t('partner.modal_where_label')}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '8px' }}>
               <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 'normal', cursor: 'pointer' }}>
                 <input type="radio" name="target" checked={target === 'existing'} onChange={() => setTarget('existing')} />
-                <span>إضافة إلى تطبيق موجود (نفس المفتاح)</span>
+                <span>{t('partner.modal_existing_app')}</span>
               </label>
               {target === 'existing' && (
-                <select value={selectedApp} onChange={(e) => setSelectedApp(e.target.value)} style={{ marginRight: '24px' }}>
+                <select value={selectedApp} onChange={(e) => setSelectedApp(e.target.value)} style={{ marginInlineStart: '24px' }}>
                   {apps.map((a, i) => (
                     <option key={i} value={a.name || a.appName}>{a.name || a.appName}</option>
                   ))}
@@ -342,7 +336,7 @@ function CreateAppModal({ products, apps, initialProduct, onClose, onCreated, on
               )}
               <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 'normal', cursor: 'pointer' }}>
                 <input type="radio" name="target" checked={target === 'new'} onChange={() => setTarget('new')} />
-                <span>إنشاء تطبيق جديد للخدمة (مفتاح مستقل)</span>
+                <span>{t('partner.modal_new_app')}</span>
               </label>
             </div>
           </div>
@@ -350,18 +344,18 @@ function CreateAppModal({ products, apps, initialProduct, onClose, onCreated, on
 
         <p className={styles.note}>
           {target === 'new'
-            ? 'سيُنشأ تطبيق جديد بمفتاح مستقل لهذه الخدمة. إتاحة الخدمة تحتاج موافقة المسؤول.'
-            : 'تُضاف الخدمة إلى التطبيق المختار بنفس مفتاح الوصول. إتاحة الخدمة تحتاج موافقة المسؤول.'}
+            ? t('partner.modal_note_new')
+            : t('partner.modal_note_existing')}
         </p>
         <div className={styles.modalActions}>
           <button className="btn btn-primary" onClick={handleCreate} disabled={busy || !selectedProduct}>
             {busy
-              ? 'جارٍ المعالجة…'
+              ? t('partner.modal_processing')
               : ((lockedProduct?.price > 0 || (products.find((p) => p.name === selectedProduct)?.price > 0))
-                  ? 'المتابعة للدفع'
-                  : 'طلب الخدمة')}
+                  ? t('partner.modal_continue_payment')
+                  : t('partner.modal_request_service'))}
           </button>
-          <button className={styles.cancel} onClick={onClose}>إلغاء</button>
+          <button className={styles.cancel} onClick={onClose}>{t('common.cancel')}</button>
         </div>
       </div>
     </div>
@@ -370,6 +364,7 @@ function CreateAppModal({ products, apps, initialProduct, onClose, onCreated, on
 
 // بطاقة الملف الشخصي — اسم الشريك وجهته (تُحفظ محليًّا، تُستخدم في التسجيل)
 function ProfileCard() {
+  const { t } = useI18n();
   const [profile, setProfile] = useState({ firstName: '', lastName: '', companyName: '' });
   const [saved, setSaved] = useState(false);
   const [open, setOpen] = useState(false);
@@ -430,7 +425,7 @@ function ProfileCard() {
       <div className={styles.profileCard}>
         <div className={styles.profileHead} onClick={() => setOpen(!open)}>
           <div>
-            <strong>ملفي الشخصي</strong>
+            <strong>{t('partner.profile_title')}</strong>
             <span className={styles.profileHint}>
               {profile.firstName} {profile.lastName} — {profile.companyName}
             </span>
@@ -440,7 +435,7 @@ function ProfileCard() {
         {open && (
           <div className={styles.profileBody}>
             <p className={styles.profileNote}>
-              بياناتك مسجَّلة في Apigee. لتعديلها، تواصل مع فريق البوابة.
+              {t('partner.profile_registered_note')}
             </p>
           </div>
         )}
@@ -452,13 +447,13 @@ function ProfileCard() {
     <div className={styles.profileCard}>
       <div className={styles.profileHead} onClick={() => setOpen(!open)}>
         <div>
-          <strong>ملفي الشخصي</strong>
+          <strong>{t('partner.profile_title')}</strong>
           <span className={styles.profileHint}>
             {loading
-              ? 'جارٍ التحميل…'
+              ? t('common.loading')
               : filled
                 ? `${profile.firstName} ${profile.lastName} — ${profile.companyName}`
-                : 'لم يُكمل بعد (سيُشتقّ الاسم من بريدك)'}
+                : t('partner.profile_incomplete')}
           </span>
         </div>
         <span>{open ? '▲' : '▼'}</span>
@@ -467,27 +462,27 @@ function ProfileCard() {
         <div className={styles.profileBody}>
           <p className={styles.profileNote}>
             {locked
-              ? 'هذه بياناتك المحفوظة. اضغط «تعديل» لتغييرها.'
-              : 'تُحفظ هذه البيانات وتُستخدم عند تسجيلك في Apigee. أكملها قبل إنشاء أول تطبيق.'}
+              ? t('partner.profile_edit_note')
+              : t('partner.profile_new_note')}
           </p>
           <div className={styles.profileRow}>
-            <label>الاسم الأول
+            <label>{t('partner.first_name')}
               <input value={profile.firstName} disabled={locked} onChange={(e) => setProfile({ ...profile, firstName: e.target.value })} />
             </label>
-            <label>الاسم الأخير
+            <label>{t('partner.last_name')}
               <input value={profile.lastName} disabled={locked} onChange={(e) => setProfile({ ...profile, lastName: e.target.value })} />
             </label>
           </div>
-          <label className={styles.profileFull}>اسم الجهة
+          <label className={styles.profileFull}>{t('partner.company_name')}
             <input value={profile.companyName} disabled={locked} onChange={(e) => setProfile({ ...profile, companyName: e.target.value })} />
           </label>
           {locked ? (
             <button className="btn btn-secondary" onClick={() => setEditing(true)}>
-              تعديل
+              {t('partner.edit')}
             </button>
           ) : (
             <button className="btn btn-primary" onClick={handleSave}>
-              {saved ? 'حُفظ ✓' : 'حفظ الملف'}
+              {saved ? t('partner.saved') : t('partner.save_profile')}
             </button>
           )}
         </div>

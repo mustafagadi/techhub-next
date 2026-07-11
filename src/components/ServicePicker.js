@@ -1,9 +1,12 @@
 'use client';
 import { useState, useRef, useEffect } from 'react';
+import { useI18n } from '@/lib/i18n';
 import styles from './ServicePicker.module.css';
 
 // قائمة منسدلة مخصّصة لاختيار خدمة، تعرض السعر كشارة ملوّنة (أخضر للمجانية، ذهبي للمدفوعة).
-export default function ServicePicker({ products, value, onChange, placeholder = '— اختر خدمة —' }) {
+export default function ServicePicker({ products, value, onChange, placeholder }) {
+  const { t } = useI18n();
+  const resolvedPlaceholder = placeholder ?? t('service_picker.default_placeholder');
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
 
@@ -22,7 +25,7 @@ export default function ServicePicker({ products, value, onChange, placeholder =
     const paid = p.price && p.price > 0;
     return (
       <span className={paid ? styles.badgePaid : styles.badgeFree}>
-        {paid ? `${p.price.toLocaleString('ar-SA')} ر.س` : 'مجانية'}
+        {paid ? `${p.price.toLocaleString('ar-SA')} ${t('service.currency')}` : t('orders.free')}
       </span>
     );
   }
@@ -42,7 +45,7 @@ export default function ServicePicker({ products, value, onChange, placeholder =
         aria-expanded={open}
       >
         <span className={styles.triggerText}>
-          {selected ? (selected.displayName || selected.name) : placeholder}
+          {selected ? (selected.displayName || selected.name) : resolvedPlaceholder}
         </span>
         {selected && priceBadge(selected)}
         <span className={styles.arrow}>{open ? '▲' : '▼'}</span>
@@ -56,7 +59,7 @@ export default function ServicePicker({ products, value, onChange, placeholder =
             aria-selected={!value}
             onClick={() => pick('')}
           >
-            <span className={styles.optName}>{placeholder}</span>
+            <span className={styles.optName}>{resolvedPlaceholder}</span>
           </li>
           {products.map((p, i) => {
             const isSel = p.name === value;

@@ -1,10 +1,12 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import { getProductSpec, getProxySpec } from '@/lib/api';
+import { useI18n } from '@/lib/i18n';
 
 // يعرض مواصفة OpenAPI لـ proxy عبر Swagger UI (يُحمّل من CDN).
 // [النهج ب] يجلب المواصفة المولّدة من الـ proxy مباشرة.
 export default function SwaggerViewer({ productName }) {
+  const { t } = useI18n();
   const containerRef = useRef(null);
   const [status, setStatus] = useState('loading'); // loading | ready | empty | error
 
@@ -52,7 +54,9 @@ export default function SwaggerViewer({ productName }) {
           spec,
           domNode: containerRef.current,
           deepLinking: true,
-          tryItOutEnabled: true,
+          // للتوثيق فقط — لا تنفيذ طلبات فعلية من هنا (لا "Try it out")
+          tryItOutEnabled: false,
+          supportedSubmitMethods: [],
         });
         if (!cancelled) setStatus('ready');
       } catch {
@@ -66,9 +70,9 @@ export default function SwaggerViewer({ productName }) {
 
   return (
     <div>
-      {status === 'loading' && <div style={{ padding: 24, color: '#5A6B82' }}>جارٍ تحميل التوثيق…</div>}
-      {status === 'empty' && <div style={{ padding: 24, color: '#5A6B82' }}>لا توجد مواصفة موثّقة لهذه الخدمة بعد.</div>}
-      {status === 'error' && <div style={{ padding: 24, color: '#C0392B' }}>تعذّر تحميل التوثيق.</div>}
+      {status === 'loading' && <div style={{ padding: 24, color: '#5A6B82' }}>{t('doc_viewer.loading')}</div>}
+      {status === 'empty' && <div style={{ padding: 24, color: '#5A6B82' }}>{t('doc_viewer.empty')}</div>}
+      {status === 'error' && <div style={{ padding: 24, color: '#C0392B' }}>{t('doc_viewer.error')}</div>}
       <div ref={containerRef} dir="ltr" />
     </div>
   );

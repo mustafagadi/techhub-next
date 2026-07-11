@@ -16,13 +16,13 @@
   font-family: inherit;
   font-size: 0.95rem;
   color: var(--navy, #0B1F3A);
-  text-align: right;
+  text-align: start;
   transition: border-color 0.15s;
 }
 .trigger:hover { border-color: #B4BECD; }
 .trigger:focus { outline: none; border-color: var(--copper, #C9A227); }
 
-.triggerText { flex: 1; text-align: right; }
+.triggerText { flex: 1; text-align: start; }
 
 .arrow {
   font-size: 0.7rem;

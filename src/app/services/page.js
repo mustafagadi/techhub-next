@@ -4,10 +4,12 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ServiceCard from '@/components/ServiceCard';
 import { getProducts } from '@/lib/api';
+import { useI18n } from '@/lib/i18n';
 import styles from './services.module.css';
 
 // الكتالوج يعرض المنتجات (apiproducts) — وحدة الاشتراك في Apigee، لا البروكسيات.
 export default function ServicesPage() {
+  const { t, locale } = useI18n();
   const [products, setProducts] = useState([]);
   const [filter, setFilter] = useState('all');
   const [catFilter, setCatFilter] = useState('all');
@@ -37,46 +39,81 @@ export default function ServicesPage() {
     return matchF && matchCat && matchQ;
   });
 
+  const numLocale = locale === 'ar' ? 'ar-SA' : 'en-US';
+
+  const FILTERS = [
+    ['all', t('catalog.filter_all')],
+    ['free', t('catalog.filter_free')],
+    ['paid', t('catalog.filter_paid')],
+  ];
+
   return (
     <>
       <Header />
       <div className={styles.pageHead}>
         <div className="container">
-          <h1>قائمة الخدمات</h1>
-          <p>تصفّح الواجهات البرمجية المتاحة، واطّلع على توثيقها قبل الاشتراك.</p>
+          <h1>{t('catalog.title')}</h1>
+          <p>{t('catalog.subtitle')}</p>
         </div>
       </div>
 
       <div className="container">
         <div className={styles.toolbar}>
           <div className={styles.search}>
-            <input type="text" placeholder="ابحث عن خدمة..." value={query} onChange={(e) => setQuery(e.target.value)} />
+            <input
+              type="text"
+              placeholder={t('catalog.search_placeholder')}
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+            />
           </div>
           <div className={styles.filters}>
-            {[['all','الكل'],['free','المجانية'],['paid','المدفوعة']].map(([k,l]) => (
-              <button key={k} className={`${styles.chip} ${filter===k ? styles.active : ''}`} onClick={() => setFilter(k)}>{l}</button>
+            {FILTERS.map(([k, l]) => (
+              <button
+                key={k}
+                className={`${styles.chip} ${filter === k ? styles.active : ''}`}
+                onClick={() => setFilter(k)}
+              >
+                {l}
+              </button>
             ))}
           </div>
         </div>
 
         {categories.length > 0 && (
           <div className={styles.catBar}>
-            <button className={`${styles.catChip} ${catFilter==='all' ? styles.catActive : ''}`} onClick={() => setCatFilter('all')}>كل الفئات</button>
+            <button
+              className={`${styles.catChip} ${catFilter === 'all' ? styles.catActive : ''}`}
+              onClick={() => setCatFilter('all')}
+            >
+              {t('catalog.all_categories')}
+            </button>
             {categories.map((c) => (
-              <button key={c} className={`${styles.catChip} ${catFilter===c ? styles.catActive : ''}`} onClick={() => setCatFilter(c)}>{c}</button>
+              <button
+                key={c}
+                className={`${styles.catChip} ${catFilter === c ? styles.catActive : ''}`}
+                onClick={() => setCatFilter(c)}
+              >
+                {c}
+              </button>
             ))}
           </div>
         )}
 
-        <div className={styles.count}>{loading ? 'جارٍ التحميل…' : `${list.length.toLocaleString('ar-SA')} خدمة`}</div>
+        <div className={styles.count}>
+          {loading
+            ? t('common.loading')
+            : t('catalog.count', { count: list.length.toLocaleString(numLocale) })}
+        </div>
+
         {error ? (
-          <div className={styles.errorBox}>
-            تعذّر الاتصال بالخادم. تأكّد من تشغيل الخدمة، ثم أعد المحاولة.
-          </div>
+          <div className={styles.errorBox}>{t('catalog.error')}</div>
         ) : (
           <div className={styles.grid}>
             {list.map((p) => <ServiceCard key={p.name} service={p} />)}
-            {!list.length && !loading && <div className={styles.empty}>لا توجد خدمات تطابق بحثك.</div>}
+            {!list.length && !loading && (
+              <div className={styles.empty}>{t('catalog.empty')}</div>
+            )}
           </div>
         )}
       </div>

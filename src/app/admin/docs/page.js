@@ -1,17 +1,18 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
 import { getAllProducts, importPostman, generateSpec, uploadDocFile } from '@/lib/api';
+import PermissionGate from '@/components/PermissionGate';
+import { useI18n } from '@/lib/i18n';
 import styles from '../admin.module.css';
 
 export default function DocsPage() {
+  const { t } = useI18n();
   const [services, setServices] = useState([]);
   const [busy, setBusy] = useState(null);
   const [toast, setToast] = useState(null);
-  const [loadError, setLoadError] = useState(false);
 
   const loadServices = useCallback(() => {
-    setLoadError(false);
-    getAllProducts().then((d) => setServices(Array.isArray(d) ? d : [])).catch(() => setLoadError(true));
+    getAllProducts().then((d) => setServices(Array.isArray(d) ? d : [])).catch(() => {});
   }, []);
   useEffect(() => { loadServices(); }, [loadServices]);
 
@@ -21,58 +22,53 @@ export default function DocsPage() {
   }
 
   async function handleImportPostman(serviceName, file) {
-    if (!serviceName || !file) { notify('اختر الخدمة والملف أولًا.', false); return; }
+    if (!serviceName || !file) { notify(t('docs.select_service_file_first'), false); return; }
     setBusy('upload');
     try {
       await importPostman(serviceName, file);
-      notify(`تم رفع التوثيق لـ «${serviceName}».`);
+      notify(t('docs.upload_success', { name: serviceName }));
       loadServices();
     } catch (err) {
-      notify(err.message || 'تعذّر رفع الملف.', false);
+      notify(err.message || t('docs.upload_failed'), false);
     } finally {
       setBusy(null);
     }
   }
 
   async function handleGenerateSpec(serviceName) {
-    if (!serviceName) { notify('اختر الخدمة أولًا.', false); return; }
+    if (!serviceName) { notify(t('docs.select_service_first'), false); return; }
     setBusy('generate');
     try {
       await generateSpec(serviceName);
-      notify(`تم توليد التوثيق لـ «${serviceName}».`);
+      notify(t('docs.generate_success', { name: serviceName }));
       loadServices();
     } catch (err) {
-      notify(err.message || 'تعذّر توليد التوثيق.', false);
+      notify(err.message || t('docs.generate_failed'), false);
     } finally {
       setBusy(null);
     }
   }
 
   async function handleUploadDocFile(serviceName, file) {
-    if (!serviceName || !file) { notify('اختر الخدمة والملف أولًا.', false); return; }
+    if (!serviceName || !file) { notify(t('docs.select_service_file_first'), false); return; }
     setBusy('docfile');
     try {
       await uploadDocFile(serviceName, file);
-      notify(`تم رفع ملف التوثيق لـ «${serviceName}».`);
+      notify(t('docs.docfile_upload_success', { name: serviceName }));
     } catch (err) {
-      notify(err.message || 'تعذّر رفع الملف.', false);
+      notify(err.message || t('docs.upload_failed'), false);
     } finally {
       setBusy(null);
     }
   }
 
   return (
-    <>
+    <PermissionGate permission="docs.manage">
       <div className={styles.topbar}>
-        <h1>التوثيق</h1>
-        <span className={styles.env}>● بيئة prod</span>
+        <h1>{t('admin_nav.docs')}</h1>
+        <span className={styles.env}>{t('overview.env_prod')}</span>
       </div>
       <div className={styles.content}>
-        {loadError && (
-          <div className={styles.error}>
-            تعذّر تحميل قائمة الخدمات. <button className={styles.priceBtn} onClick={loadServices}>إعادة المحاولة</button>
-          </div>
-        )}
         <DocsTab
           services={services}
           busy={busy}
@@ -87,11 +83,12 @@ export default function DocsPage() {
           {toast.message}
         </div>
       )}
-    </>
+    </PermissionGate>
   );
 }
 
 function DocsTab({ services, busy, onImport, onGenerate, onUploadDoc }) {
+  const { t } = useI18n();
   const [selected, setSelected] = useState('');
   const [file, setFile] = useState(null);
   const [docFile, setDocFile] = useState(null);
@@ -100,8 +97,8 @@ function DocsTab({ services, busy, onImport, onGenerate, onUploadDoc }) {
 
   const filtered = services.filter((s) => {
     if (!search) return true;
-    const t = (s.displayName || s.name || '').toLowerCase();
-    return t.includes(search.toLowerCase());
+    const name = (s.displayName || s.name || '').toLowerCase();
+    return name.includes(search.toLowerCase());
   });
 
   const selectedLabel = selected
@@ -110,14 +107,14 @@ function DocsTab({ services, busy, onImport, onGenerate, onUploadDoc }) {
 
   return (
     <div className={styles.card}>
-      <div className={styles.cardHead}><span>إضافة توثيق لخدمة</span></div>
+      <div className={styles.cardHead}><span>{t('docs.add_docs_title')}</span></div>
       <div className={styles.docsBody}>
         <label className={styles.docsLabel}>
-          الخدمة
+          {t('orders.col_service')}
           <div className={styles.searchSelect}>
             <input
               type="text"
-              placeholder="ابحث واختر خدمة…"
+              placeholder={t('docs.search_placeholder')}
               value={open ? search : selectedLabel}
               onChange={(e) => { setSearch(e.target.value); setOpen(true); }}
               onFocus={() => { setOpen(true); setSearch(''); }}
@@ -126,7 +123,7 @@ function DocsTab({ services, busy, onImport, onGenerate, onUploadDoc }) {
             {open && (
               <div className={styles.searchDropdown}>
                 {filtered.length === 0 ? (
-                  <div className={styles.searchEmpty}>لا توجد نتائج</div>
+                  <div className={styles.searchEmpty}>{t('docs.no_results')}</div>
                 ) : (
                   filtered.slice(0, 50).map((s, i) => (
                     <div
@@ -139,19 +136,19 @@ function DocsTab({ services, busy, onImport, onGenerate, onUploadDoc }) {
                         setOpen(false);
                       }}
                     >
-                      {s.displayName || s.name} {s.hasSpec ? <span className={styles.hasSpec}>(لها توثيق)</span> : ''}
+                      {s.displayName || s.name} {s.hasSpec ? <span className={styles.hasSpec}>{t('docs.has_spec')}</span> : ''}
                     </div>
                   ))
                 )}
-                {filtered.length > 50 && <div className={styles.searchEmpty}>اكتب للتضييق… ({filtered.length} نتيجة)</div>}
+                {filtered.length > 50 && <div className={styles.searchEmpty}>{t('docs.narrow_search', { count: filtered.length })}</div>}
               </div>
             )}
           </div>
         </label>
 
         <div className={styles.docsOption}>
-          <h4>الطريقة الأولى: رفع ملف Postman</h4>
-          <p>ارفع ملف Postman Collection (JSON)، لتحويله الى توثيق OpenAPI.</p>
+          <h4>{t('docs.method1_title')}</h4>
+          <p>{t('docs.method1_desc')}</p>
           <input
             type="file"
             accept=".json"
@@ -162,29 +159,29 @@ function DocsTab({ services, busy, onImport, onGenerate, onUploadDoc }) {
             onClick={() => onImport(selected, file)}
             disabled={busy === 'upload' || !selected || !file}
           >
-            {busy === 'upload' ? 'جارٍ الرفع…' : 'رفع وتحويل'}
+            {busy === 'upload' ? t('docs.uploading') : t('docs.upload_convert')}
           </button>
         </div>
 
-        <div className={styles.docsDivider}>أو</div>
+        <div className={styles.docsDivider}>{t('docs.or')}</div>
 
         <div className={styles.docsOption}>
-          <h4>الطريقة الثانية: توليد من الـ Proxy</h4>
-          <p>توليد توثيق أوّلي تلقائيًّا من تعريف الـ proxy في Apigee.</p>
+          <h4>{t('docs.method2_title')}</h4>
+          <p>{t('docs.method2_desc')}</p>
           <button
             className={styles.btnGhost}
             onClick={() => onGenerate(selected)}
             disabled={busy === 'generate' || !selected}
           >
-            {busy === 'generate' ? 'جارٍ التوليد…' : 'توليد من Proxy'}
+            {busy === 'generate' ? t('docs.generating') : t('docs.generate_from_proxy')}
           </button>
         </div>
 
-        <div className={styles.docsDivider}>أو</div>
+        <div className={styles.docsDivider}>{t('docs.or')}</div>
 
         <div className={styles.docsOption}>
-          <h4>الطريقة الثالثة: رفع ملف توثيق (PDF / Word)</h4>
-          <p>ارفع ملف توثيق جاهزًا (PDF أو Word)، ليتمكّن الشريك من تنزيله من صفحة الخدمة.</p>
+          <h4>{t('docs.method3_title')}</h4>
+          <p>{t('docs.method3_desc')}</p>
           <input
             type="file"
             accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
@@ -196,7 +193,7 @@ function DocsTab({ services, busy, onImport, onGenerate, onUploadDoc }) {
             disabled={busy === 'docfile' || !selected || !docFile}
             style={{ marginTop: 8 }}
           >
-            {busy === 'docfile' ? 'جارٍ الرفع…' : 'رفع ملف التوثيق'}
+            {busy === 'docfile' ? t('docs.uploading') : t('docs.upload_doc_file')}
           </button>
         </div>
       </div>

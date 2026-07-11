@@ -11,7 +11,7 @@
 .GET { background: var(--steel); }
 .POST { background: var(--green); }
 .path { font-family: ui-monospace, monospace; font-size: 0.9rem; direction: ltr; }
-.opName { color: var(--muted); font-size: 0.85rem; margin-right: auto; }
+.opName { color: var(--muted); font-size: 0.85rem; margin-inline-start: auto; }
 .empty { padding: 24px; color: var(--muted); text-align: center; }
 .tabs { display: flex; gap: 4px; padding: 0 24px; border-bottom: 1px solid var(--line); }
 .tab { padding: 14px 18px; cursor: pointer; font-size: 0.92rem; color: var(--muted); border: none; background: none; border-bottom: 2px solid transparent; margin-bottom: -1px; font-family: inherit; }
@@ -44,9 +44,11 @@
 .proxyDot { width: 7px; height: 7px; border-radius: 50%; background: var(--copper); flex-shrink: 0; }
 
 .proxyRow { background: var(--cloud); border-radius: 8px; overflow: hidden; }
-.proxyToggle { width: 100%; display: flex; align-items: center; gap: 10px; padding: 11px 14px; background: none; border: none; cursor: pointer; font-family: inherit; font-size: 0.9rem; text-align: right; }
+.proxyToggle { width: 100%; display: flex; align-items: center; gap: 10px; padding: 11px 14px; background: none; border: none; cursor: pointer; font-family: inherit; font-size: 0.9rem; text-align: start; }
 .proxyToggle:hover { background: rgba(0,0,0,0.02); }
-.proxyName { font-family: ui-monospace, monospace; flex: 1; direction: ltr; text-align: right; }
+/* الاسم يبقى LTR دائمًا (معرّف تقني)، لكن محاذاته تتبع اتجاه الصفحة */
+.proxyName { font-family: ui-monospace, monospace; flex: 1; direction: ltr; text-align: left; }
+html[dir="rtl"] .proxyName { text-align: right; }
 .proxyChevron { font-size: 0.7rem; color: var(--muted); }
 .proxyOps { padding: 4px 14px 12px; display: flex; flex-direction: column; gap: 6px; }
 .proxyLoading { font-size: 0.85rem; color: var(--muted); padding: 8px 0; }

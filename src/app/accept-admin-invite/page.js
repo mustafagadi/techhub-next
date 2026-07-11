@@ -2,11 +2,11 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { getInvite, acceptInvite, saveProfile } from '@/lib/api';
+import { getAdminInvite, acceptAdminInvite } from '@/lib/api';
 import { useI18n } from '@/lib/i18n';
-import styles from './accept-invite.module.css';
+import styles from '../accept-invite/accept-invite.module.css';
 
-function AcceptInviteInner() {
+function AcceptAdminInviteInner() {
   const { t } = useI18n();
   const router = useRouter();
   const params = useSearchParams();
@@ -22,14 +22,13 @@ function AcceptInviteInner() {
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState(false);
 
-  // جلب بيانات الدعوة عند فتح الصفحة
   useEffect(() => {
     if (!token) {
       setInvalidReason('missing');
       setLoading(false);
       return;
     }
-    getInvite(token)
+    getAdminInvite(token)
       .then((data) => setInvite(data))
       .catch(() => setInvalidReason('invalid'))
       .finally(() => setLoading(false));
@@ -43,15 +42,7 @@ function AcceptInviteInner() {
 
     setBusy(true);
     try {
-      await acceptInvite(token, password);
-      // حفظ بيانات الدعوة في الملف الشخصي، فتُملأ تلقائيًّا عند أول دخول
-      if (invite) {
-        saveProfile({
-          firstName: invite.firstName || '',
-          lastName: invite.lastName || '',
-          companyName: invite.companyName || '',
-        });
-      }
+      await acceptAdminInvite(token, password);
       setDone(true);
       setTimeout(() => router.push('/login'), 2500);
     } catch (err) {
@@ -86,11 +77,15 @@ function AcceptInviteInner() {
     );
   }
 
+  const roleLabel = invite?.role === 'portal-superadmin'
+    ? t('admin_users.role_superadmin')
+    : t('admin_users.role_admin');
+
   return (
     <div className={styles.card}>
-      <h1>{t('accept_invite.title')}</h1>
+      <h1>{t('admin_invite.title')}</h1>
       <p className={styles.sub}>
-        {t('accept_invite.welcome', { name: invite?.firstName ? ` ${invite.firstName}` : '' })}
+        {t('admin_invite.welcome', { role: roleLabel })}
       </p>
 
       <form onSubmit={handleSubmit}>
@@ -129,12 +124,12 @@ function AcceptInviteInner() {
   );
 }
 
-export default function AcceptInvitePage() {
+export default function AcceptAdminInvitePage() {
   const { t } = useI18n();
   return (
     <div className={styles.wrap}>
       <Suspense fallback={<div className={styles.card}><p>{t('common.loading')}</p></div>}>
-        <AcceptInviteInner />
+        <AcceptAdminInviteInner />
       </Suspense>
     </div>
   );

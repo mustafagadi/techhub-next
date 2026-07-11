@@ -4,6 +4,7 @@ import { useParams } from 'next/navigation';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { getProduct, getProxyOperations, getProductSpec, getAuth, submitInterest, docFileExists, docFileUrl } from '@/lib/api';
+import { useI18n } from '@/lib/i18n';
 import styles from './detail.module.css';
 
 // يحلّ مرجع $ref إلى الكائن الفعلي داخل components.schemas
@@ -47,14 +48,14 @@ function SchemaTree({ schema, depth = 0 }) {
   if (!schema) return null;
   if (schema.type === 'object' && schema.properties) {
     return (
-      <div style={{ paddingRight: depth ? 16 : 0 }}>
+      <div style={{ paddingInlineStart: depth ? 16 : 0 }}>
         {Object.entries(schema.properties).map(([key, val]) => (
           <div key={key} style={{ padding: '3px 0' }}>
             <span style={{ color: '#C9A227', fontWeight: 600 }}>{key}</span>
             <span style={{ color: '#6FB3E0' }}>: {val.type || 'object'}</span>
             {val.type === 'object' && <SchemaTree schema={val} depth={depth + 1} />}
             {val.type === 'array' && val.items && (
-              <div style={{ paddingRight: 16 }}>
+              <div style={{ paddingInlineStart: 16 }}>
                 <span style={{ color: '#888' }}>[ ]</span>
                 <SchemaTree schema={val.items} depth={depth + 1} />
               </div>
@@ -68,6 +69,7 @@ function SchemaTree({ schema, depth = 0 }) {
 }
 
 export default function ServiceDetail() {
+  const { t, locale } = useI18n();
   const params = useParams();
   const name = decodeURIComponent(params.name);
   const [product, setProduct] = useState(null);
@@ -118,9 +120,9 @@ export default function ServiceDetail() {
       <Header />
       <div className={styles.hero}>
         <div className="container">
-          <div className={styles.crumb}>الرئيسية ‹ الخدمات ‹ {title}</div>
+          <div className={styles.crumb}>{t('nav.home')} ‹ {t('nav.services')} ‹ {title}</div>
           <h1>{title}</h1>
-          <p>{product?.description || 'واجهة برمجية موثّقة جاهزة للتكامل.'}</p>
+          <p>{product?.description || t('service.default_desc')}</p>
         </div>
       </div>
 
@@ -128,14 +130,14 @@ export default function ServiceDetail() {
         <div className={styles.layout}>
           <div>
             <div className={styles.panel}>
-              <div className={styles.panelHead}><span>الخدمات التقنية والعمليات</span><span className={styles.muted}>حسب البروكسي</span></div>
+              <div className={styles.panelHead}><span>{t('service.proxies_title')}</span><span className={styles.muted}>{t('service.proxies_by_proxy')}</span></div>
               <div style={{ padding: '16px' }}>
-                {loading && <div className={styles.empty}>جارٍ التحميل…</div>}
-                {!loading && !(product?.apiProxies?.length) && <div className={styles.empty}>لا توجد خدمات تقنية معروضة.</div>}
+                {loading && <div className={styles.empty}>{t('service.loading')}</div>}
+                {!loading && !(product?.apiProxies?.length) && <div className={styles.empty}>{t('service.proxies_empty')}</div>}
                 {product?.apiProxies?.length > 0 && (
                   <>
                     <p className={styles.proxiesHint}>
-                      يشمل اشتراكك في هذا المنتج الوصول إلى الخدمات التقنية التالية. اضغط أيًّا منها لعرض عملياتها:
+                      {t('service.proxies_hint')}
                     </p>
                     <ul className={styles.proxiesList}>
                       {product.apiProxies.map((proxy, i) => (
@@ -149,19 +151,19 @@ export default function ServiceDetail() {
 
             <div className={styles.panel}>
               <div className={styles.tabs}>
-                {[['desc','الوصف'],['auth','المصادقة']].map(([k,l]) => (
+                {[['desc', t('service.tab_description')], ['auth', t('service.tab_auth')]].map(([k,l]) => (
                   <button key={k} className={`${styles.tab} ${tab===k ? styles.activeTab : ''}`} onClick={() => setTab(k)}>{l}</button>
                 ))}
                 {isAuthed && (
                   <a href={`/services/${encodeURIComponent(name)}/docs`} className={styles.tab} style={{ marginInlineStart: 'auto' }}>
-                    التوثيق الكامل ←
+                    {t('service.full_docs')}
                   </a>
                 )}
               </div>
               <div className={styles.tabBody}>
                 {tab === 'desc' && (
                   <>
-                    <p>{product?.description || 'وصف الخدمة وعملياتها.'}</p>
+                    <p>{product?.description || t('service.desc_fallback')}</p>
                     {hasDocFile ? (
                       <a
                         href={docFileUrl(name)}
@@ -169,18 +171,18 @@ export default function ServiceDetail() {
                         style={{ marginTop: 12, display: 'inline-block' }}
                         download
                       >
-                        تنزيل ملف التوثيق
+                        {t('service.doc_download')}
                       </a>
                     ) : (
                       <p style={{ color: '#5A6B82', fontSize: '0.9rem', marginTop: 12 }}>
-                        لا يوجد ملف توثيق مرفوع لهذه الخدمة.
+                        {t('service.doc_none')}
                       </p>
                     )}
                   </>
                 )}
                 {tab === 'auth' && (
                   <>
-                    <p>تستخدم الخدمة مصادقة OAuth 2.0. أرسل رمز الوصول في رأس الطلب:</p>
+                    <p>{t('service.auth_body')}</p>
                     <pre className={styles.code}>Authorization: Bearer {'{access_token}'}</pre>
                   </>
                 )}
@@ -191,13 +193,13 @@ export default function ServiceDetail() {
           <aside className={styles.side}>
             <div className={styles.buy}>
               <div className={styles.price}>
-                {price ? <>{price.toLocaleString('ar-SA')} <small>ر.س</small></> : <span className={styles.free}>مجانية</span>}
+                {price ? <>{price.toLocaleString(locale === 'ar' ? 'ar-SA' : 'en-US')} <small>{t('service.currency')}</small></> : <span className={styles.free}>{t('service.free')}</span>}
               </div>
-              {price ? <div className={styles.billing}>اشتراك حسب الباقة</div> : null}
+              {price ? <div className={styles.billing}>{t('service.billing_quota')}</div> : null}
               {product?.quotaDescription && (
                 <div className={styles.quota}>
                   <span className={styles.quotaIcon}>⚡</span>
-                  حدّ الاستخدام: {product.quotaDescription}
+                  {t('service.quota_limit', { value: product.quotaDescription })}
                 </div>
               )}
               {isAuthed ? (
@@ -207,10 +209,10 @@ export default function ServiceDetail() {
                     style={{ width: '100%', justifyContent: 'center' }}
                     onClick={() => { window.location.href = '/partner?product=' + encodeURIComponent(name); }}
                   >
-                    {price ? 'اشترك في الخدمة' : 'أضف الخدمة'}
+                    {price ? t('service.subscribe') : t('service.add_service')}
                   </button>
                   <p style={{ fontSize: '0.8rem', color: '#5A6B82', marginTop: '12px', textAlign: 'center' }}>
-                    {price ? 'ستُوجَّه لإتمام الدفع ثم تُفعّل الخدمة.' : 'ستُضاف الخدمة إلى تطبيقك مباشرة.'}
+                    {price ? t('service.hint_paid') : t('service.hint_free')}
                   </p>
                 </>
               ) : (
@@ -220,10 +222,10 @@ export default function ServiceDetail() {
                     style={{ width: '100%', justifyContent: 'center' }}
                     onClick={() => setShowInterest(true)}
                   >
-                    أبدِ اهتمامك بالخدمة
+                    {t('service.interest_cta')}
                   </button>
                   <p style={{ fontSize: '0.8rem', color: '#5A6B82', marginTop: '12px', textAlign: 'center' }}>
-                    سيتواصل معك الفريق لإتاحة الوصول للخدمة.
+                    {t('service.interest_hint')}
                   </p>
                 </>
               )}
@@ -241,7 +243,7 @@ export default function ServiceDetail() {
       )}
       {interestSent && (
         <div style={{ position: 'fixed', bottom: 24, insetInlineStart: 24, background: '#E6F5EE', color: '#1E7A4D', padding: '14px 22px', borderRadius: 10, fontWeight: 600, boxShadow: '0 4px 16px rgba(0,0,0,0.12)', zIndex: 110 }}>
-          تم إرسال اهتمامك. سيتواصل معك الفريق قريبًا.
+          {t('service.interest_sent')}
         </div>
       )}
       <Footer />
@@ -251,6 +253,7 @@ export default function ServiceDetail() {
 
 // نموذج إبداء الاهتمام بخدمة (proxy). يرسل بيانات التواصل للمسؤول.
 function InterestModal({ serviceName, onClose, onDone }) {
+  const { t } = useI18n();
   const [form, setForm] = useState({ fullName: '', phoneNumber: '', email: '', companyName: '' });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
@@ -259,7 +262,7 @@ function InterestModal({ serviceName, onClose, onDone }) {
 
   async function handleSubmit() {
     if (!form.fullName || !form.email || !form.phoneNumber || !form.companyName) {
-      setError('يرجى تعبئة كل الحقول.');
+      setError(t('interest.fill_all'));
       return;
     }
     setBusy(true);
@@ -275,7 +278,7 @@ function InterestModal({ serviceName, onClose, onDone }) {
       });
       onDone();
     } catch (err) {
-      setError(err.message || 'تعذّر إرسال الطلب. حاول مجددًا.');
+      setError(err.message || t('interest.failed'));
     } finally {
       setBusy(false);
     }
@@ -289,29 +292,29 @@ function InterestModal({ serviceName, onClose, onDone }) {
   return (
     <div style={overlay} onClick={onClose}>
       <div style={modal} onClick={(e) => e.stopPropagation()}>
-        <h2 style={{ fontSize: '1.3rem', marginBottom: 8 }}>إبداء اهتمام بـ «{serviceName}»</h2>
+        <h2 style={{ fontSize: '1.3rem', marginBottom: 8 }}>{t('interest.title', { service: serviceName })}</h2>
         <p style={{ fontSize: '0.88rem', color: '#5A6B82', marginBottom: 24 }}>
-          أدخل بياناتك وسيتواصل معك الفريق لإتاحة الوصول للخدمة.
+          {t('interest.subtitle')}
         </p>
-        <label style={label}>الاسم الكامل
+        <label style={label}>{t('interest.full_name')}
           <input style={input} value={form.fullName} onChange={(e) => update('fullName', e.target.value)} />
         </label>
-        <label style={label}>الجهة / الشركة
+        <label style={label}>{t('interest.company')}
           <input style={input} value={form.companyName} onChange={(e) => update('companyName', e.target.value)} />
         </label>
-        <label style={label}>البريد الإلكتروني
+        <label style={label}>{t('interest.email')}
           <input style={input} type="email" dir="ltr" value={form.email} onChange={(e) => update('email', e.target.value)} />
         </label>
-        <label style={label}>رقم الجوال
+        <label style={label}>{t('interest.phone')}
           <input style={input} type="tel" dir="ltr" value={form.phoneNumber} onChange={(e) => update('phoneNumber', e.target.value)} />
         </label>
         {error && <p style={{ color: '#C0392B', fontSize: '0.85rem', marginBottom: 14 }}>{error}</p>}
         <div style={{ display: 'flex', gap: 12 }}>
           <button className="btn btn-primary" onClick={handleSubmit} disabled={busy}>
-            {busy ? 'جارٍ الإرسال…' : 'إرسال'}
+            {busy ? t('interest.submitting') : t('interest.submit')}
           </button>
           <button onClick={onClose} style={{ padding: '11px 22px', border: '1px solid #E2E7EE', borderRadius: 10, background: '#fff', cursor: 'pointer', fontFamily: 'inherit' }}>
-            إلغاء
+            {t('common.cancel')}
           </button>
         </div>
       </div>
@@ -321,6 +324,7 @@ function InterestModal({ serviceName, onClose, onDone }) {
 
 // صفّ بروكسي قابل للتوسيع — يجلب عملياته عند الفتح
 function ProxyRow({ proxyName }) {
+  const { t } = useI18n();
   const [open, setOpen] = useState(false);
   const [ops, setOps] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -359,7 +363,7 @@ function ProxyRow({ proxyName }) {
       {open && (
         <div className={styles.proxyOps}>
           {loading ? (
-            <div className={styles.proxyLoading}>جارٍ تحميل العمليات…</div>
+            <div className={styles.proxyLoading}>{t('service.proxy_loading')}</div>
           ) : ops && ops.length ? (
             ops.map((op, i) => {
               const method = (op.method || op.Method || 'GET').toUpperCase();
@@ -372,7 +376,7 @@ function ProxyRow({ proxyName }) {
               );
             })
           ) : (
-            <div className={styles.proxyLoading}>لا توجد عمليات موثّقة لهذا البروكسي.</div>
+            <div className={styles.proxyLoading}>{t('service.proxy_no_ops')}</div>
           )}
         </div>
       )}

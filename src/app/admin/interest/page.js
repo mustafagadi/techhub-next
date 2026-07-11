@@ -1,12 +1,14 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
 import { getInterestRequests, updateInterestStatus, createPartnerAccount } from '@/lib/api';
+import PermissionGate from '@/components/PermissionGate';
+import { useI18n } from '@/lib/i18n';
 import styles from '../admin.module.css';
 
 export default function InterestPage() {
+  const { t } = useI18n();
   const [interest, setInterest] = useState([]);
   const [interestLoading, setInterestLoading] = useState(true);
-  const [loadError, setLoadError] = useState(false);
   const [busy, setBusy] = useState(null);
   const [toast, setToast] = useState(null);
   const [accountModal, setAccountModal] = useState(null);
@@ -14,10 +16,9 @@ export default function InterestPage() {
 
   const loadInterest = useCallback(() => {
     setInterestLoading(true);
-    setLoadError(false);
     getInterestRequests()
       .then((d) => setInterest(Array.isArray(d) ? d : []))
-      .catch(() => setLoadError(true))
+      .catch(() => {})
       .finally(() => setInterestLoading(false));
   }, []);
   useEffect(() => { loadInterest(); }, [loadInterest]);
@@ -32,10 +33,10 @@ export default function InterestPage() {
     setBusy(id);
     try {
       await updateInterestStatus(id, { status, adminNote: null });
-      notify('تم تحديث حالة الطلب.');
+      notify(t('admin_interest.status_updated'));
       loadInterest();
     } catch (err) {
-      notify(err.message || 'تعذّر تحديث الحالة.', false);
+      notify(err.message || t('admin_interest.status_update_failed'), false);
     } finally {
       setBusy(null);
     }
@@ -48,27 +49,27 @@ export default function InterestPage() {
       if (form.interestId) {
         try { await updateInterestStatus(form.interestId, { status: 2, adminNote: 'account created: ' + form.email }); } catch {}
       }
-      notify(`تم ارسال الدعوة إلى «${form.email}».`);
+      notify(t('admin_interest.invite_sent', { email: form.email }));
       setAccountModal(null);
       loadInterest();
     } catch (err) {
-      notify(err.message || 'تعذر إرسال الدعوة.', false);
+      notify(err.message || t('admin_interest.invite_failed'), false);
     } finally {
       setBusy(null);
     }
   }
 
   return (
-    <>
+    <PermissionGate permission="interest.manage">
       <div className={styles.topbar}>
-        <h1>طلبات الاهتمام</h1>
-        <span className={styles.env}>● بيئة prod</span>
+        <h1>{t('admin_nav.interest')}</h1>
+        <span className={styles.env}>{t('overview.env_prod')}</span>
       </div>
       <div className={styles.content}>
         <div className={styles.card}>
-          <div className={styles.cardHead}><span>طلبات الاهتمام</span></div>
+          <div className={styles.cardHead}><span>{t('admin_nav.interest')}</span></div>
           <table className={styles.table}>
-            <thead><tr><th>الاسم</th><th>الشركة</th><th>البريد</th><th>الحالة</th><th>الإجراء</th></tr></thead>
+            <thead><tr><th>{t('admin_interest.col_name')}</th><th>{t('admin_interest.col_company')}</th><th>{t('admin_interest.col_email')}</th><th>{t('orders.col_status')}</th><th>{t('access.col_action')}</th></tr></thead>
             <tbody>
               {interest.filter((it) => {
                 const s = it.status;
@@ -78,22 +79,19 @@ export default function InterestPage() {
                   <td>{it.fullName || it.name || it.FullName || `${it.firstName||''} ${it.lastName||''}`.trim() || '—'}</td>
                   <td>{it.company || it.companyName}</td>
                   <td style={{ direction: 'ltr' }}>{it.email}</td>
-                  <td>{interestLabel(it.status)}</td>
+                  <td>{interestLabel(t, it.status)}</td>
                   <td>
                     <button className={styles.ok} onClick={() => setAccountModal(it)} disabled={busy === it.id}>
-                      قبول ودعوة
+                      {t('admin_interest.accept_invite')}
                     </button>{' '}
                     <button className={styles.no} onClick={() => setRejectModal(it)} disabled={busy === it.id}>
-                      رفض
+                      {t('access.reject')}
                     </button>
                   </td>
                 </tr>
               ))}
-              {interestLoading && <tr><td colSpan="5" className={styles.empty}>جارٍ تحميل الطلبات…</td></tr>}
-              {!interestLoading && loadError && (
-                <tr><td colSpan="5" className={styles.empty}>تعذّر تحميل الطلبات. <button className={styles.priceBtn} onClick={loadInterest}>إعادة المحاولة</button></td></tr>
-              )}
-              {!interestLoading && !loadError && !interest.length && <tr><td colSpan="5" className={styles.empty}>لا توجد طلبات.</td></tr>}
+              {interestLoading && <tr><td colSpan="5" className={styles.empty}>{t('access.loading_requests')}</td></tr>}
+              {!interestLoading && !interest.length && <tr><td colSpan="5" className={styles.empty}>{t('admin_interest.empty')}</td></tr>}
             </tbody>
           </table>
         </div>
@@ -109,10 +107,9 @@ export default function InterestPage() {
       {rejectModal && (
         <div className={styles.overlay} onClick={() => setRejectModal(null)}>
           <div className={styles.modal} onClick={(e) => e.stopPropagation()} style={{ maxWidth: '380px' }}>
-            <h2>تأكيد الرفض</h2>
+            <h2>{t('promotions.confirm_reject')}</h2>
             <p className={styles.modalNote}>
-              هل تريد رفض طلب «{rejectModal.companyName || rejectModal.company || rejectModal.email}»؟
-              لن يظهر الطلب في القائمة بعد الرفض.
+              {t('admin_interest.confirm_reject_note', { name: rejectModal.companyName || rejectModal.company || rejectModal.email })}
             </p>
             <div className={styles.modalActions}>
               <button
@@ -120,9 +117,9 @@ export default function InterestPage() {
                 onClick={async () => { await handleInterestStatus(rejectModal, 3); setRejectModal(null); }}
                 disabled={busy === rejectModal.id}
               >
-                {busy === rejectModal.id ? '…' : 'تأكيد الرفض'}
+                {busy === rejectModal.id ? '…' : t('promotions.confirm_reject')}
               </button>
-              <button className={styles.cancel} onClick={() => setRejectModal(null)}>إلغاء</button>
+              <button className={styles.cancel} onClick={() => setRejectModal(null)}>{t('common.cancel')}</button>
             </div>
           </div>
         </div>
@@ -133,11 +130,12 @@ export default function InterestPage() {
           {toast.message}
         </div>
       )}
-    </>
+    </PermissionGate>
   );
 }
 
 function AccountModal({ interest, onClose, onCreate }) {
+  const { t } = useI18n();
   // بيانات الاهتمام تخزّن الاسم كاملًا في حقل واحد (fullName)، والجهة في companyName.
   const defaultName = interest.fullName || interest.name || interest.FullName || '';
   const defaultCompany = interest.companyName || interest.company || interest.CompanyName || '';
@@ -150,7 +148,7 @@ function AccountModal({ interest, onClose, onCreate }) {
   const [err, setErr] = useState('');
 
   async function submit() {
-    if (!email.trim()) { setErr('البريد الإلكتروني مطلوب.'); return; }
+    if (!email.trim()) { setErr(t('admin_interest.email_required')); return; }
     setBusy(true); setErr('');
     // الخلفية تتوقّع firstName/lastName — نقسّم الاسم الكامل
     const parts = fullName.trim().split(/\s+/).filter(Boolean);
@@ -165,7 +163,7 @@ function AccountModal({ interest, onClose, onCreate }) {
         interestId: interest.id,
       });
     } catch (e) {
-      setErr(e.message || 'تعذر إرسال الدعوة.');
+      setErr(e.message || t('admin_interest.invite_failed'));
     } finally {
       setBusy(false);
     }
@@ -174,33 +172,38 @@ function AccountModal({ interest, onClose, onCreate }) {
   return (
     <div className={styles.overlay} onClick={onClose}>
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-        <h2>دعوة شريك</h2>
+        <h2>{t('admin_interest.account_modal_title')}</h2>
         <p className={styles.modalNote}>
-          ستُرسل دعوة إلى بريد الشريك لإنشاء حسابه. الشريك يحدد كلمة مروره بنفسه عبر رابط الدعوة.
+          {t('admin_interest.account_modal_note')}
         </p>
-        <label className={styles.label}>البريد الإلكتروني
+        <label className={styles.label}>{t('interest.email')}
           <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} style={{ direction: 'ltr', textAlign: 'left' }} />
         </label>
-        <label className={styles.label}>الاسم الكامل
+        <label className={styles.label}>{t('interest.full_name')}
           <input type="text" value={fullName} onChange={(e) => setFullName(e.target.value)} />
         </label>
-        <label className={styles.label}>الجهة
+        <label className={styles.label}>{t('admin_interest.org_label')}
           <input type="text" value={company} onChange={(e) => setCompany(e.target.value)} />
         </label>
         {err && <div className={styles.error}>{err}</div>}
         <div className={styles.modalActions}>
           <button className="btn btn-primary" onClick={submit} disabled={busy || !email.trim()}>
-            {busy ? 'جاري الإرسال…' : 'إرسال الدعوة'}
+            {busy ? t('admin_interest.sending_invite') : t('admin_interest.send_invite')}
           </button>
-          <button className={styles.cancel} onClick={onClose}>إلغاء</button>
+          <button className={styles.cancel} onClick={onClose}>{t('common.cancel')}</button>
         </div>
       </div>
     </div>
   );
 }
 
-function interestLabel(status) {
-  const map = { 0: 'جديد', 1: 'تم التواصل', 2: 'مقبول', 3: 'مرفوض' };
-  if (typeof status === 'number') return map[status] || 'جديد';
-  return status || 'جديد';
+function interestLabel(t, status) {
+  const map = {
+    0: t('admin_interest.label_new'),
+    1: t('admin_interest.label_contacted'),
+    2: t('promotions.status_approved'),
+    3: t('promotions.status_rejected'),
+  };
+  if (typeof status === 'number') return map[status] || t('admin_interest.label_new');
+  return status || t('admin_interest.label_new');
 }

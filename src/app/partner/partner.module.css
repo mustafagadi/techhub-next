@@ -29,8 +29,9 @@
 .modal { background: var(--paper); border-radius: var(--radius); padding: 32px; width: 100%; max-width: 440px; box-shadow: var(--shadow); }
 .modal h2 { font-size: 1.3rem; margin-bottom: 24px; }
 .label { display: block; font-size: 0.9rem; font-weight: 600; margin-bottom: 18px; }
-.label input, .label select { display: block; width: 100%; margin-top: 6px; padding: 11px 14px; border: 1px solid var(--line); border-radius: 10px; font-family: inherit; font-size: 0.95rem; outline: none; }
-.label input:focus, .label select:focus { border-color: var(--steel); }
+/* عنصر مباشر فقط (> لا وريث) — كي لا يمتد لأزرار الاختيار المتداخلة داخل الخيارات مثلًا */
+.label > input, .label > select { display: block; width: 100%; margin-top: 6px; padding: 11px 14px; border: 1px solid var(--line); border-radius: 10px; font-family: inherit; font-size: 0.95rem; outline: none; }
+.label > input:focus, .label > select:focus { border-color: var(--steel); }
 .note { font-size: 0.85rem; color: var(--muted); background: var(--cloud); padding: 12px 14px; border-radius: 8px; margin-bottom: 20px; }
 .modalActions { display: flex; gap: 12px; }
 .cancel { padding: 11px 22px; border: 1px solid var(--line); border-radius: 10px; background: var(--paper); cursor: pointer; font-family: inherit; }
