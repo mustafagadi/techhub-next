@@ -6,7 +6,7 @@ import { getInvite, acceptInvite, saveProfile } from '@/lib/api';
 import { useI18n } from '@/lib/i18n';
 import styles from './accept-invite.module.css';
 
-// شروط قوة كلمة المرور — تُحسب حيًّا أثناء الكتابة (تطابق تصميم Figma)
+// Password strength requirements — computed live while typing (matches the Figma design)
 function passwordRules(pw) {
   return {
     latin: /^[A-Za-z0-9!@#$%^&*_\-]*$/.test(pw) && /[A-Za-z]/.test(pw),
@@ -32,7 +32,7 @@ function AcceptInviteInner() {
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState(false);
 
-  // جلب بيانات الدعوة عند فتح الصفحة
+  // Fetch invite data when the page opens
   useEffect(() => {
     if (!token) {
       setInvalidReason('missing');
@@ -47,7 +47,7 @@ function AcceptInviteInner() {
 
   const rules = useMemo(() => passwordRules(password), [password]);
   const rulesPassed = Object.values(rules).filter(Boolean).length;
-  // 3 مقاطع تقوية: على الأقل مقطع واحد أحمر بمجرد الكتابة، ثم تتدرّج مع اكتمال الشروط
+  // 3 strength segments: at least one red segment as soon as typing starts, then it fills in as requirements are met
   const strengthFilled = password.length === 0 ? 0 : Math.max(1, Math.ceil((rulesPassed / 4) * 3));
   const strengthLevel = rulesPassed === 4 ? styles.strengthStrong : rulesPassed >= 3 ? styles.strengthMedium : styles.strengthWeak;
 
@@ -60,7 +60,7 @@ function AcceptInviteInner() {
     setBusy(true);
     try {
       await acceptInvite(token, password);
-      // حفظ بيانات الدعوة في الملف الشخصي، فتُملأ تلقائيًّا عند أول دخول
+      // Save the invite data into the profile so it's auto-filled on first login
       if (invite) {
         saveProfile({
           firstName: invite.firstName || '',

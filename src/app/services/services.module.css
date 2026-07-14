@@ -1,17 +1,17 @@
-/* الصفحة الحقيقية بلا شريط داكن — عنوان ووصف مباشرة على خلفية الصفحة، مع مسار تنقّل (breadcrumb) */
+/* The real page has no dark bar — title and description sit directly on the page background, with a breadcrumb */
 .pageHead { background: #F6F6F6; padding: 40px 0 0; }
 .breadcrumb { color: #9DA4AE; font-size: 14px; padding: 0 0 40px; }
 .breadcrumb a { color: #384250; }
 .breadcrumb a:hover { color: #161616; }
-/* .namePage الحقيقي: 48px/600 بلا لون خاص (يرث لون النص الأساسي #161616) */
+/* The real .namePage: 48px/600 with no special color (inherits the base text color #161616) */
 .pageHead h1 { font-size: 48px; font-weight: 600; margin-bottom: 8px; color: #161616; }
-/* .descPage الحقيقي في النمط الفاتح */
+/* The real .descPage in light mode */
 .pageHead p { color: #384250; font-size: 18px; font-weight: 400; }
 .toolbar { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; margin: 32px 0; }
 .search { flex: 1; min-width: 240px; background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: 0 16px; height: 52px; display: flex; align-items: center; box-shadow: var(--shadow); }
 .search input { border: none; outline: none; width: 100%; font-family: inherit; font-size: 0.98rem; background: transparent; color: var(--ink); }
-/* رقاقات الفلترة — مطابقة لشكل .catName الحقيقي (بيضاوي 32px، نص 16px/500)، مع تلوين "نشِط" بالأسود
-   الصلب اتّساقًا مع نمط الموقع الفعلي في كل عناصره الأساسية (linkAPI، الأزرار، التبويب النشط) */
+/* Filter chips — matching the shape of the real .catName (32px pill, 16px/500 text), with the "active" state colored solid black,
+   consistent with the real site's style across all its core elements (linkAPI, buttons, the active tab) */
 .filters { display: flex; gap: 8px; flex-wrap: wrap; }
 .chip {
   height: 32px; padding: 0 16px; border-radius: 9999px; border: 1px solid #E5E7EB;

@@ -1,5 +1,5 @@
-/* الرأس الحقيقي يتبدّل حسب الصفحة: أسود على الرئيسية فقط، أبيض في بقية الصفحات
-   (body.lightMode .header = أبيض ، body.lightMode.homePage .header = أسود) — مطابق لِـ Header/_index.module.scss الحقيقي */
+/* The real header switches based on the page: black on the homepage only, white on the rest of the pages
+   (body.lightMode .header = white, body.lightMode.homePage .header = black) — matches the real Header/_index.module.scss */
 .header {
   position: sticky; top: 0; z-index: 50;
   background: #fff; color: #000;
@@ -13,8 +13,8 @@
 
 .nav { display: flex; align-items: center; justify-content: space-between; height: 72px; }
 .logo { display: flex; align-items: center; }
-/* الشعار المعتمد ملوّن أخضر داكن (لا أبيض) — يظهر بلونه الطبيعي على الخلفية الفاتحة،
-   ونعكسه للأبيض عبر filter فقط على رأس الرئيسية الأسود، بنفس تقنية الموقع الفعلي */
+/* The official logo is dark green (not white) — it shows in its natural color on the light background,
+   and we invert it to white via filter only on the black homepage header, using the same technique as the real site */
 .logoImg { height: 44px; width: auto; }
 .onHome .logoImg { filter: brightness(0) invert(1); }
 
@@ -29,17 +29,17 @@
 .userEmail { color: #5A6B82; font-size: 0.88rem; }
 .onHome .userEmail { color: #C7D2E0; }
 @media (max-width: 820px){ .userEmail { display: none; } }
-/* على الجوال تختفي كل عناصر الرأس المباشرة لصالح زر القائمة المتحركة */
+/* On mobile, all the direct header elements are hidden in favor of the hamburger menu button */
 @media (max-width: 640px){ .userBox { display: none; } }
 
-/* زر القائمة (البرغر) — يظهر فقط على الجوال، حيث تُخفى .links و.userBox */
+/* The menu (hamburger) button — shows only on mobile, where .links and .userBox are hidden */
 .menuBtn {
   display: none;
   background: none; border: none; color: inherit; cursor: pointer; padding: 8px;
 }
 @media (max-width: 640px){ .menuBtn { display: flex; } }
 
-/* القائمة المتحركة الجانبية — خلفية #203a32 الحقيقية من .dgaui_slideoutMenu */
+/* The sliding side menu — the real #203a32 background from .dgaui_slideoutMenu */
 .menuOverlay {
   position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100;
   display: flex; justify-content: flex-end;
@@ -56,7 +56,7 @@
 .menuActions { display: flex; flex-direction: column; align-items: flex-start; gap: 14px; }
 .menuActions .contactBtn { border-color: rgba(255,255,255,0.3); color: #fff; }
 
-/* زر "تواصل معنا" — حدّ داكن على الخلفية الفاتحة، حدّ أبيض على الرئيسية */
+/* "Contact us" button — dark border on the light background, white border on the homepage */
 .contactBtn {
   padding: 7px 16px; border-radius: 8px;
   border: 1px solid rgba(0,0,0,0.2);

@@ -20,22 +20,22 @@ const I18nContext = createContext({
 });
 
 /**
- * يقرأ مفتاحًا متداخلًا: t('login.title') → dict.login.title
- * ويستبدل المتغيّرات: t('greeting', { name: 'Ali' }) مع "Hello {name}"
- * إن غاب المفتاح، يرجع للإنجليزية، ثم للمفتاح نفسه (يكشف النقص بوضوح).
+ * Reads a nested key: t('login.title') → dict.login.title
+ * and substitutes variables: t('greeting', { name: 'Ali' }) with "Hello {name}"
+ * If the key is missing, falls back to English, then to the key itself (makes the gap obvious).
  */
 function translate(dict, fallback, key, vars) {
   const read = (d) => key.split('.').reduce((o, k) => (o == null ? undefined : o[k]), d);
   let value = read(dict);
   if (typeof value !== 'string') value = read(fallback);
-  if (typeof value !== 'string') return key; // مفتاح ناقص — يظهر كما هو
+  if (typeof value !== 'string') return key; // missing key — shown as-is
 
   if (!vars) return value;
   return value.replace(/\{(\w+)\}/g, (m, k) => (vars[k] ?? m));
 }
 
 export function I18nProvider({ children }) {
-  // نبدأ بالافتراضي (لتطابق الخادم مع العميل)، ثم نقرأ التفضيل بعد التركيب
+  // Start with the default (to match server with client), then read the preference after mount
   const [locale, setLocaleState] = useState(DEFAULT_LOCALE);
 
   useEffect(() => {
@@ -44,7 +44,7 @@ export function I18nProvider({ children }) {
     if (saved && DICTS[saved]) setLocaleState(saved);
   }, []);
 
-  // نضبط lang/dir على <html> — التخطيط الجذري خادمي، فنغيّره من العميل
+  // Set lang/dir on <html> — the root layout is server-rendered, so we change it from the client
   useEffect(() => {
     const meta = LOCALES.find((l) => l.code === locale) || LOCALES[0];
     document.documentElement.lang = meta.code;
@@ -71,7 +71,7 @@ export function I18nProvider({ children }) {
   );
 }
 
-/** الخطّاف الذي تستخدمه المكوّنات: const { t, locale, dir, setLocale } = useI18n(); */
+/** The hook that components use: const { t, locale, dir, setLocale } = useI18n(); */
 export function useI18n() {
   return useContext(I18nContext);
 }

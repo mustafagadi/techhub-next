@@ -1,4 +1,4 @@
-/* .headerSearvice الحقيقي: بطاقة داكنة مدوّرة داخل الصفحة (لا شريط بعرض الصفحة)، بنمط زخرفي 6% */
+/* The real .headerService: a dark rounded card inside the page (not a full-width bar), with a 6% decorative pattern */
 .heroWrap { padding-top: 32px; }
 .hero {
   position: relative; overflow: hidden;
@@ -33,7 +33,7 @@
 .code { background: #0E1B2E; color: #C7D2E0; border-radius: 10px; padding: 16px; font-family: ui-monospace, monospace; font-size: 0.85rem; direction: ltr; margin-top: 14px; }
 .side { position: sticky; top: 96px; }
 .buy { background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius); padding: 26px; box-shadow: var(--shadow); }
-/* زر الاشتراك/الإضافة — نمط خفيف بحدّ رفيع بدل التعبئة الذهبية، مطابقًا للمرجع المعتمد */
+/* Subscribe/Add button — light style with a thin border instead of the gold fill, matching the approved reference */
 .buy :global(.btn-primary) {
   background: #fff; color: #161616; border: 1px solid #E5E7EB;
   border-radius: 8px; font-weight: 500;
@@ -45,7 +45,7 @@
 .free { color: var(--green); }
 .billing { color: var(--muted); font-size: 0.88rem; margin-bottom: 20px; }
 
-/* حالة "مشترك بالفعل" — نفس نمط .tag.success الحقيقي، لكن كشارة نقطة+نص */
+/* "Already subscribed" state — same style as the real .tag.success, but as a dot+text badge */
 .subscribedBadge {
   display: flex; align-items: center; gap: 8px;
   font-size: 0.88rem; font-weight: 600; color: #085D3A;
@@ -54,7 +54,7 @@
 }
 .subscribedDot { width: 8px; height: 8px; border-radius: 50%; background: #009C6D; flex-shrink: 0; }
 
-/* بطاقات مستويات التسعير — تبويب "الأسعار" لخدمة مجمّعة بعدّة مستويات */
+/* Pricing tier cards — the "Pricing" tab for a service bundled with multiple tiers */
 .tierGrid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
 .tierCard {
   background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius);
@@ -89,7 +89,7 @@
 .proxyRow { background: var(--cloud); border-radius: 8px; overflow: hidden; }
 .proxyToggle { width: 100%; display: flex; align-items: center; gap: 10px; padding: 11px 14px; background: none; border: none; cursor: pointer; font-family: inherit; font-size: 0.9rem; text-align: start; }
 .proxyToggle:hover { background: rgba(0,0,0,0.02); }
-/* الاسم يبقى LTR دائمًا (معرّف تقني)، لكن محاذاته تتبع اتجاه الصفحة */
+/* The name always stays LTR (a technical identifier), but its alignment follows the page direction */
 .proxyName { font-family: ui-monospace, monospace; flex: 1; direction: ltr; text-align: left; }
 html[dir="rtl"] .proxyName { text-align: right; }
 .proxyChevron { font-size: 0.7rem; color: var(--muted); }

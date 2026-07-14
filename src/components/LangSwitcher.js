@@ -3,7 +3,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useI18n, LOCALES } from '@/lib/i18n';
 import styles from './LangSwitcher.module.css';
 
-// مبدّل اللغة (English / العربية). يحفظ التفضيل ويغيّر اتجاه الصفحة فورًا.
+// Language switcher (English / Arabic). Saves the preference and changes the page direction immediately.
 export default function LangSwitcher() {
   const { locale, setLocale } = useI18n();
   const [open, setOpen] = useState(false);

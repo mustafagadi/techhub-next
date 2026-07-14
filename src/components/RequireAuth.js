@@ -4,9 +4,9 @@ import { useRouter } from 'next/navigation';
 import { getAuth, hasPermission } from '@/lib/api';
 import { useI18n } from '@/lib/i18n';
 
-// يحرس صفحة: يتحقق من وجود رمز دخول، ثم الدور المطلوب (نص أو مصفوفة أدوار)، ثم صلاحية دقيقة اختيارية.
-// إن لم يكن مسجّلًا → يوجّه لـ /login.
-// إن لم يطابق الدور، أو نقصت الصلاحية → يعرض رسالة منع.
+// Guards a page: checks for a login token, then the required role (string or array of roles), then an optional granular permission.
+// If not logged in → redirects to /login.
+// If the role doesn't match, or the permission is missing → shows a denial message.
 export default function RequireAuth({ role, permission, children }) {
   const { t } = useI18n();
   const router = useRouter();

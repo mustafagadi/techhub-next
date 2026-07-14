@@ -3,8 +3,8 @@ import { useEffect, useRef, useState } from 'react';
 import { getProductSpec, getProxySpec } from '@/lib/api';
 import { useI18n } from '@/lib/i18n';
 
-// يعرض مواصفة OpenAPI لـ proxy عبر Swagger UI (يُحمّل من CDN).
-// [النهج ب] يجلب المواصفة المولّدة من الـ proxy مباشرة.
+// Displays a proxy's OpenAPI spec via Swagger UI (loaded from a CDN).
+// [Approach B] fetches the spec generated from the proxy directly.
 export default function SwaggerViewer({ productName }) {
   const { t } = useI18n();
   const containerRef = useRef(null);
@@ -35,7 +35,7 @@ export default function SwaggerViewer({ productName }) {
 
     async function init() {
       try {
-        // 1) نجلب التوثيق المخزّن أولًا (المرفوع أو المولّد والمحفوظ)، وإن لم يوجد نولّد من proxy لحظيًّا
+        // 1) Fetch the stored documentation first (uploaded or generated and saved); if none exists, generate it from the proxy on the fly
         let spec = await getProductSpec(productName).catch(() => null);
         if (!spec || !spec.paths || Object.keys(spec.paths).length === 0) {
           spec = await getProxySpec(productName).catch(() => null);
@@ -45,16 +45,16 @@ export default function SwaggerViewer({ productName }) {
           return;
         }
 
-        // 2) تحميل أصول Swagger UI من CDN
+        // 2) Load Swagger UI assets from the CDN
         await Promise.all([loadCss(), loadScript()]);
 
-        // 3) تهيئة Swagger UI بالمواصفة مباشرة (كائن، لا رابط)
+        // 3) Initialize Swagger UI directly with the spec (an object, not a URL)
         if (cancelled || !containerRef.current) return;
         window.SwaggerUIBundle({
           spec,
           domNode: containerRef.current,
           deepLinking: true,
-          // للتوثيق فقط — لا تنفيذ طلبات فعلية من هنا (لا "Try it out")
+          // Documentation only — no actual requests executed from here (no "Try it out")
           tryItOutEnabled: false,
           supportedSubmitMethods: [],
         });

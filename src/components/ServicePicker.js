@@ -3,14 +3,14 @@ import { useState, useRef, useEffect } from 'react';
 import { useI18n } from '@/lib/i18n';
 import styles from './ServicePicker.module.css';
 
-// قائمة منسدلة مخصّصة لاختيار خدمة، تعرض السعر كشارة ملوّنة (أخضر للمجانية، ذهبي للمدفوعة).
+// Custom dropdown for selecting a service, showing the price as a colored badge (green for free, gold for paid).
 export default function ServicePicker({ products, value, onChange, placeholder }) {
   const { t } = useI18n();
   const resolvedPlaceholder = placeholder ?? t('service_picker.default_placeholder');
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
 
-  // إغلاق القائمة عند النقر خارجها
+  // Close the dropdown when clicking outside it
   useEffect(() => {
     function onDocClick(e) {
       if (ref.current && !ref.current.contains(e.target)) setOpen(false);

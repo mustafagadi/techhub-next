@@ -6,7 +6,7 @@ import PermissionGate from '@/components/PermissionGate';
 import { useI18n } from '@/lib/i18n';
 import styles from '../admin.module.css';
 
-// الخلفية قد تُرجع الحالة كرقم (0/1/2) أو كنص — نوحّدها هنا.
+// The backend may return status as a number (0/1/2) or as text — we normalize it here.
 const STATUS_BY_NUM = { 0: 'Pending', 1: 'Approved', 2: 'Rejected' };
 function normStatus(s) {
   if (typeof s === 'number') return STATUS_BY_NUM[s] ?? String(s);
@@ -181,7 +181,7 @@ export default function PromotionsPage() {
   );
 }
 
-// نافذة تأكيد الرفض مع سبب اختياري
+// Rejection confirmation modal with an optional reason
 function RejectModal({ item, busy, onCancel, onConfirm }) {
   const { t } = useI18n();
   const [note, setNote] = useState('');

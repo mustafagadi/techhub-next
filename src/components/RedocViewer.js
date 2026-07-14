@@ -3,8 +3,8 @@ import { useEffect, useRef, useState } from 'react';
 import { getProductSpec, getProxySpec } from '@/lib/api';
 import { useI18n } from '@/lib/i18n';
 
-// يعرض مواصفة OpenAPI لخدمة عبر Redoc (يُحمّل من CDN).
-// يجلب المواصفة من /products/{name}/spec ويمرّرها لـ Redoc.
+// Displays a service's OpenAPI spec via Redoc (loaded from a CDN).
+// Fetches the spec from /products/{name}/spec and passes it to Redoc.
 export default function RedocViewer({ productName }) {
   const { t } = useI18n();
   const containerRef = useRef(null);
@@ -15,7 +15,7 @@ export default function RedocViewer({ productName }) {
 
     async function init() {
       try {
-        // 1) نجلب التوثيق المخزّن أولًا (المرفوع أو المولّد والمحفوظ)، وإن لم يوجد نولّد من proxy لحظيًّا
+        // 1) Fetch the stored documentation first (uploaded or generated and saved), and if it doesn't exist, generate it from the proxy on the fly
         let spec = await getProductSpec(productName).catch(() => null);
         if (!spec || !spec.paths || Object.keys(spec.paths).length === 0) {
           spec = await getProxySpec(productName).catch(() => null);
@@ -25,7 +25,7 @@ export default function RedocViewer({ productName }) {
           return;
         }
 
-        // 2) تحميل Redoc من CDN مرة واحدة
+        // 2) Load Redoc from the CDN once
         if (!window.Redoc) {
           await new Promise((resolve, reject) => {
             const s = document.createElement('script');
@@ -36,7 +36,7 @@ export default function RedocViewer({ productName }) {
           });
         }
 
-        // 3) تمرير المواصفة لـ Redoc (كائن مباشر، لا رابط)
+        // 3) Pass the spec to Redoc (a direct object, not a URL)
         if (cancelled || !containerRef.current) return;
         window.Redoc.init(
           spec,

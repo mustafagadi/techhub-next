@@ -9,7 +9,7 @@ import { useI18n } from '@/lib/i18n';
 import styles from './docs.module.css';
 import '@/styles/swagger-theme.css';
 
-// صفحة توثيق كاملة مستقلة — للمسجّلين فقط. تعرض Redoc أو Swagger UI.
+// A full standalone documentation page — for logged-in users only. Shows Redoc or Swagger UI.
 export default function ServiceDocs() {
   const { t } = useI18n();
   const params = useParams();
@@ -18,7 +18,7 @@ export default function ServiceDocs() {
   const [viewer, setViewer] = useState('swagger'); // swagger | redoc
   const [authChecked, setAuthChecked] = useState(false);
 
-  // التوثيق الكامل للمسجّلين فقط — غير المسجّل يُوجّه للدخول
+  // Full documentation for logged-in users only — non-logged-in users are redirected to login
   useEffect(() => {
     if (!getAuth()?.token) {
       router.replace('/login');

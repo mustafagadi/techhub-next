@@ -3,8 +3,8 @@ import Link from 'next/link';
 import { useI18n } from '@/lib/i18n';
 import styles from './ServiceCard.module.css';
 
-// بطاقة proxy في الكتالوج [النهج ب]
-// تعرض الـ proxy وحالته: متاح للاشتراك (يوجد منتج يضمّه) أو للعرض فقط.
+// Proxy card in the catalog [Approach B]
+// Shows the proxy and its status: subscribable (a product includes it) or view-only.
 export default function ProxyCard({ proxy }) {
   const { t } = useI18n();
   const name = proxy.name;

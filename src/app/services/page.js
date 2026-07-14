@@ -7,7 +7,7 @@ import { getProducts } from '@/lib/api';
 import { useI18n } from '@/lib/i18n';
 import styles from './services.module.css';
 
-// الكتالوج يعرض المنتجات (apiproducts) — وحدة الاشتراك في Apigee، لا البروكسيات.
+// The catalog displays products (apiproducts) — the subscription unit in Apigee, not proxies.
 export default function ServicesPage() {
   const { t, locale } = useI18n();
   const [products, setProducts] = useState([]);
@@ -24,7 +24,7 @@ export default function ServicesPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  // الفئات الموجودة فعليًّا (من سمة category) — لا فئات وهمية
+  // Categories that actually exist (from the category attribute) — no mock categories
   const categories = [...new Set(products.map((p) => p.category).filter(Boolean))];
 
   const list = products.filter((p) => {

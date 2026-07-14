@@ -1,4 +1,4 @@
-/* سمة Swagger UI — منسوخة حرفيًّا من _swagger.scss الحقيقي (فرع body.lightMode، لأن موقعنا فاتح فقط) */
+/* Swagger UI theme — copied verbatim from the real _swagger.scss (the body.lightMode branch, since our site is light-mode only) */
 .swagger-ui { direction: ltr; font-family: inherit; }
 .swagger-ui .information-container,
 .swagger-ui .scheme-container,

@@ -3,8 +3,8 @@ import Link from 'next/link';
 import { useI18n } from '@/lib/i18n';
 import styles from './ServiceCard.module.css';
 
-// يطابق أسماء الفئات المعروفة بشعار شريك حقيقي (نفس تعيين getCategoryImage في الموقع الفعلي)،
-// وإلا يعود لأيقونة عامة — لا نخترع شعارًا لفئة غير معروفة.
+// Matches known category names to a real partner logo (same mapping as getCategoryImage in the real site),
+// otherwise falls back to a generic icon — we don't invent a logo for an unknown category.
 const CATEGORY_LOGOS = {
   sakani: '/images/partner-sakani.svg',
   ejar: '/images/partner-ejar.svg',
@@ -24,7 +24,7 @@ function categoryLogo(tag) {
 export default function ServiceCard({ service }) {
   const { t, locale } = useI18n();
 
-  // نتعامل مع حقول الخلفية الحقيقية (ApiProduct) والعيّنات معًا
+  // We handle both the real backend fields (ApiProduct) and sample data together
   const name = service.name;
   const title = service.displayName || service.name;
   const tag = service.tag || service.category;
@@ -34,14 +34,14 @@ export default function ServiceCard({ service }) {
   const billingType = service.billingType;
   const logo = categoryLogo(tag);
 
-  // تسمية نوع الفوترة حسب اللغة
+  // Billing type label depending on the language
   const billingLabel = {
     'subscription': t('service_card.billing_subscription'),
     'one-time': t('service_card.billing_one_time'),
     'quota': t('service_card.billing_usage'),
   }[billingType];
 
-  // الأرقام تتبع اللغة: لاتينية بالإنجليزية، عربية-هندية بالعربية
+  // Numbers follow the language: Latin digits in English, Arabic-Indic digits in Arabic
   const numLocale = locale === 'ar' ? 'ar-SA' : 'en-US';
 
   return (
@@ -70,7 +70,7 @@ export default function ServiceCard({ service }) {
           <span className={styles.free}>{t('service_card.free')}</span>
         )}
       </div>
-      {/* .linkAPI الحقيقي — زر أسود بأيقونة سهم، هو الرابط الفعلي الوحيد للبطاقة */}
+      {/* The real .linkAPI — a black button with an arrow icon, the card's only actual link */}
       <div className={styles.linkApi}>
         <Link href={`/services/${encodeURIComponent(name)}`}>{t('service_card.browse_api')}</Link>
       </div>

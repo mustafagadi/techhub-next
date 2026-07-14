@@ -6,8 +6,8 @@ import { getAuth, hasPermission } from '@/lib/api';
 import { useI18n } from '@/lib/i18n';
 import styles from './admin.module.css';
 
-// أقسام لوحة التحكم ومساراتها. permission غائبة = مرئية لأي مسؤول.
-// superAdminOnly = مرئية للمسؤول الفائق فقط، بصرف النظر عن الصلاحيات الفردية.
+// Dashboard sections and their routes. Missing permission = visible to any admin.
+// superAdminOnly = visible to the super admin only, regardless of individual permissions.
 const NAV = [
   { href: '/admin/overview', labelKey: 'admin_nav.overview' },
   { href: '/admin/services', labelKey: 'nav.services' },

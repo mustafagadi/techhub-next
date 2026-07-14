@@ -1,4 +1,4 @@
-/* القيم أدناه منسوخة حرفيًّا من _index.module.scss الحقيقي لمكوّن الفوتر (لا تخمين) */
+/* The values below are copied verbatim from the real _index.module.scss for the footer component (not guessed) */
 .footer {
   color: #fff;
   margin-top: 80px;
@@ -15,7 +15,7 @@
   padding-top: 60px;
 }
 
-/* شعار تيك هب — نفس شعار الرأس، مطابق للفوتر الحقيقي (لا شعار NHC هنا) */
+/* TechHub logo — same as the header logo, matching the real footer (no NHC logo here) */
 .brand { display: flex; align-items: center; }
 .brandLogo { height: 70px; width: auto; }
 
@@ -25,7 +25,7 @@
 .col a { font-size: 16px; font-weight: 400; color: #fff; transition: .2s; }
 .col a:hover { text-decoration: underline; }
 
-/* شارة رؤية 2030 الرسمية (SVG أبيض حقيقي) */
+/* Official Vision 2030 mark (real white SVG) */
 .vision { display: flex; align-items: center; }
 .visionMark { width: 96px; height: 64px; }
 

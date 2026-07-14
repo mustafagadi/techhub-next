@@ -2,7 +2,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
-// المسار الأساسي /admin يحوّل لأول قسم: نظرة عامة
+// The base /admin route redirects to the first section: overview
 export default function AdminPage() {
   const router = useRouter();
   useEffect(() => { router.replace('/admin/overview'); }, [router]);

@@ -2,7 +2,7 @@
 import { useI18n } from '@/lib/i18n';
 import styles from './Footer.module.css';
 
-// الروابط الحقيقية مأخوذة من HTML الموقع المنشور فعليًّا (لا حزر)
+// The real links are taken from the HTML of the actual published site (not guessed)
 const LINK_COLUMNS = [
   {
     titleKey: 'footer.col_links_title',
@@ -38,7 +38,7 @@ export default function Footer() {
       <div className="container">
         <div className={styles.top}>
           <div className={styles.brand}>
-            {/* العلامة المعروضة في الفوتر الحقيقي هي شعار تيك هب نفسه، لا شعار NHC Innovation */}
+            {/* The mark shown in the real footer is the TechHub logo itself, not the NHC Innovation logo */}
             <img src="/images/techhub-logo.svg" alt={t('common.brand')} className={styles.brandLogo} />
           </div>
 
@@ -60,7 +60,7 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* الموقع الفعلي يعرض فقط X وLinkedIn — لا حساب إنستغرام */}
+        {/* The real site shows only X and LinkedIn — no Instagram account */}
         <div className={styles.social}>
           <a href="https://x.com/NHCinnovation" target="_blank" rel="noopener noreferrer" aria-label={t('footer.social_x')} className={styles.socialBtn}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.9 2H22l-7.6 8.7L23 22h-6.9l-5.4-6.7L4.5 22H1.3l8.1-9.3L1 2h7.1l4.9 6.1L18.9 2Zm-1.2 18h1.9L7.4 4H5.4l12.3 16Z"/></svg>

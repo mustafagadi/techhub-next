@@ -1,9 +1,9 @@
-/* القيم أدناه منسوخة حرفيًّا من .cardItem/.imgCard/.tag/.linkAPI الحقيقية (_common.scss و _status-tag.scss).
-   البطاقة نفسها لم تعد رابطًا — الرابط الفعلي الوحيد هو زر "استعراض API" أسفلها، تمامًا كالموقع الفعلي. */
+/* The values below are copied verbatim from the real .cardItem/.imgCard/.tag/.linkAPI (_common.scss and _status-tag.scss).
+   The card itself is no longer a link — the only actual link is the "Browse API" button below it, exactly like the real site. */
 .card { background: #fff; border: 1px solid #E5E7EB; border-radius: 16px; padding: 16px; transition: .25s; display: flex; flex-direction: column; color: inherit; }
 .card:hover { box-shadow: 0 10px 40px -12px rgba(11,31,58,0.18); }
 .top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
-/* .imgCard الحقيقي: دائرة بيضاء 60px بحدّ خفيف، شعار الفئة إن وُجد */
+/* The real .imgCard: a white 60px circle with a light border, category logo if present */
 .imgCard {
   width: 60px; height: 60px; border-radius: 50%; background: #fff; border: 1.667px solid #E5E7EB;
   display: flex; align-items: center; justify-content: center; padding: 8px;
@@ -16,7 +16,7 @@
   display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden;
 }
 .tagsRow { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
-/* .tag.success الحقيقي: أخضر فاتح */
+/* The real .tag.success: light green */
 .tag { font-size: 14px; font-weight: 500; color: #085D3A; background: #ECFDF3; border: 1px solid #ABEFC6; padding: 0 12px; height: 32px; display: inline-flex; align-items: center; border-radius: 999px; }
 .meta { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; color: #5A6B82; border-top: 1px solid #E5E7EB; padding-top: 16px; }
 .price { color: #0B4332; font-weight: 700; }
@@ -27,7 +27,7 @@
 .sourceApic { font-size: 0.68rem; padding: 2px 8px; border-radius: 5px; background: #E7F0FA; color: #1f4e80; font-weight: 600; }
 .sourceApigee { font-size: 0.68rem; padding: 2px 8px; border-radius: 5px; background: #EAF4EE; color: #1d4d33; font-weight: 600; }
 
-/* .linkAPI الحقيقي (النمط الفاتح): زر أسود صلب، سهم بعد النص */
+/* The real .linkAPI (light mode): solid black button, arrow after the text */
 .linkApi { margin-top: 16px; text-align: end; }
 .linkApi a {
   display: inline-flex; align-items: center; height: 40px; padding: 0 16px;

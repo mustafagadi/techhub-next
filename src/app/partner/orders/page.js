@@ -15,7 +15,7 @@ export default function OrdersPage() {
   );
 }
 
-// حالة الطلب + لون — يتعامل مع الرقم أو النص
+// Order status + color — handles either the number or the text
 function statusInfo(t, status) {
   const map = {
     0: [t('orders.status_pending'), 'pending'], Pending: [t('orders.status_pending'), 'pending'],

@@ -3,8 +3,8 @@ import { useState, useEffect } from 'react';
 import { getEnvironments, getEnvironment, setEnvironment } from '@/lib/api';
 import styles from './EnvSwitcher.module.css';
 
-// مبدّل البيئات (prod/test) — يجلب المتاح من الخلفية ويغيّر البيئة النشطة.
-// تغيير البيئة يُعيد تحميل الصفحة ليُطبّق على كل البيانات المعروضة.
+// Environment switcher (prod/test) — fetches what's available from the backend and changes the active environment.
+// Changing the environment reloads the page so it applies to all displayed data.
 export default function EnvSwitcher() {
   const [envs, setEnvs] = useState([]);
   const [current, setCurrent] = useState(getEnvironment());
@@ -16,7 +16,7 @@ export default function EnvSwitcher() {
         const available = d?.available || d?.environments || [];
         setEnvs(Array.isArray(available) ? available : []);
       })
-      .catch(() => setEnvs(['prod'])); // احتياط
+      .catch(() => setEnvs(['prod'])); // fallback
   }, []);
 
   function choose(env) {
@@ -24,11 +24,11 @@ export default function EnvSwitcher() {
     setEnvironment(env);
     setCurrent(env);
     setOpen(false);
-    // إعادة تحميل ليُطبّق على كل البيانات (الكتالوج، التفاصيل...)
+    // Reload so it applies to all data (catalog, details...)
     window.location.reload();
   }
 
-  // لا تعرض المبدّل إن كانت بيئة واحدة فقط
+  // Don't show the switcher if there's only one environment
   if (envs.length <= 1) return null;
 
   return (

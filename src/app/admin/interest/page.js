@@ -136,7 +136,7 @@ export default function InterestPage() {
 
 function AccountModal({ interest, onClose, onCreate }) {
   const { t } = useI18n();
-  // بيانات الاهتمام تخزّن الاسم كاملًا في حقل واحد (fullName)، والجهة في companyName.
+  // Interest data stores the full name in a single field (fullName), and the organization in companyName.
   const defaultName = interest.fullName || interest.name || interest.FullName || '';
   const defaultCompany = interest.companyName || interest.company || interest.CompanyName || '';
   const defaultEmail = interest.email || interest.Email || '';
@@ -150,7 +150,7 @@ function AccountModal({ interest, onClose, onCreate }) {
   async function submit() {
     if (!email.trim()) { setErr(t('admin_interest.email_required')); return; }
     setBusy(true); setErr('');
-    // الخلفية تتوقّع firstName/lastName — نقسّم الاسم الكامل
+    // The backend expects firstName/lastName — split the full name
     const parts = fullName.trim().split(/\s+/).filter(Boolean);
     const firstName = parts[0] || '';
     const lastName = parts.length > 1 ? parts.slice(1).join(' ') : '';

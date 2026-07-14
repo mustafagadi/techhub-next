@@ -29,12 +29,12 @@
 .chipPending { background: #FBF3E2; color: #B7791F; }
 .muted { color: var(--muted); font-size: 0.85rem; }
 
-/* النافذة */
+/* The modal */
 .overlay { position: fixed; inset: 0; background: rgba(13,18,28,0.5); display: grid; place-items: center; z-index: 100; padding: 24px; }
 .modal { background: var(--paper); border-radius: var(--radius); padding: 32px; width: 100%; max-width: 440px; box-shadow: var(--shadow); }
 .modal h2 { font-size: 1.3rem; margin-bottom: 24px; }
 .label { display: block; font-size: 0.9rem; font-weight: 600; margin-bottom: 18px; }
-/* عنصر مباشر فقط (> لا وريث) — كي لا يمتد لأزرار الاختيار المتداخلة داخل الخيارات مثلًا */
+/* Direct child only (> not descendant) — so it doesn't extend to nested radio buttons inside the options, for example */
 .label > input, .label > select { display: block; width: 100%; margin-top: 6px; padding: 11px 14px; border: 1px solid var(--line); border-radius: 10px; font-family: inherit; font-size: 0.95rem; outline: none; }
 .label > input:focus, .label > select:focus { border-color: #009C6D; }
 .note { font-size: 0.85rem; color: var(--muted); background: var(--cloud); padding: 12px 14px; border-radius: 8px; margin-bottom: 20px; }
@@ -63,7 +63,7 @@
   border-color: #E2E8F0;
 }
 
-/* ===== ترقية الخدمات للإنتاج ===== */
+/* ===== Promoting services to production ===== */
 .svcList { display: flex; flex-direction: column; gap: 8px; margin-top: 6px; }
 .svcRow {
   display: flex; align-items: center; justify-content: space-between;

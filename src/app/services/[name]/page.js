@@ -7,7 +7,7 @@ import { getProduct, getProxyOperations, getProductSpec, getAuth, submitInterest
 import { useI18n } from '@/lib/i18n';
 import styles from './detail.module.css';
 
-// يحلّ مرجع $ref إلى الكائن الفعلي داخل components.schemas
+// Resolves a $ref reference to the actual object inside components.schemas
 function resolveRef(spec, ref) {
   if (!ref || !ref.startsWith('#/')) return null;
   const parts = ref.slice(2).split('/');
@@ -19,13 +19,13 @@ function resolveRef(spec, ref) {
   return node;
 }
 
-// يستخرج العمليات من مواصفة OpenAPI (paths) مع schema الـ body إن وُجدت
+// Extracts operations from the OpenAPI spec (paths), with the body schema if present
 function operationsFromSpec(spec) {
   if (!spec || !spec.paths) return [];
   const ops = [];
   for (const [path, methods] of Object.entries(spec.paths)) {
     for (const [method, def] of Object.entries(methods)) {
-      // schema جسم الطلب (لعمليات POST عادةً)
+      // Request body schema (usually for POST operations)
       let schema = null;
       const ref = def.requestBody?.content?.['application/json']?.schema?.$ref;
       if (ref) schema = resolveRef(spec, ref);
@@ -43,7 +43,7 @@ function operationsFromSpec(spec) {
   return ops;
 }
 
-// يحوّل schema لعرض شجري مقروء (اسم: نوع، مع تداخل)
+// Converts a schema into a readable tree view (name: type, with nesting)
 function SchemaTree({ schema, depth = 0 }) {
   if (!schema) return null;
   if (schema.type === 'object' && schema.properties) {
@@ -81,16 +81,16 @@ export default function ServiceDetail() {
   const [showInterest, setShowInterest] = useState(false);
   const [interestSent, setInterestSent] = useState(false);
   const [hasDocFile, setHasDocFile] = useState(false);
-  const [subscribedApp, setSubscribedApp] = useState(null); // التطبيق المشترك بهذه الخدمة فعلًا، إن وُجد
-  const [subscribedTierApps, setSubscribedTierApps] = useState({}); // خريطة: اسم منتج Apigee (مستوى) → التطبيق المشترك به
-  const [interestTarget, setInterestTarget] = useState(null); // اسم منتج Apigee (خدمة بسيطة أو مستوى محدّد) لنافذة إبداء الاهتمام
+  const [subscribedApp, setSubscribedApp] = useState(null); // The app actually subscribed to this service, if any
+  const [subscribedTierApps, setSubscribedTierApps] = useState({}); // Map: Apigee product name (tier) → the app subscribed to it
+  const [interestTarget, setInterestTarget] = useState(null); // Apigee product name (simple service or specific tier) for the interest modal
 
   useEffect(() => { setIsAuthed(!!getAuth()?.token); }, []);
   useEffect(() => {
     docFileExists(name).then((r) => setHasDocFile(!!r?.exists)).catch(() => setHasDocFile(false));
   }, [name]);
 
-  // هل الشريك مشترك بالفعل في هذه الخدمة (أو أحد مستوياتها)؟ نتحقق من قائمة تطبيقاته الحالية
+  // Is the partner already subscribed to this service (or one of its tiers)? We check their current app list
   useEffect(() => {
     if (!getAuth()?.token || getAuth()?.role !== 'portal-partner') return;
     const productsOf = (app) => app.credentials?.[0]?.products || app.credentials?.[0]?.apiProducts || app.apiProducts || [];
@@ -101,7 +101,7 @@ export default function ServiceDetail() {
       const match = list.find((app) => productsOf(app).some((p) => nameOf(p) === name));
       setSubscribedApp(match || null);
 
-      // خريطة كل منتجات Apigee المشترك بها فعليًّا → التطبيق الذي يحملها (لبطاقات المستويات)
+      // Map of every Apigee product actually subscribed to → the app that holds it (for the tier cards)
       const tierMap = {};
       for (const app of list) {
         for (const p of productsOf(app)) {
@@ -118,15 +118,15 @@ export default function ServiceDetail() {
       const p = await getProduct(name).catch(() => null);
       setProduct(p);
 
-      // [النهج ب] name هو اسم proxy — نجلب عملياته مباشرة من حزمته
+      // [Approach B] name is the proxy name — we fetch its operations directly from its bundle
       let operations = [];
       const proxyOps = await getProxyOperations(name).catch(() => null);
       if (Array.isArray(proxyOps) && proxyOps.length) {
-        // الاستجابة: [{ serviceName, operations: [...] }]
+        // Response: [{ serviceName, operations: [...] }]
         operations = proxyOps.flatMap((s) => s.operations || s.Operations || []);
       }
 
-      // احتياطيًا: المواصفة المخزّنة إن وُجدت (للخدمات التي رُفع لها Postman)
+      // Fallback: the stored spec if present (for services that had a Postman file uploaded)
       if (!operations.length) {
         const spec = await getProductSpec(name).catch(() => null);
         if (spec) operations = operationsFromSpec(spec);
@@ -140,7 +140,7 @@ export default function ServiceDetail() {
 
   const title = product?.displayName || product?.name || name;
   const price = product?.price;
-  // خدمة مجمّعة بعدّة مستويات تسعير حقيقية (كل مستوى منتج Apigee مستقل) — أكثر من مستوى واحد فقط
+  // A service bundled with multiple real pricing tiers (each tier is an independent Apigee product) — more than just one tier
   const sortedTiers = product?.tiers?.length > 1 ? [...product.tiers].sort((a, b) => a.sortOrder - b.sortOrder) : null;
 
   return (
@@ -340,7 +340,7 @@ export default function ServiceDetail() {
   );
 }
 
-// بطاقة مستوى تسعير واحد ضمن خدمة مجمّعة — مرآة لنفس منطق CTA الثلاثي في الشريط الجانبي، لكن لكل مستوى على حدة
+// A single pricing tier card within a bundled service — mirrors the same triple-CTA logic in the sidebar, but per tier
 function TierCard({ tier, locale, isAuthed, subscribedApp, onInterest }) {
   const { t } = useI18n();
   const numLocale = locale === 'ar' ? 'ar-SA' : 'en-US';
@@ -387,7 +387,7 @@ function TierCard({ tier, locale, isAuthed, subscribedApp, onInterest }) {
   );
 }
 
-// نموذج إبداء الاهتمام بخدمة (proxy). يرسل بيانات التواصل للمسؤول.
+// Interest form for a service (proxy). Sends contact info to the admin.
 function InterestModal({ serviceName, onClose, onDone }) {
   const { t } = useI18n();
   const [form, setForm] = useState({ fullName: '', phoneNumber: '', email: '', companyName: '' });
@@ -404,7 +404,7 @@ function InterestModal({ serviceName, onClose, onDone }) {
     setBusy(true);
     setError(null);
     try {
-      // ProductName يحمل اسم الـ proxy (النهج ب)
+      // ProductName holds the proxy name (Approach B)
       await submitInterest({
         productName: serviceName,
         fullName: form.fullName,
@@ -458,7 +458,7 @@ function InterestModal({ serviceName, onClose, onDone }) {
   );
 }
 
-// صفّ بروكسي قابل للتوسيع — يجلب عملياته عند الفتح
+// Expandable proxy row — fetches its operations when opened
 function ProxyRow({ proxyName }) {
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
@@ -468,12 +468,12 @@ function ProxyRow({ proxyName }) {
   async function toggle() {
     const next = !open;
     setOpen(next);
-    // جلب العمليات أول مرة فقط
+    // Fetch operations only the first time
     if (next && ops === null) {
       setLoading(true);
       try {
         const data = await getProxyOperations(proxyName);
-        // الاستجابة: قائمة ServiceOperations، كل واحد فيه Operations[] — نفكّها لقائمة مسطّحة
+        // Response: a list of ServiceOperations, each containing Operations[] — we flatten it into a single list
         const flat = [];
         const groups = Array.isArray(data) ? data : (data?.services || data?.operations || []);
         for (const g of groups) {

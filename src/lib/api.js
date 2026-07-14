@@ -1,10 +1,10 @@
-// طبقة الاتصال بالـ API الخلفي (ApigeePortal.Api)
-// كل الاستدعاءات تمرّ من هنا، فيسهل تعديل العنوان أو إضافة المصادقة لاحقًا.
+// Connection layer to the backend API (ApigeePortal.Api)
+// All calls go through here, making it easy to change the base URL or add authentication later.
 
-// على المتصفح: مسار نسبي /api (يُوجَّه عبر next.config.js).
-// على الخادم (server components): يحتاج عنوانًا كاملًا، من API_BASE_SERVER.
+// In the browser: relative path /api (proxied via next.config.js).
+// On the server (server components): needs a full URL, from API_BASE_SERVER.
 
-// رسالة الخطأ الاحتياطية بلغة الواجهة الحالية (تُستخدم فقط إن لم يُرجع الخادم رسالة)
+// Fallback error message in the current UI language (used only if the server doesn't return one)
 function fallbackError(status) {
   let locale = 'en';
   try { locale = localStorage.getItem('portal_locale') || 'en'; } catch {}
@@ -13,15 +13,15 @@ function fallbackError(status) {
 
 function resolveBase() {
   if (typeof window === 'undefined') {
-    // بيئة الخادم: عنوان كامل للخلفية (عرّفه في .env.local)
+    // Server environment: full backend URL (define it in .env.local)
     return process.env.API_BASE_SERVER || 'http://localhost:5080/api';
   }
-  // بيئة المتصفح: مسار نسبي يمرّ عبر إعادة التوجيه
+  // Browser environment: relative path that goes through the redirect/rewrite
   return process.env.NEXT_PUBLIC_API_BASE || '/api';
 }
 
-// البيئة المختارة (prod/test) — تُرسل في ترويسة X-Apigee-Environment
-// تُحفظ في sessionStorage لتبقى عبر تحديث الصفحة.
+// The selected environment (prod/test) — sent in the X-Apigee-Environment header
+// Stored in sessionStorage so it persists across page refreshes.
 const ENV_KEY = 'portal_env';
 let currentEnv = 'prod';
 if (typeof window !== 'undefined') {
@@ -35,8 +35,8 @@ export function setEnvironment(env) {
 }
 export function getEnvironment() { return currentEnv; }
 
-// ===== المصادقة: حفظ رمز الدخول واسترجاعه =====
-// يُحفظ في الذاكرة + sessionStorage (يبقى عبر تحديث الصفحة، يُمسح بإغلاق التبويب).
+// ===== Authentication: storing and retrieving the login token =====
+// Stored in memory + sessionStorage (persists across page refresh, cleared when the tab is closed).
 const TOKEN_KEY = 'portal_auth';
 
 export function setAuth(token, email, role, permissions = []) {
@@ -60,7 +60,7 @@ export function getAuth() {
 
 export function logout() { setAuth(null); }
 
-// المسؤول الفائق يملك كل الصلاحيات ضمنيًّا — دون الحاجة لتخزينها له فرديًّا.
+// The super admin implicitly has all permissions — no need to store them individually.
 export function hasPermission(code) {
   const auth = getAuth();
   if (!auth) return false;
@@ -74,7 +74,7 @@ async function request(path, options = {}) {
     'X-Apigee-Environment': currentEnv,
     ...(options.headers || {}),
   };
-  // حقن رمز الدخول تلقائيًّا في كل طلب (إن وُجد)
+  // Automatically inject the login token into every request (if present)
   const auth = getAuth();
   if (auth?.token) headers['Authorization'] = `Bearer ${auth.token}`;
 
@@ -90,32 +90,32 @@ async function request(path, options = {}) {
   return res.json();
 }
 
-// ===== الدخول والخروج =====
+// ===== Login and logout =====
 export async function login(email, password) {
   const res = await request('/auth/login', {
     method: 'POST',
     body: JSON.stringify({ email, password }),
   });
-  // الخلفية تعيد { token, email, role, permissions }
+  // The backend returns { token, email, role, permissions }
   setAuth(res.token, res.email, res.role, res.permissions || []);
   return res;
 }
 
-// ===== الكتالوج العام =====
+// ===== Public catalog =====
 export const getProducts = () => request('/products');
 
-// [النهج ب] قائمة الـ proxies للكتالوج مع حالة قابلية الاشتراك
+// [Approach B] List of proxies for the catalog with subscribability status
 export const getProxies = async () => {
   const res = await request('/products/proxies');
   if (Array.isArray(res)) return res;
   return res?.proxies || [];
 };
 
-// [النهج ب] عمليات proxy واحد مباشرة (من حزمته في Apigee)
+// [Approach B] Operations of a single proxy directly (from its bundle in Apigee)
 export const getProxyOperations = (proxyName) =>
   request(`/products/proxy/${encodeURIComponent(proxyName)}/operations`);
 
-// [النهج ب] مواصفة OpenAPI مولّدة من proxy (للتوثيق الكامل والـ schemas)
+// [Approach B] OpenAPI spec generated from a proxy (for full documentation and schemas)
 export const getProxySpec = (proxyName) =>
   request(`/products/proxy/${encodeURIComponent(proxyName)}/generated-spec`);
 
@@ -123,8 +123,8 @@ export const getProduct = (name) => request(`/products/${encodeURIComponent(name
 export const getProductSpec = (name) => request(`/products/${encodeURIComponent(name)}/spec`);
 export const getProductOperations = (name) => request(`/products/${encodeURIComponent(name)}/operations`);
 
-// ===== رفع الملفات (multipart) =====
-// دالة منفصلة عن request: لا تضع Content-Type (المتصفح يضبطه مع boundary)، لكن تُبقي المصادقة.
+// ===== File uploads (multipart) =====
+// Separate function from request: doesn't set Content-Type (the browser sets it with the boundary), but keeps authentication.
 async function uploadFile(path, file, method = 'PUT') {
   const form = new FormData();
   form.append('file', file);
@@ -145,37 +145,37 @@ async function uploadFile(path, file, method = 'PUT') {
   return res.json();
 }
 
-// رفع ملف Postman وتحويله لمواصفة
+// Upload a Postman file and convert it to a spec
 export const importPostman = (name, file) =>
   uploadFile(`/admin/products/${encodeURIComponent(name)}/import-postman`, file, 'PUT');
 
-// رفع ملف توثيق (PDF/Word) لخدمة — من لوحة الأدمن.
+// Upload a documentation file (PDF/Word) for a service — from the admin panel.
 export const uploadDocFile = (name, file) =>
   uploadFile(`/admin/products/${encodeURIComponent(name)}/doc-file`, file, 'PUT');
 
-// هل لهذه الخدمة ملف توثيق مرفوع؟
+// Does this service have an uploaded documentation file?
 export const docFileExists = (name) =>
   request(`/products/${encodeURIComponent(name)}/doc-file/exists`);
 
-// رابط تنزيل ملف التوثيق المباشر (يفتحه المتصفّح للتنزيل).
+// Direct download link for the documentation file (the browser opens it for download).
 export const docFileUrl = (name) =>
   `${resolveBase()}/products/${encodeURIComponent(name)}/doc-file`;
 
-// رفع ملف OpenAPI جاهز
+// Upload a ready-made OpenAPI file
 export const uploadSpec = (name, file) =>
   uploadFile(`/admin/products/${encodeURIComponent(name)}/spec`, file, 'PUT');
 
-// توليد مواصفة من الـ proxy
+// Generate a spec from the proxy
 export const generateSpec = (name) =>
   request(`/admin/products/${encodeURIComponent(name)}/generate-spec`, { method: 'POST' });
 
-// ===== تسجيل الاهتمام (عام) =====
+// ===== Interest registration (public) =====
 export const submitInterest = (data) =>
   request('/interest', { method: 'POST', body: JSON.stringify(data) });
 
-// ===== الشركاء =====
-// عمليات توفير الوصول للشريك تُوجَّه دائمًا لبيئة الاختبار (stage) أولًا.
-// الترقية للإنتاج تتمّ لاحقًا بموافقة المسؤول (per-service).
+// ===== Partners =====
+// Partner access-provisioning operations are always directed to the test (stage) environment first.
+// Promotion to production happens later with admin approval (per-service).
 const STAGE = { headers: { 'X-Apigee-Environment': 'test' } };
 
 export const registerPartner = (data) =>
@@ -183,10 +183,10 @@ export const registerPartner = (data) =>
 export const createApp = (data) =>
   request('/partners/apps', { method: 'POST', body: JSON.stringify(data), ...STAGE });
 
-// يضيف خدمة لتطبيق الشريك الموجود بنفس المفتاح (مفتاح واحد لكل الخدمات).
-// appName اختياري — إن غاب يُستخدم أول تطبيق للشريك.
-// يضيف خدمة لتطبيق الشريك الموجود بنفس المفتاح، أو ينشئ تطبيقًا جديدًا إن createNew=true.
-// يُوجَّه لبيئة stage (الوصول الأولي دائمًا اختباري).
+// Adds a service to the partner's existing app under the same key (one key for all services).
+// appName is optional — if omitted, the partner's first app is used.
+// Adds a service to the partner's existing app under the same key, or creates a new app if createNew=true.
+// Directed to the stage environment (initial access is always test).
 export const addService = (productName, appName = null, createNew = false) =>
   request('/partners/apps/add-service', {
     method: 'POST',
@@ -194,7 +194,7 @@ export const addService = (productName, appName = null, createNew = false) =>
     ...STAGE,
   });
 
-// ملف الشريك الشخصي (يُحفظ محليًّا، يُستخدم في التسجيل)
+// Partner's personal profile (saved locally, used during registration)
 const PROFILE_KEY = 'portal_profile';
 export function saveProfile(profile) {
   try { sessionStorage.setItem(PROFILE_KEY, JSON.stringify(profile)); } catch {}
@@ -203,8 +203,8 @@ export function getProfile() {
   try { return JSON.parse(sessionStorage.getItem(PROFILE_KEY) || 'null'); } catch { return null; }
 }
 
-// يضمن تسجيل الشريك في Apigee قبل إنشاء تطبيق.
-// إن كان مسجّلًا مسبقًا (409) يتجاهل الخطأ ويكمل. البريد من الرمز في الخلفية.
+// Ensures the partner is registered in Apigee before creating an app.
+// If already registered (409), ignores the error and continues. The email comes from the backend token.
 export async function ensureRegistered(profile = {}) {
   const auth = getAuth();
   const saved = getProfile() || {};
@@ -216,12 +216,12 @@ export async function ensureRegistered(profile = {}) {
       companyName: company,
     });
   } catch (err) {
-    // 409 = مسجّل مسبقًا → ليس خطأ، نكمل
+    // 409 = already registered → not an error, continue
     if (err.status !== 409) throw err;
   }
 }
 
-// جلب تطبيقات الشريك الحالي من بيئة stage (البريد من رمز الدخول المحفوظ)
+// Fetch the current partner's apps from the stage environment (email from the saved login token)
 export const getMyApps = async () => {
   const auth = getAuth();
   if (!auth?.email) return [];
@@ -230,8 +230,8 @@ export const getMyApps = async () => {
   return res?.apps || res?.app || [];
 };
 
-// تطبيقات الشريك في بيئة الإنتاج — تظهر بعد ترقية خدمة واحدة على الأقل
-// (نفس نقطة النهاية، لكن بترويسة بيئة الإنتاج بدل الاختبار).
+// Partner's apps in the production environment — appear after at least one service is promoted
+// (same endpoint, but with the production environment header instead of test).
 const PROD = { headers: { 'X-Apigee-Environment': 'prod' } };
 export const getMyProdApps = async () => {
   const auth = getAuth();
@@ -241,13 +241,13 @@ export const getMyProdApps = async () => {
   return res?.apps || res?.app || [];
 };
 
-// جلب تطبيق محدّد من بيئة stage
+// Fetch a specific app from the stage environment
 export const getApp = (appName) => {
   const auth = getAuth();
   return request(`/partners/${encodeURIComponent(auth.email)}/apps/${encodeURIComponent(appName)}`, { ...STAGE });
 };
 
-// ملف المطوّر كما هو مسجَّل في Apigee (بيئة stage) → { registered, firstName, lastName, company }
+// Developer profile as registered in Apigee (stage environment) → { registered, firstName, lastName, company }
 export const getDeveloperProfile = async () => {
   const auth = getAuth();
   if (!auth?.email) return null;
@@ -256,19 +256,19 @@ export const getDeveloperProfile = async () => {
   } catch { return null; }
 };
 
-// ===== ترقية الخدمات من stage إلى الإنتاج =====
-// الشريك يطلب ترقية خدمة (بشرط وجودها في stage).
+// ===== Promoting services from stage to production =====
+// The partner requests promotion of a service (provided it exists in stage).
 export const requestPromotion = (productName) =>
   request('/promotions', { method: 'POST', body: JSON.stringify({ productName }) });
 
-// طلبات الشريك الحالي → { requests: [...] }
+// Current partner's requests → { requests: [...] }
 export const getMyPromotions = () => request('/promotions/mine');
 
-// كل الطلبات (للمسؤول) → { total, requests: [...] }
+// All requests (for admin) → { total, requests: [...] }
 export const getAllPromotions = (status) =>
   request(`/promotions${status ? `?status=${encodeURIComponent(status)}` : ''}`);
 
-// المسؤول: قبول / رفض
+// Admin: approve / reject
 export const approvePromotion = (id, note = '') =>
   request(`/promotions/${encodeURIComponent(id)}/approve`, {
     method: 'POST', body: JSON.stringify({ note }),
@@ -279,27 +279,40 @@ export const rejectPromotion = (id, note = '') =>
     method: 'POST', body: JSON.stringify({ note }),
   });
 
-// ===== الدفع =====
+// ===== Payment =====
 export const startPurchase = (data) =>
   request('/payments/purchase', { method: 'POST', body: JSON.stringify(data) });
 export const getMyOrders = () => request('/payments/my-orders');
 
-// ===== الإدارة =====
+// ===== Admin =====
 export const getAllProducts = async () => {
   const res = await request('/products/all');
-  // الخلفية تعيد { total, products } — نستخرج المصفوفة
+  // The backend returns { total, products } — we extract the array
   if (Array.isArray(res)) return res;
   return res?.products || [];
 };
 export const setPricing = (name, data) =>
   request(`/admin/products/${encodeURIComponent(name)}/pricing`, { method: 'PUT', body: JSON.stringify(data) });
 // data: { price, billingType, quotaLimit? }
+
+// Admin: all proxies available in Apigee (unfiltered) — for selection when creating a new service
+export const getAdminProxies = async () => {
+  const res = await request('/admin/products/proxies');
+  if (Array.isArray(res)) return res;
+  return res?.proxies || [];
+};
+
+// Create a service with one or more pricing tiers in one go (the same form covers both simple and tiered services)
+// data: { name, displayName, description, approvalType, environments: string[], apiProxies: string[],
+//         tiers: [{ slug, label, price, billingType, quotaLimit, isDefault, sortOrder }] }
+export const createTieredProduct = (data) =>
+  request('/admin/products/tiered', { method: 'POST', body: JSON.stringify(data) });
 export const publishProduct = (name) =>
   request(`/admin/products/${encodeURIComponent(name)}/publish`, { method: 'POST' });
 export const unpublishProduct = (name) =>
   request(`/admin/products/${encodeURIComponent(name)}/unpublish`, { method: 'POST' });
 
-// ضبط نوع الموافقة: 'manual' (ينتظر موافقة) أو 'auto' (تلقائي)
+// Set the approval type: 'manual' (awaits approval) or 'auto' (automatic)
 export const setApprovalType = (name, approvalType) =>
   request(`/admin/products/${encodeURIComponent(name)}/approval-type`, {
     method: 'PUT', body: JSON.stringify({ approvalType }),
@@ -321,30 +334,30 @@ export const getInterestRequests = async () => {
 export const updateInterestStatus = (id, data) =>
   request(`/interest/${id}/status`, { method: 'PUT', body: JSON.stringify(data) });
 
-// دعوة شريك (Identity) من قبل المسؤول، عادة بعد الموافقة على اهتمام.
-// ترسل بريد دعوة، والشريك ينشئ كلمة مروره عبر الرابط.
+// Invite a partner (Identity) by the admin, usually after approving an interest request.
+// Sends an invite email, and the partner creates their password via the link.
 export const createPartnerAccount = (data) =>
   request('/admin/partner-invites', { method: 'POST', body: JSON.stringify(data) });
 
-// عرض بيانات الدعوة (عامّ — صفحة قبول الدعوة).
+// Display invite data (public — invite acceptance page).
 export const getInvite = (token) =>
   request(`/invites/${encodeURIComponent(token)}`);
 
-// قبول الدعوة وإنشاء كلمة المرور (عامّ).
+// Accept the invite and create the password (public).
 export const acceptInvite = (token, password) =>
   request('/invites/accept', { method: 'POST', body: JSON.stringify({ token, password }) });
 
-// ===== الصحة والبيئات =====
+// ===== Health and environments =====
 export const getEnvironments = () => request('/health/environments');
 export const getApigeeHealth = () => request('/health/apigee');
 
-// ===== إدارة حسابات المسؤولين وصلاحياتهم (portal-superadmin فقط) =====
+// ===== Managing admin accounts and their permissions (portal-superadmin only) =====
 export const getAdminUsers = async () => {
   const res = await request('/admin/users');
   if (Array.isArray(res)) return res;
   return res?.users || [];
 };
-// يرسل دعوة بريدية لمسؤول جديد (بريد/دور/صلاحيات) — لا كلمة مرور هنا، المدعو يختارها بنفسه
+// Sends an email invite to a new admin (email/role/permissions) — no password here, the invitee chooses it themselves
 export const inviteAdminUser = (data) =>
   request('/admin/users', { method: 'POST', body: JSON.stringify(data) });
 export const setAdminUserPermissions = (userId, permissions) =>
@@ -352,10 +365,10 @@ export const setAdminUserPermissions = (userId, permissions) =>
     method: 'PUT', body: JSON.stringify({ permissions }),
   });
 
-// عرض بيانات دعوة مسؤول (عامّ — صفحة قبول الدعوة).
+// Display admin invite data (public — invite acceptance page).
 export const getAdminInvite = (token) =>
   request(`/admin/users/invites/${encodeURIComponent(token)}`);
 
-// قبول دعوة المسؤول وإنشاء كلمة المرور (عامّ).
+// Accept the admin invite and create the password (public).
 export const acceptAdminInvite = (token, password) =>
   request('/admin/users/invites/accept', { method: 'POST', body: JSON.stringify({ token, password }) });

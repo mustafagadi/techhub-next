@@ -56,14 +56,14 @@
 }
 .label input:focus { border-color: var(--green); }
 
-/* مقياس قوة كلمة المرور — 3 مقاطع، تتلوّن حسب عدد الشروط المستوفاة */
+/* Password strength meter — 3 segments, colored based on the number of conditions met */
 .strengthMeter { display: flex; gap: 6px; margin-top: -10px; margin-bottom: 14px; }
 .strengthSeg { flex: 1; height: 4px; border-radius: 2px; background: var(--line); }
 .strengthWeak { background: #C0392B; }
 .strengthMedium { background: #C9A227; }
 .strengthStrong { background: var(--green); }
 
-/* قائمة شروط كلمة المرور — تتحدّث حيًّا أثناء الكتابة */
+/* Password requirements list — updates live while typing */
 .rules { margin-bottom: 18px; }
 .rulesTitle { font-size: 0.9rem; font-weight: 700; margin-bottom: 8px; }
 .rule {

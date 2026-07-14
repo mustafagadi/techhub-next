@@ -1,11 +1,11 @@
-// تنسيق التواريخ على مستوى المشروع.
-// القاعدة: التخزين UTC، والعرض بتوقيت السعودية (GMT+3)،
-// بتقويم ميلادي وأرقام لاتينية (en-GB) — أوضح للجداول الإدارية.
+// Project-wide date formatting.
+// Rule: stored in UTC, displayed in Saudi Arabia time (GMT+3),
+// with the Gregorian calendar and Latin numerals (en-GB) — clearer for admin tables.
 
 const TZ = 'Asia/Riyadh';
-const LOCALE = 'en-GB'; // ميلادي + أرقام لاتينية + صيغة يوم/شهر/سنة
+const LOCALE = 'en-GB'; // Gregorian + Latin numerals + day/month/year format
 
-/** التاريخ فقط: 09/07/2026 */
+/** Date only: 09/07/2026 */
 export function fmtDate(value) {
   if (!value) return '—';
   const date = new Date(value);
@@ -22,7 +22,7 @@ export function fmtDate(value) {
   }
 }
 
-/** التاريخ والوقت: 09/07/2026, 14:32 */
+/** Date and time: 09/07/2026, 14:32 */
 export function fmtDateTime(value) {
   if (!value) return '—';
   const date = new Date(value);

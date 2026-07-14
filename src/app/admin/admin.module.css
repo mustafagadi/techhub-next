@@ -1,8 +1,8 @@
-/* لوحة التحكم — نفس هوية العلامة الحقيقية المؤكَّدة من الموقع الفعلي (أسود/أخضر بدل الأزرق الداكن/النحاسي القديمين) */
+/* Dashboard — same brand identity confirmed from the real production site (black/green instead of the old dark blue/copper) */
 .shell { display: grid; grid-template-columns: 260px 1fr; min-height: 100vh; }
 .sidebar { background: #0D121C; color: #C7D2E0; padding: 24px 16px; }
 .brand { display: flex; align-items: center; gap: 12px; color: #fff; font-weight: 700; padding: 8px 12px 24px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 16px; }
-/* الشعار المعتمد ملوّن أخضر داكن — نعكسه للأبيض عبر filter لأن الشريط الجانبي داكن دائمًا */
+/* The official logo is colored dark green — we invert it to white via filter since the sidebar is always dark */
 .brandLogo { height: 32px; width: auto; filter: brightness(0) invert(1); }
 .navItem { display: block; width: 100%; text-align: start; padding: 11px 14px; border-radius: 10px; font-size: 0.93rem; margin-bottom: 4px; background: none; border: none; color: #C7D2E0; cursor: pointer; font-family: inherit; transition: .2s; }
 .navItem:hover { background: rgba(255,255,255,0.06); color: #fff; }
@@ -48,7 +48,7 @@
 .modal { background: var(--paper); border-radius: var(--radius); padding: 32px; width: 100%; max-width: 420px; box-shadow: var(--shadow); }
 .modal h2 { font-size: 1.25rem; margin-bottom: 24px; }
 .modalLabel { display: block; font-size: 0.9rem; font-weight: 600; margin-bottom: 18px; }
-/* عنصر مباشر فقط (> لا وريث) — نفس درس .label: لا تمتد لعناصر متداخلة كصناديق اختيار داخل قائمة */
+/* Direct child only (> not descendant) — same lesson as .label: don't extend to nested elements like checkboxes inside a list */
 .modalLabel > input, .modalLabel > select { display: block; width: 100%; margin-top: 6px; padding: 11px 14px; border: 1px solid var(--line); border-radius: 10px; font-family: inherit; font-size: 0.95rem; }
 .modalActions { display: flex; gap: 12px; margin-top: 8px; }
 .cancel { padding: 11px 22px; border: 1px solid var(--line); border-radius: 10px; background: var(--paper); cursor: pointer; font-family: inherit; }
@@ -79,7 +79,7 @@
 .formRow .label { flex: 1; }
 
 .label { display: block; font-size: 0.85rem; font-weight: 600; color: var(--ink, #0B1F3A); margin-bottom: 14px; }
-/* عنصر مباشر فقط (> لا وريث) — كي لا يمتد لصناديق الاختيار المتداخلة داخل قوائم صلاحيات مثلًا */
+/* Direct child only (> not descendant) — so it doesn't extend to nested checkboxes inside permission lists, for example */
 .label > input, .label > select {
   display: block; width: 100%; margin-top: 6px; padding: 10px 12px;
   border: 1px solid var(--line, #E2E8F0); border-radius: 8px;
@@ -90,7 +90,14 @@
 .modalActions { display: flex; gap: 10px; margin-top: 20px; }
 .error { color: #B91C1C; font-size: 0.85rem; margin-bottom: 12px; }
 
-/* ===== طلبات الترقية للإنتاج ===== */
+/* "Create service" form — wider than the regular modal, and accommodates dynamic tier rows */
+.modalWide { max-width: 640px; max-height: 85vh; overflow-y: auto; }
+.tierRow { border: 1px solid var(--line); border-radius: 10px; padding: 16px; margin-bottom: 14px; }
+.tierRowHead { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; font-size: 0.85rem; }
+.tierRowHead input[type="radio"] { accent-color: #009C6D; }
+.cardHeadActions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+
+/* ===== Production upgrade requests ===== */
 .muted { color: var(--muted); font-size: 0.82rem; }
 
 .filterChips { display: flex; gap: 6px; flex-wrap: wrap; }

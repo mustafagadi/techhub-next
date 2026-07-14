@@ -30,12 +30,12 @@ export default function LoginPage() {
     setLoading(true);
     try {
       const res = await login(email, password);
-      // توجيه حسب الدور
+      // Redirect based on role
       if (res.role === 'portal-admin' || res.role === 'portal-superadmin') router.push('/admin');
       else if (res.role === 'portal-partner') router.push('/partner');
       else router.push('/');
     } catch (err) {
-      // رسائل الخلفية تعود بالعربية حاليًّا (النطاق: الواجهة فقط)
+      // Backend messages currently come back in Arabic (scope: frontend only)
       setError(err.message || t('login.failed'));
     } finally {
       setLoading(false);
@@ -94,7 +94,7 @@ export default function LoginPage() {
           </button>
         </form>
 
-        {/* دخول سريع للتطوير المحلي فقط — يحفظ جلسة وهمية دون قاعدة بيانات. */}
+        {/* Quick login for local development only — saves a fake session without a database. */}
         <div className={styles.devBox}>
           <div className={styles.devLabel}>{t('login.dev_quick')}</div>
           <div className={styles.devButtons}>

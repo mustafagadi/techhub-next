@@ -5,7 +5,7 @@ import RequireAuth from '@/components/RequireAuth';
 import { useI18n } from '@/lib/i18n';
 import styles from '../admin.module.css';
 
-// الصلاحيات الدقيقة السبع — يجب أن تطابق PortalPermissions.All في الخلفية.
+// The seven granular permissions — must match PortalPermissions.All on the backend.
 const PERMISSIONS = [
   { code: 'products.publish', labelKey: 'permissions.products_publish' },
   { code: 'products.pricing', labelKey: 'permissions.products_pricing' },

@@ -13,7 +13,7 @@ const PARTNER_LOGOS = [
   { src: '/images/partner-mullak.svg', alt: 'Mullak' },
 ];
 
-// بند سؤال شائع قابل للطي — يطابق سلوك FaqItem الحقيقي (نقر العنوان يفتح/يغلق الوصف)
+// Collapsible FAQ item — matches the real FaqItem behavior (clicking the title opens/closes the answer)
 function FaqItem({ question, answer }) {
   const [open, setOpen] = useState(false);
   return (
@@ -27,8 +27,8 @@ function FaqItem({ question, answer }) {
   );
 }
 
-// أقسام الصفحة الرئيسية — مكوّن عميل ليستطيع استخدام الترجمة.
-// جلب البيانات يبقى في الصفحة (خادمي) وتُمرَّر إليه.
+// Homepage sections — a client component so it can use translations.
+// Data fetching stays in the page (server-side) and is passed down to it.
 export default function HomeSections({ featured }) {
   const { t } = useI18n();
 
@@ -58,7 +58,7 @@ export default function HomeSections({ featured }) {
               <a href="/services" className="btn btn-primary">{t('home.cta_browse')}</a>
               <a href="#advantages" className="btn btn-ghost">{t('home.cta_advantages')}</a>
             </div>
-            {/* سهم تمرير فعلي ينقل لقسم الخدمات — لا زخرفة بلا وظيفة كما كان */}
+            {/* An actual scroll link to the services section — not a non-functional decoration like before */}
             <a href="#services" className={styles.scrollDown} aria-label={t('home.scroll_to_services')}>
               <span className={styles.scrollDownIcon} />
             </a>

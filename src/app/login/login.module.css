@@ -14,7 +14,7 @@
   max-width: 460px;
   box-shadow: var(--shadow);
 }
-/* الشعار انتقل لرأس الصفحة في التصميم الجديد — لا داعي لتكراره داخل البطاقة */
+/* The logo moved to the page header in the new design — no need to repeat it inside the card */
 .logo { display: none; }
 .mark { display: none; }
 .card h1 { font-size: 1.6rem; font-weight: 700; margin-bottom: 6px; text-align: start; }
@@ -66,7 +66,7 @@
   line-height: 1;
 }
 
-/* شريط تنبيه أعلى الصفحة بالكامل — لأخطاء بيانات الدخول العامة (بريد/كلمة مرور غير صحيحين) */
+/* Full-width alert banner at the top of the page — for general login errors (incorrect email/password) */
 .banner {
   position: fixed;
   top: 0;
@@ -113,7 +113,7 @@
 }
 .back:hover { color: var(--green); }
 
-/* زر الدخول الأساسي — أسود داكن مطابقًا للتصميم الجديد (بدل النحاسي العام) */
+/* Primary login button — dark black matching the new design (instead of the generic brass color) */
 .card :global(.btn.btn-primary) {
   background: var(--navy);
   color: #fff;

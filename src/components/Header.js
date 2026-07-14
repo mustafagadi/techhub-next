@@ -17,7 +17,7 @@ export default function Header() {
   const isHomePage = pathname === '/';
 
   useEffect(() => { setAuthState(getAuth()); }, []);
-  // إغلاق القائمة المتحركة تلقائيًّا عند تغيّر المسار
+  // Automatically close the mobile menu when the route changes
   useEffect(() => { setMenuOpen(false); }, [pathname]);
 
   function handleLogout() {
@@ -55,7 +55,7 @@ export default function Header() {
             </div>
           )}
 
-          {/* زر القائمة المتحركة — يظهر فقط على الشاشات الصغيرة حيث يُخفى .links و.userBox */}
+          {/* Mobile menu button — shows only on small screens where .links and .userBox are hidden */}
           <button
             type="button"
             className={styles.menuBtn}
@@ -70,7 +70,7 @@ export default function Header() {
         </nav>
       </div>
 
-      {/* القائمة المتحركة الجانبية للجوال — تكرّر روابط التنقّل وأزرار الرأس */}
+      {/* Mobile sliding side menu — mirrors the nav links and header buttons */}
       {menuOpen && (
         <div className={styles.menuOverlay} onClick={() => setMenuOpen(false)}>
           <div className={styles.menuDrawer} onClick={(e) => e.stopPropagation()}>

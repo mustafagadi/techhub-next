@@ -50,7 +50,7 @@ function PartnerDashboard() {
     loadProdApps();
     loadPromotions();
     getProducts().then((d) => setProducts(Array.isArray(d) ? d : [])).catch(() => {});
-    // إن جاء الشريك من صفحة خدمة (?product=)، نفتح نافذة الطلب بالخدمة محدّدة مسبقًا
+    // If the partner arrived from a service page (?product=), open the request modal with the service pre-selected
     try {
       const params = new URLSearchParams(window.location.search);
       const p = params.get('product');
@@ -58,7 +58,7 @@ function PartnerDashboard() {
     } catch {}
   }, [loadApps, loadProdApps, loadPromotions]);
 
-  // الشريك يطلب ترقية خدمة للإنتاج
+  // The partner requests promotion of a service to production
   async function handlePromote(productName) {
     try {
       await requestPromotion(productName);
@@ -148,8 +148,8 @@ function PartnerDashboard() {
   );
 }
 
-// بطاقة تطبيق — تعرض اسمه ومفاتيحه والخدمات المرتبطة وحالة ترقيتها للإنتاج
-// prod=true: بطاقة قراءة فقط لتطبيق بيئة الإنتاج (بلا أزرار ترقية، فهو أصلًا مفعّل هناك)
+// App card — shows its name, keys, linked services, and their production promotion status
+// prod=true: a read-only card for a production-environment app (no promotion buttons, since it's already active there)
 function AppCard({ app, promotions = [], onPromote, prod = false }) {
   const { t } = useI18n();
   const [showKey, setShowKey] = useState(false);
@@ -159,7 +159,7 @@ function AppCard({ app, promotions = [], onPromote, prod = false }) {
   const secret = credentials[0]?.consumerSecret || app.consumerSecret;
   const products = credentials[0]?.products || credentials[0]?.apiProducts || app.apiProducts || [];
 
-  // الخلفية قد تُرجع الحالة كرقم (0/1/2) أو كنص — نوحّدها.
+  // The backend may return the status as a number (0/1/2) or as text — we normalize it.
   const STATUS_BY_NUM = { 0: 'Pending', 1: 'Approved', 2: 'Rejected' };
   function normStatus(s) {
     if (typeof s === 'number') return STATUS_BY_NUM[s] ?? String(s);
@@ -167,7 +167,7 @@ function AppCard({ app, promotions = [], onPromote, prod = false }) {
     return s;
   }
 
-  // حالة ترقية خدمة معيّنة: Pending / Approved / Rejected / null
+  // Promotion status of a given service: Pending / Approved / Rejected / null
   function promotionOf(productName) {
     const r = promotions.find(
       (x) => (x.productName || '').toLowerCase() === (productName || '').toLowerCase()
@@ -258,38 +258,38 @@ function AppCard({ app, promotions = [], onPromote, prod = false }) {
   );
 }
 
-// نافذة إنشاء تطبيق — اسم + اختيار خدمة لطلب إتاحتها
+// Create-app modal — name + selecting a service to request access to
 function CreateAppModal({ products, apps, initialProduct, onClose, onCreated, onError }) {
   const { t } = useI18n();
   const [selectedProduct, setSelectedProduct] = useState(initialProduct || '');
-  // إن جاء الشريك من صفحة خدمة محدّدة، الخدمة مقفلة (لا يعيد اختيارها من قائمة).
+  // If the partner arrived from a specific service page, the service is locked (they can't pick a different one from the list).
   const locked = !!initialProduct;
   const lockedProduct = products.find((p) => p.name === initialProduct);
   const hasApps = Array.isArray(apps) && apps.length > 0;
-  // الوجهة: 'existing' = تطبيق موجود، 'new' = تطبيق جديد. الافتراضي حسب توفّر تطبيقات.
+  // The target: 'existing' = an existing app, 'new' = a new app. Default depends on whether apps already exist.
   const [target, setTarget] = useState(hasApps ? 'existing' : 'new');
   const [selectedApp, setSelectedApp] = useState(hasApps ? (apps[0].name || apps[0].appName || '') : '');
   const [busy, setBusy] = useState(false);
 
   async function handleCreate() {
     if (!selectedProduct) return;
-    // لا نمنع الإنشاء إن كان الملف فارغًا: الخلفية تشتقّ الاسم من البريد،
-    // ومن جاء عبر دعوة تصله بياناته تلقائيًّا.
+    // We don't block creation if the profile is empty: the backend derives the name from the email,
+    // and anyone who arrived via an invite already has their data auto-filled.
     const myProfile = getProfile() || {};
     setBusy(true);
     try {
-      // تسجيل الشريك في Apigee تلقائيًّا (يتجاهل إن كان مسجّلًا)
+      // Automatically register the partner in Apigee (ignored if already registered)
       await ensureRegistered(myProfile);
       const useExisting = (target === 'existing' && hasApps);
       const appName = useExisting ? selectedApp : null;
       const createNew = !useExisting;
 
-      // نحدّد سعر الخدمة المختارة من القائمة
+      // Determine the price of the service selected from the list
       const product = products.find((p) => p.name === selectedProduct);
       const price = product?.price || 0;
 
       if (price > 0) {
-        // خدمة مدفوعة: إمّا على تطبيق موجود (بمفتاحه)، أو إنشاء تطبيق جديد بعد الدفع.
+        // Paid service: either on an existing app (with its key), or create a new app after payment.
         let consumerKey = '';
         if (useExisting && selectedApp) {
           const app = apps.find((a) => (a.name || a.appName) === selectedApp);
@@ -303,17 +303,17 @@ function CreateAppModal({ products, apps, initialProduct, onClose, onCreated, on
           productName: selectedProduct,
           appName: useExisting ? selectedApp : '',
           consumerKey,
-          createNewApp: !useExisting, // إن لم يختر تطبيقًا موجودًا، يُنشأ تطبيق جديد بعد الدفع
+          createNewApp: !useExisting, // If they didn't select an existing app, a new app is created after payment
         });
         if (session?.paymentUrl) {
-          window.location.href = session.paymentUrl; // توجيه لبوابة الدفع
+          window.location.href = session.paymentUrl; // Redirect to the payment gateway
           return;
         }
         onError(t('partner.payment_start_failed'));
         return;
       }
 
-      // خدمة مجانية: تُضاف مباشرة
+      // Free service: added directly
       await addService(selectedProduct, appName, createNew);
       onCreated(selectedProduct);
     } catch (err) {
@@ -398,19 +398,19 @@ function CreateAppModal({ products, apps, initialProduct, onClose, onCreated, on
   );
 }
 
-// بطاقة الملف الشخصي — اسم الشريك وجهته (تُحفظ محليًّا، تُستخدم في التسجيل)
+// Profile card — the partner's name and company (saved locally, used during registration)
 function ProfileCard() {
   const { t } = useI18n();
   const [profile, setProfile] = useState({ firstName: '', lastName: '', companyName: '' });
   const [saved, setSaved] = useState(false);
   const [open, setOpen] = useState(false);
-  const [editing, setEditing] = useState(false); // وضع التعديل (الحقول مفتوحة للكتابة)
-  const [registered, setRegistered] = useState(false); // مسجَّل في Apigee؟
+  const [editing, setEditing] = useState(false); // Edit mode (fields open for writing)
+  const [registered, setRegistered] = useState(false); // Registered in Apigee?
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let alive = true;
-    // مصدر الحقيقة: Apigee. إن كان الشريك مسجّلًا هناك، نعرض بياناته ولا نطالبه بشيء.
+    // Source of truth: Apigee. If the partner is registered there, we show their data and don't ask them for anything.
     getDeveloperProfile()
       .then((d) => {
         if (!alive) return;
@@ -421,12 +421,12 @@ function ProfileCard() {
             companyName: d.company || '',
           };
           setProfile(p);
-          saveProfile(p);      // نزامن التخزين المحلي
+          saveProfile(p);      // Sync local storage
           setRegistered(true);
           setEditing(false);
           return;
         }
-        // غير مسجّل بعد → نرجع للتخزين المحلي (قد يأتي من الدعوة)
+        // Not registered yet → fall back to local storage (may have come from the invite)
         const local = getProfile();
         if (local) {
           setProfile(local);
@@ -447,15 +447,15 @@ function ProfileCard() {
   function handleSave() {
     saveProfile(profile);
     setSaved(true);
-    setEditing(false); // بعد الحفظ نقفل الحقول
+    setEditing(false); // Lock the fields after saving
     setTimeout(() => setSaved(false), 2500);
   }
 
   const filled = profile.firstName || profile.companyName;
-  // مسجَّل في Apigee → مقفل دائمًا (البيانات هناك، لا تُعدَّل من هنا)
+  // Registered in Apigee → always locked (the data lives there, not editable from here)
   const locked = registered || !editing;
 
-  // مسجَّل ببيانات كاملة → لا حاجة لإظهار البطاقة إطلاقًا
+  // Registered with complete data → no need to show the card at all
   if (!loading && registered && filled) {
     return (
       <div className={styles.profileCard}>

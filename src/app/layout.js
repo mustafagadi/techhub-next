@@ -7,8 +7,8 @@ export const metadata = {
   description: 'A unified API platform connecting your systems to municipal and real-estate services.',
 };
 
-// اللغة الافتراضية إنجليزية. المزوّد يصحّح lang/dir بعد التركيب
-// إن كان المستخدم قد اختار العربية سابقًا.
+// The default language is English. The provider corrects lang/dir after mount
+// if the user has previously chosen Arabic.
 export default function RootLayout({ children }) {
   return (
     <html lang="en" dir="ltr">
