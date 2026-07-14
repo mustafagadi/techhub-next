@@ -230,6 +230,17 @@ export const getMyApps = async () => {
   return res?.apps || res?.app || [];
 };
 
+// تطبيقات الشريك في بيئة الإنتاج — تظهر بعد ترقية خدمة واحدة على الأقل
+// (نفس نقطة النهاية، لكن بترويسة بيئة الإنتاج بدل الاختبار).
+const PROD = { headers: { 'X-Apigee-Environment': 'prod' } };
+export const getMyProdApps = async () => {
+  const auth = getAuth();
+  if (!auth?.email) return [];
+  const res = await request(`/partners/${encodeURIComponent(auth.email)}/apps`, { ...PROD }).catch(() => null);
+  if (Array.isArray(res)) return res;
+  return res?.apps || res?.app || [];
+};
+
 // جلب تطبيق محدّد من بيئة stage
 export const getApp = (appName) => {
   const auth = getAuth();

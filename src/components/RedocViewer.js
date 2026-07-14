@@ -44,7 +44,7 @@ export default function RedocViewer({ productName }) {
             scrollYOffset: 72,
             hideDownloadButton: false,
             theme: {
-              colors: { primary: { main: '#0B1F3A' } },
+              colors: { primary: { main: '#009C6D' } },
               typography: { fontFamily: "'IBM Plex Sans Arabic', sans-serif" },
             },
           },

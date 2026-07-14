@@ -52,6 +52,9 @@ export default function ServicesPage() {
       <Header />
       <div className={styles.pageHead}>
         <div className="container">
+          <div className={styles.breadcrumb}>
+            <a href="/">{t('nav.home')}</a> › <span>{t('nav.services')}</span>
+          </div>
           <h1>{t('catalog.title')}</h1>
           <p>{t('catalog.subtitle')}</p>
         </div>

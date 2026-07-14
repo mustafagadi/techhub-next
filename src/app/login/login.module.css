@@ -3,44 +3,30 @@
   display: grid;
   place-items: center;
   padding: 24px;
-  background: linear-gradient(160deg, var(--navy), var(--navy-soft));
+  background: var(--cloud);
 }
 .card {
   background: var(--paper);
+  border: 1px solid var(--line);
   border-radius: var(--radius);
   padding: 40px;
   width: 100%;
-  max-width: 420px;
+  max-width: 460px;
   box-shadow: var(--shadow);
 }
-.logo {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  color: var(--navy);
-  font-weight: 700;
-  font-size: 1.1rem;
-  margin-bottom: 28px;
-  justify-content: center;
-}
-.mark {
-  width: 38px;
-  height: 38px;
-  border-radius: 10px;
-  background: linear-gradient(135deg, var(--steel), var(--copper));
-  display: grid;
-  place-items: center;
-  color: #fff;
-}
-.card h1 { font-size: 1.5rem; margin-bottom: 6px; text-align: center; }
-.sub { color: var(--muted); font-size: 0.92rem; text-align: center; margin-bottom: 28px; }
+/* الشعار انتقل لرأس الصفحة في التصميم الجديد — لا داعي لتكراره داخل البطاقة */
+.logo { display: none; }
+.mark { display: none; }
+.card h1 { font-size: 1.6rem; font-weight: 700; margin-bottom: 6px; text-align: start; }
+.sub { color: var(--muted); font-size: 0.92rem; text-align: start; margin-bottom: 28px; }
 .label {
   display: block;
   font-size: 0.9rem;
   font-weight: 600;
   color: var(--ink);
-  margin-bottom: 16px;
+  margin-bottom: 18px;
 }
+.label::after { content: " *"; color: #C0392B; }
 .label input {
   display: block;
   width: 100%;
@@ -53,14 +39,70 @@
   outline: none;
   transition: border-color .2s;
 }
-.label input:focus { border-color: var(--steel); }
-.error {
-  background: #FBEAE8;
+.label input:focus { border-color: var(--green); }
+
+.label .invalid,
+.label .invalid:focus { border-color: #C0392B; }
+
+.fieldError {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   color: #C0392B;
-  padding: 10px 14px;
-  border-radius: 8px;
-  font-size: 0.88rem;
+  font-size: 0.82rem;
+  margin-top: -10px;
   margin-bottom: 16px;
+}
+.fieldErrorIcon {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1px solid currentColor;
+  font-size: 10px;
+  line-height: 1;
+}
+
+/* شريط تنبيه أعلى الصفحة بالكامل — لأخطاء بيانات الدخول العامة (بريد/كلمة مرور غير صحيحين) */
+.banner {
+  position: fixed;
+  top: 0;
+  inset-inline: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #FBEAE8;
+  color: #8A2020;
+  padding: 14px 24px;
+  border-bottom: 3px solid #C0392B;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+.bannerIcon {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #C0392B;
+  color: #fff;
+  font-size: 13px;
+}
+.bannerClose {
+  margin-inline-start: auto;
+  background: none;
+  border: none;
+  font-size: 1.3rem;
+  line-height: 1;
+  color: inherit;
+  cursor: pointer;
+  padding: 0 4px;
 }
 .back {
   display: block;
@@ -69,11 +111,19 @@
   color: var(--muted);
   font-size: 0.88rem;
 }
-.back:hover { color: var(--steel); }
+.back:hover { color: var(--green); }
 
-.devBox { margin-top: 20px; padding: 16px; border: 1px dashed var(--line); border-radius: 10px; background: var(--cloud); }
+/* زر الدخول الأساسي — أسود داكن مطابقًا للتصميم الجديد (بدل النحاسي العام) */
+.card :global(.btn.btn-primary) {
+  background: var(--navy);
+  color: #fff;
+}
+.card :global(.btn.btn-primary):hover { background: var(--navy-soft); transform: none; }
+.card :global(.btn.btn-primary):disabled { opacity: 0.6; }
+
+.devBox { margin-top: 20px; padding: 16px; border: 1px solid var(--line); border-radius: 10px; background: var(--cloud); }
 .devLabel { font-size: 0.82rem; font-weight: 600; color: var(--muted); margin-bottom: 10px; text-align: center; }
 .devButtons { display: flex; gap: 10px; }
 .devBtn { flex: 1; padding: 9px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); font-family: inherit; font-size: 0.88rem; cursor: pointer; }
-.devBtn:hover { border-color: var(--steel); background: #fff; }
+.devBtn:hover { border-color: var(--green); background: #fff; }
 .devHint { font-size: 0.72rem; color: var(--muted); text-align: center; margin-top: 8px; }

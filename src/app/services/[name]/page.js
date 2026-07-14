@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { getProduct, getProxyOperations, getProductSpec, getAuth, submitInterest, docFileExists, docFileUrl } from '@/lib/api';
+import { getProduct, getProxyOperations, getProductSpec, getAuth, submitInterest, docFileExists, docFileUrl, getMyApps } from '@/lib/api';
 import { useI18n } from '@/lib/i18n';
 import styles from './detail.module.css';
 
@@ -81,10 +81,23 @@ export default function ServiceDetail() {
   const [showInterest, setShowInterest] = useState(false);
   const [interestSent, setInterestSent] = useState(false);
   const [hasDocFile, setHasDocFile] = useState(false);
+  const [subscribedApp, setSubscribedApp] = useState(null); // التطبيق المشترك بهذه الخدمة فعلًا، إن وُجد
 
   useEffect(() => { setIsAuthed(!!getAuth()?.token); }, []);
   useEffect(() => {
     docFileExists(name).then((r) => setHasDocFile(!!r?.exists)).catch(() => setHasDocFile(false));
+  }, [name]);
+
+  // هل الشريك مشترك بالفعل في هذه الخدمة؟ نتحقق من قائمة تطبيقاته الحالية
+  useEffect(() => {
+    if (!getAuth()?.token || getAuth()?.role !== 'portal-partner') return;
+    getMyApps().then((apps) => {
+      const match = (Array.isArray(apps) ? apps : []).find((app) => {
+        const products = app.credentials?.[0]?.products || app.credentials?.[0]?.apiProducts || app.apiProducts || [];
+        return products.some((p) => (typeof p === 'string' ? p : (p.productName || p.apiproduct)) === name);
+      });
+      setSubscribedApp(match || null);
+    }).catch(() => setSubscribedApp(null));
   }, [name]);
 
   useEffect(() => {
@@ -118,11 +131,13 @@ export default function ServiceDetail() {
   return (
     <>
       <Header />
-      <div className={styles.hero}>
+      <div className={styles.heroWrap}>
         <div className="container">
-          <div className={styles.crumb}>{t('nav.home')} ‹ {t('nav.services')} ‹ {title}</div>
-          <h1>{title}</h1>
-          <p>{product?.description || t('service.default_desc')}</p>
+          <div className={styles.hero}>
+            <div className={styles.crumb}>{t('nav.home')} ‹ {t('nav.services')} ‹ {title}</div>
+            <h1>{title}</h1>
+            <p>{product?.description || t('service.default_desc')}</p>
+          </div>
         </div>
       </div>
 
@@ -202,7 +217,24 @@ export default function ServiceDetail() {
                   {t('service.quota_limit', { value: product.quotaDescription })}
                 </div>
               )}
-              {isAuthed ? (
+              {subscribedApp ? (
+                <>
+                  <div className={styles.subscribedBadge}>
+                    <span className={styles.subscribedDot} />
+                    {t('service.already_subscribed')}
+                  </div>
+                  <a
+                    href="/partner"
+                    className="btn btn-primary"
+                    style={{ width: '100%', justifyContent: 'center' }}
+                  >
+                    {t('service.manage_subscription')}
+                  </a>
+                  <p style={{ fontSize: '0.8rem', color: '#5A6B82', marginTop: '12px', textAlign: 'center' }}>
+                    {t('service.already_subscribed_hint', { app: subscribedApp.name || subscribedApp.appName })}
+                  </p>
+                </>
+              ) : isAuthed ? (
                 <>
                   <button
                     className="btn btn-primary"

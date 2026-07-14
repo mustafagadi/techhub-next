@@ -1,13 +1,26 @@
-.pageHead { background: linear-gradient(160deg, var(--navy), var(--navy-soft)); color: #fff; padding: 56px 0 40px; }
-.pageHead h1 { font-size: clamp(1.8rem, 4vw, 2.6rem); margin-bottom: 10px; }
-.pageHead p { color: #C7D2E0; }
-.toolbar { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; margin: -28px 0 32px; position: relative; z-index: 5; }
+/* الصفحة الحقيقية بلا شريط داكن — عنوان ووصف مباشرة على خلفية الصفحة، مع مسار تنقّل (breadcrumb) */
+.pageHead { background: #F6F6F6; padding: 40px 0 0; }
+.breadcrumb { color: #9DA4AE; font-size: 14px; padding: 0 0 40px; }
+.breadcrumb a { color: #384250; }
+.breadcrumb a:hover { color: #161616; }
+/* .namePage الحقيقي: 48px/600 بلا لون خاص (يرث لون النص الأساسي #161616) */
+.pageHead h1 { font-size: 48px; font-weight: 600; margin-bottom: 8px; color: #161616; }
+/* .descPage الحقيقي في النمط الفاتح */
+.pageHead p { color: #384250; font-size: 18px; font-weight: 400; }
+.toolbar { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; margin: 32px 0; }
 .search { flex: 1; min-width: 240px; background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: 0 16px; height: 52px; display: flex; align-items: center; box-shadow: var(--shadow); }
 .search input { border: none; outline: none; width: 100%; font-family: inherit; font-size: 0.98rem; background: transparent; color: var(--ink); }
+/* رقاقات الفلترة — مطابقة لشكل .catName الحقيقي (بيضاوي 32px، نص 16px/500)، مع تلوين "نشِط" بالأسود
+   الصلب اتّساقًا مع نمط الموقع الفعلي في كل عناصره الأساسية (linkAPI، الأزرار، التبويب النشط) */
 .filters { display: flex; gap: 8px; flex-wrap: wrap; }
-.chip { padding: 9px 18px; border-radius: 100px; border: 1px solid var(--line); background: var(--paper); cursor: pointer; font-size: 0.9rem; font-family: inherit; color: var(--muted); transition: .2s; }
-.chip:hover { border-color: var(--steel); color: var(--steel); }
-.active { background: var(--navy); color: #fff; border-color: var(--navy); }
+.chip {
+  height: 32px; padding: 0 16px; border-radius: 9999px; border: 1px solid #E5E7EB;
+  background: #fff; cursor: pointer; font-size: 16px; font-weight: 500; font-family: inherit;
+  color: #161616; transition: .2s; display: inline-flex; align-items: center;
+}
+.chip:hover { border-color: #009C6D; color: #009C6D; }
+.active { background: #0D121C; color: #fff; border-color: #0D121C; }
+.active:hover { color: #fff; }
 .count { color: var(--muted); font-size: 0.9rem; margin-bottom: 18px; }
 .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; padding-bottom: 60px; }
 .empty { text-align: center; padding: 80px 20px; color: var(--muted); grid-column: 1/-1; }
@@ -17,6 +30,11 @@
 .errorBox { text-align: center; padding: 48px 24px; background: #FBEAE8; color: #C0392B; border-radius: 12px; font-size: 0.95rem; margin-top: 16px; }
 
 .catBar { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
-.catChip { padding: 6px 16px; border: 1px solid var(--line); border-radius: 100px; background: var(--paper); font-family: inherit; font-size: 0.84rem; cursor: pointer; color: var(--muted); }
-.catChip:hover { border-color: var(--steel); }
-.catActive { background: var(--navy); color: #fff; border-color: var(--navy); }
+.catChip {
+  height: 32px; padding: 0 16px; border: 1px solid #E5E7EB; border-radius: 9999px;
+  background: #fff; font-family: inherit; font-size: 16px; font-weight: 500;
+  cursor: pointer; color: #161616; display: inline-flex; align-items: center; transition: .2s;
+}
+.catChip:hover { border-color: #009C6D; color: #009C6D; }
+.catActive { background: #0D121C; color: #fff; border-color: #0D121C; }
+.catActive:hover { color: #fff; }

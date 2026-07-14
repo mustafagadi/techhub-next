@@ -6,39 +6,44 @@
 .empty { text-align: center; padding: 80px 20px; color: var(--muted); background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius); }
 
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 20px; }
+
+.prodSection { margin-top: 48px; padding-top: 32px; border-top: 1px solid var(--line); }
+.prodSection .head { margin-bottom: 20px; }
+.prodSection .head h2 { font-size: 1.3rem; margin-bottom: 6px; }
+.prodSection .head p { color: var(--muted); font-size: 0.9rem; max-width: 480px; }
 .card { background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius); padding: 24px; }
 .cardHead { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
 .cardHead h3 { font-size: 1.15rem; }
-.status { font-size: 0.74rem; padding: 4px 12px; border-radius: 100px; background: #E6F5EE; color: var(--green); }
+.status { font-size: 0.74rem; padding: 4px 12px; border-radius: 100px; background: #ECFDF3; color: #085D3A; }
 
 .cred { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
 .credLabel { font-size: 0.8rem; color: var(--muted); font-weight: 600; display: block; margin-bottom: 6px; width: 100%; }
 .credValue { font-family: ui-monospace, monospace; font-size: 0.85rem; background: var(--cloud); padding: 6px 10px; border-radius: 8px; direction: ltr; word-break: break-all; flex: 1; }
 .reveal { font-size: 0.78rem; padding: 6px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); cursor: pointer; }
-.reveal:hover { border-color: var(--steel); }
+.reveal:hover { border-color: #009C6D; }
 
 .products { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--line); }
 .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
 .chip { font-size: 0.78rem; padding: 4px 12px; border-radius: 100px; }
-.chipOk { background: #E6F5EE; color: var(--green); }
+.chipOk { background: #ECFDF3; color: #085D3A; }
 .chipPending { background: #FBF3E2; color: #B7791F; }
 .muted { color: var(--muted); font-size: 0.85rem; }
 
 /* النافذة */
-.overlay { position: fixed; inset: 0; background: rgba(11,31,58,0.5); display: grid; place-items: center; z-index: 100; padding: 24px; }
+.overlay { position: fixed; inset: 0; background: rgba(13,18,28,0.5); display: grid; place-items: center; z-index: 100; padding: 24px; }
 .modal { background: var(--paper); border-radius: var(--radius); padding: 32px; width: 100%; max-width: 440px; box-shadow: var(--shadow); }
 .modal h2 { font-size: 1.3rem; margin-bottom: 24px; }
 .label { display: block; font-size: 0.9rem; font-weight: 600; margin-bottom: 18px; }
 /* عنصر مباشر فقط (> لا وريث) — كي لا يمتد لأزرار الاختيار المتداخلة داخل الخيارات مثلًا */
 .label > input, .label > select { display: block; width: 100%; margin-top: 6px; padding: 11px 14px; border: 1px solid var(--line); border-radius: 10px; font-family: inherit; font-size: 0.95rem; outline: none; }
-.label > input:focus, .label > select:focus { border-color: var(--steel); }
+.label > input:focus, .label > select:focus { border-color: #009C6D; }
 .note { font-size: 0.85rem; color: var(--muted); background: var(--cloud); padding: 12px 14px; border-radius: 8px; margin-bottom: 20px; }
 .modalActions { display: flex; gap: 12px; }
 .cancel { padding: 11px 22px; border: 1px solid var(--line); border-radius: 10px; background: var(--paper); cursor: pointer; font-family: inherit; }
 .cancel:hover { border-color: var(--muted); }
 
 .toast { position: fixed; bottom: 24px; left: 24px; padding: 14px 22px; border-radius: 10px; font-size: 0.92rem; font-weight: 600; box-shadow: var(--shadow); z-index: 110; }
-.toastOk { background: #E6F5EE; color: var(--green); }
+.toastOk { background: #ECFDF3; color: #085D3A; }
 .toastErr { background: #FBEAE8; color: #C0392B; }
 
 .profileCard { background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius); margin-bottom: 24px; overflow: hidden; }
@@ -67,11 +72,11 @@
 
 .promoBtn {
   font-size: 0.75rem; padding: 5px 12px; border-radius: 20px;
-  background: #fff; color: var(--navy, #0B1F3A);
+  background: #fff; color: #161616;
   border: 1px solid #D5DCE5; cursor: pointer; font-family: inherit;
   white-space: nowrap; transition: all 0.15s;
 }
-.promoBtn:hover:not(:disabled) { border-color: var(--copper, #C9A227); color: #8A6512; }
+.promoBtn:hover:not(:disabled) { border-color: #009C6D; color: #085D3A; }
 .promoBtn:disabled { opacity: 0.45; cursor: not-allowed; }
 
 .promoLive, .promoPending, .promoRejected {

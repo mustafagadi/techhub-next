@@ -1,14 +1,16 @@
+/* لوحة التحكم — نفس هوية العلامة الحقيقية المؤكَّدة من الموقع الفعلي (أسود/أخضر بدل الأزرق الداكن/النحاسي القديمين) */
 .shell { display: grid; grid-template-columns: 260px 1fr; min-height: 100vh; }
-.sidebar { background: var(--navy); color: #C7D2E0; padding: 24px 16px; }
+.sidebar { background: #0D121C; color: #C7D2E0; padding: 24px 16px; }
 .brand { display: flex; align-items: center; gap: 12px; color: #fff; font-weight: 700; padding: 8px 12px 24px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 16px; }
-.mark { width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, var(--steel), var(--copper)); display: grid; place-items: center; }
+/* الشعار المعتمد ملوّن أخضر داكن — نعكسه للأبيض عبر filter لأن الشريط الجانبي داكن دائمًا */
+.brandLogo { height: 32px; width: auto; filter: brightness(0) invert(1); }
 .navItem { display: block; width: 100%; text-align: start; padding: 11px 14px; border-radius: 10px; font-size: 0.93rem; margin-bottom: 4px; background: none; border: none; color: #C7D2E0; cursor: pointer; font-family: inherit; transition: .2s; }
 .navItem:hover { background: rgba(255,255,255,0.06); color: #fff; }
-.active { background: rgba(201,162,39,0.15); color: #fff; }
+.active { background: rgba(0,156,109,0.18); color: #fff; }
 .main { background: var(--cloud); }
 .topbar { background: var(--paper); border-bottom: 1px solid var(--line); padding: 0 32px; height: 68px; display: flex; align-items: center; justify-content: space-between; }
 .topbar h1 { font-size: 1.2rem; }
-.env { font-size: 0.8rem; background: #E6F5EE; color: var(--green); padding: 5px 12px; border-radius: 100px; font-weight: 600; }
+.env { font-size: 0.8rem; background: #ECFDF3; color: #085D3A; padding: 5px 12px; border-radius: 100px; font-weight: 600; }
 .content { padding: 32px; }
 .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
 .stat { background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius); padding: 22px; }
@@ -25,7 +27,7 @@
 @media (max-width: 860px){ .shell { grid-template-columns: 1fr; } .sidebar { display: none; } .stats { grid-template-columns: 1fr; } }
 
 .toast { position: fixed; bottom: 24px; left: 24px; padding: 14px 22px; border-radius: 10px; font-size: 0.92rem; font-weight: 600; box-shadow: var(--shadow); z-index: 100; }
-.toastOk { background: #E6F5EE; color: var(--green); }
+.toastOk { background: #ECFDF3; color: #085D3A; }
 .toastErr { background: #FBEAE8; color: #C0392B; }
 
 .docsBody { padding: 24px; }
@@ -36,13 +38,13 @@
 .docsOption p { color: var(--muted); font-size: 0.88rem; margin-bottom: 16px; }
 .docsOption input[type=file] { display: block; margin-bottom: 16px; font-size: 0.88rem; }
 .docsDivider { text-align: center; color: var(--muted); font-size: 0.85rem; margin: 18px 0; max-width: 480px; }
-.btnGhost { padding: 10px 20px; border: 1px solid var(--steel); border-radius: 10px; background: var(--paper); color: var(--steel); font-family: inherit; font-weight: 600; cursor: pointer; }
+.btnGhost { padding: 10px 20px; border: 1px solid #009C6D; border-radius: 10px; background: var(--paper); color: #009C6D; font-family: inherit; font-weight: 600; cursor: pointer; }
 .btnGhost:hover:not(:disabled) { background: var(--cloud); }
 .btnGhost:disabled { opacity: 0.5; cursor: not-allowed; }
 
-.priceBtn { padding: 5px 14px; border: 1px solid var(--copper); border-radius: 7px; background: var(--paper); color: var(--copper); font-family: inherit; font-size: 0.82rem; cursor: pointer; }
-.priceBtn:hover:not(:disabled) { background: #FBF6EA; }
-.overlay { position: fixed; inset: 0; background: rgba(11,31,58,0.5); display: grid; place-items: center; z-index: 100; padding: 24px; }
+.priceBtn { padding: 5px 14px; border: 1px solid #009C6D; border-radius: 7px; background: var(--paper); color: #009C6D; font-family: inherit; font-size: 0.82rem; cursor: pointer; }
+.priceBtn:hover:not(:disabled) { background: #ECFDF3; }
+.overlay { position: fixed; inset: 0; background: rgba(13,18,28,0.5); display: grid; place-items: center; z-index: 100; padding: 24px; }
 .modal { background: var(--paper); border-radius: var(--radius); padding: 32px; width: 100%; max-width: 420px; box-shadow: var(--shadow); }
 .modal h2 { font-size: 1.25rem; margin-bottom: 24px; }
 .modalLabel { display: block; font-size: 0.9rem; font-weight: 600; margin-bottom: 18px; }
@@ -55,15 +57,15 @@
 .quotaNote { font-size: 0.82rem; color: var(--muted); background: var(--cloud); padding: 10px 14px; border-radius: 8px; margin-bottom: 18px; }
 
 .searchBox { padding: 8px 14px; border: 1px solid var(--line); border-radius: 8px; font-family: inherit; font-size: 0.88rem; min-width: 220px; }
-.searchBox:focus { outline: none; border-color: var(--steel); }
+.searchBox:focus { outline: none; border-color: #009C6D; }
 .pager { display: flex; align-items: center; justify-content: center; gap: 16px; padding: 18px; font-size: 0.88rem; color: var(--muted); }
 .pager button { padding: 7px 16px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); font-family: inherit; cursor: pointer; }
-.pager button:hover:not(:disabled) { border-color: var(--steel); }
+.pager button:hover:not(:disabled) { border-color: #009C6D; }
 .pager button:disabled { opacity: 0.45; cursor: not-allowed; }
 
 .searchSelect { position: relative; margin-top: 6px; }
 .searchSelect input { width: 100%; padding: 11px 14px; border: 1px solid var(--line); border-radius: 10px; font-family: inherit; font-size: 0.95rem; }
-.searchSelect input:focus { outline: none; border-color: var(--steel); }
+.searchSelect input:focus { outline: none; border-color: #009C6D; }
 .searchDropdown { position: absolute; top: 100%; left: 0; right: 0; margin-top: 4px; background: var(--paper); border: 1px solid var(--line); border-radius: 10px; box-shadow: var(--shadow); max-height: 260px; overflow-y: auto; z-index: 20; }
 .searchOption { padding: 10px 14px; cursor: pointer; font-size: 0.9rem; border-bottom: 1px solid var(--cloud); }
 .searchOption:hover { background: var(--cloud); }
@@ -83,7 +85,7 @@
   border: 1px solid var(--line, #E2E8F0); border-radius: 8px;
   font-family: inherit; font-size: 0.9rem; box-sizing: border-box;
 }
-.label > input:focus, .label > select:focus { outline: none; border-color: var(--steel, #C9A227); }
+.label > input:focus, .label > select:focus { outline: none; border-color: #009C6D; }
 .cancel { padding: 10px 20px; border: 1px solid var(--line, #E2E8F0); border-radius: 8px; background: var(--paper, #fff); font-family: inherit; cursor: pointer; }
 .modalActions { display: flex; gap: 10px; margin-top: 20px; }
 .error { color: #B91C1C; font-size: 0.85rem; margin-bottom: 12px; }
@@ -99,8 +101,8 @@
 }
 .filterChip:hover { border-color: #B4BECD; }
 .filterChipOn {
-  background: #EEF3FA; color: var(--navy, #0B1F3A);
-  border-color: #C3D2E5; font-weight: 600;
+  background: #ECFDF3; color: #085D3A;
+  border-color: #ABEFC6; font-weight: 600;
 }
 
 .badgeOk, .badgeBad, .badgeWait {

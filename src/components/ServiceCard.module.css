@@ -1,18 +1,38 @@
-.card { background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius); padding: 26px; transition: .25s; display: flex; flex-direction: column; color: inherit; }
-.card:hover { transform: translateY(-4px); box-shadow: var(--shadow); border-color: transparent; }
-.top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; }
-.tag { font-size: 0.76rem; color: var(--steel); background: #EAF1F9; padding: 4px 12px; border-radius: 100px; }
-.status { font-size: 0.72rem; padding: 3px 10px; border-radius: 100px; background: #E6F5EE; color: var(--green); }
-.card h3 { font-size: 1.18rem; margin-bottom: 8px; }
-.card p { color: var(--muted); font-size: 0.92rem; margin-bottom: 18px; flex: 1; }
-.meta { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; color: var(--muted); border-top: 1px solid var(--line); padding-top: 16px; }
-.price { color: var(--navy); font-weight: 700; }
-.free { color: var(--green); font-weight: 600; }
-
-.statusMuted { font-size: 0.72rem; padding: 4px 10px; border-radius: 100px; background: #EEF1F5; color: #5A6B82; }
-.muted { color: #5A6B82; font-size: 0.85rem; }
+/* القيم أدناه منسوخة حرفيًّا من .cardItem/.imgCard/.tag/.linkAPI الحقيقية (_common.scss و _status-tag.scss).
+   البطاقة نفسها لم تعد رابطًا — الرابط الفعلي الوحيد هو زر "استعراض API" أسفلها، تمامًا كالموقع الفعلي. */
+.card { background: #fff; border: 1px solid #E5E7EB; border-radius: 16px; padding: 16px; transition: .25s; display: flex; flex-direction: column; color: inherit; }
+.card:hover { box-shadow: 0 10px 40px -12px rgba(11,31,58,0.18); }
+.top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
+/* .imgCard الحقيقي: دائرة بيضاء 60px بحدّ خفيف، شعار الفئة إن وُجد */
+.imgCard {
+  width: 60px; height: 60px; border-radius: 50%; background: #fff; border: 1.667px solid #E5E7EB;
+  display: flex; align-items: center; justify-content: center; padding: 8px;
+}
+.imgCard img { max-height: 23px; max-width: 100%; }
+.imgFallback { font-size: 1.1rem; font-weight: 700; color: #009C6D; }
+.card h3 { font-size: 18px; font-weight: 700; margin-bottom: 8px; color: #161616; }
+.card p {
+  color: #161616; opacity: 0.75; font-size: 16px; font-weight: 400; line-height: 24px; margin-bottom: 16px; flex: 1;
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden;
+}
+.tagsRow { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+/* .tag.success الحقيقي: أخضر فاتح */
+.tag { font-size: 14px; font-weight: 500; color: #085D3A; background: #ECFDF3; border: 1px solid #ABEFC6; padding: 0 12px; height: 32px; display: inline-flex; align-items: center; border-radius: 999px; }
+.meta { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; color: #5A6B82; border-top: 1px solid #E5E7EB; padding-top: 16px; }
+.price { color: #0B4332; font-weight: 700; }
+.free { color: #009C6D; font-weight: 600; }
 
 .billing { font-size: 0.78rem; font-weight: 400; opacity: 0.75; }
 
 .sourceApic { font-size: 0.68rem; padding: 2px 8px; border-radius: 5px; background: #E7F0FA; color: #1f4e80; font-weight: 600; }
 .sourceApigee { font-size: 0.68rem; padding: 2px 8px; border-radius: 5px; background: #EAF4EE; color: #1d4d33; font-weight: 600; }
+
+/* .linkAPI الحقيقي (النمط الفاتح): زر أسود صلب، سهم بعد النص */
+.linkApi { margin-top: 16px; text-align: end; }
+.linkApi a {
+  display: inline-flex; align-items: center; height: 40px; padding: 0 16px;
+  background: #0D121C; color: #fff; border-radius: 6px; font-size: 0.92rem; font-weight: 500;
+  transition: background .15s;
+}
+.linkApi a:hover { background: #1F2A37; }
+.linkApi a::after { content: "‹"; margin-inline-start: 12px; font-weight: 700; }

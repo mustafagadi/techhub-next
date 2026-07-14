@@ -11,12 +11,22 @@ export default function LoginPage() {
   const { t } = useI18n();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [emailError, setEmailError] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
   async function handleSubmit(e) {
     e.preventDefault();
     setError('');
+
+    if (!EMAIL_RE.test(email)) {
+      setEmailError(t('login.email_invalid'));
+      return;
+    }
+    setEmailError('');
+
     setLoading(true);
     try {
       const res = await login(email, password);
@@ -34,6 +44,13 @@ export default function LoginPage() {
 
   return (
     <div className={styles.page}>
+      {error && (
+        <div className={styles.banner} role="alert">
+          <span className={styles.bannerIcon}>!</span>
+          <span>{error}</span>
+          <button type="button" className={styles.bannerClose} onClick={() => setError('')} aria-label={t('common.close')}>×</button>
+        </div>
+      )}
       <div className={styles.card}>
         <Link href="/" className={styles.logo}>
           <span>{t('common.brand')}</span>
@@ -41,18 +58,25 @@ export default function LoginPage() {
         <h1>{t('login.title')}</h1>
         <p className={styles.sub}>{t('login.subtitle')}</p>
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} noValidate>
           <label className={styles.label}>
             {t('login.email')}
             <input
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => { setEmail(e.target.value); if (emailError) setEmailError(''); }}
               placeholder="you@example.com"
               required
               autoComplete="email"
+              className={emailError ? styles.invalid : undefined}
             />
           </label>
+          {emailError && (
+            <div className={styles.fieldError}>
+              <span className={styles.fieldErrorIcon}>!</span>
+              {emailError}
+            </div>
+          )}
           <label className={styles.label}>
             {t('login.password')}
             <input
@@ -64,8 +88,6 @@ export default function LoginPage() {
               autoComplete="current-password"
             />
           </label>
-
-          {error && <div className={styles.error}>{error}</div>}
 
           <button type="submit" className="btn btn-primary" disabled={loading} style={{ width: '100%', justifyContent: 'center' }}>
             {loading ? t('login.submitting') : t('login.submit')}

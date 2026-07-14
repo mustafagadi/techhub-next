@@ -1,7 +1,20 @@
-.hero { background: linear-gradient(160deg, var(--navy), var(--navy-soft)); color: #fff; padding: 40px 0 48px; }
-.crumb { color: #9FB0C4; font-size: 0.88rem; margin-bottom: 16px; }
-.hero h1 { font-size: clamp(1.8rem, 4vw, 2.6rem); margin-bottom: 12px; }
-.hero p { color: #C7D2E0; max-width: 620px; }
+/* .headerSearvice الحقيقي: بطاقة داكنة مدوّرة داخل الصفحة (لا شريط بعرض الصفحة)، بنمط زخرفي 6% */
+.heroWrap { padding-top: 32px; }
+.hero {
+  position: relative; overflow: hidden;
+  border-radius: 16px;
+  padding: 32px; color: #fff;
+  background: linear-gradient(258deg, #000 22.41%, #000 43.78%, #004E37 92.45%, #009C6D 107.65%);
+}
+.hero::after {
+  content: ""; position: absolute; inset-inline-start: 0; top: 0;
+  width: 500px; height: 365px; opacity: 0.06;
+  background: url("/images/service-header-pattern.svg") no-repeat; background-size: contain;
+}
+.crumb { position: relative; color: rgba(255,255,255,0.7); font-size: 0.88rem; margin-bottom: 16px; }
+.hero h1 { position: relative; font-size: clamp(1.5rem, 3.5vw, 1.9rem); font-weight: 700; margin-bottom: 12px; }
+.hero p { position: relative; color: rgba(255,255,255,0.85); max-width: 620px; }
+@media (max-width: 640px){ .hero { padding: 16px; } }
 .layout { display: grid; grid-template-columns: 1fr 320px; gap: 32px; padding: 36px 0 80px; align-items: start; }
 .panel { background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; margin-bottom: 24px; }
 .panelHead { padding: 18px 24px; border-bottom: 1px solid var(--line); font-weight: 600; display: flex; justify-content: space-between; align-items: center; }
@@ -20,10 +33,26 @@
 .code { background: #0E1B2E; color: #C7D2E0; border-radius: 10px; padding: 16px; font-family: ui-monospace, monospace; font-size: 0.85rem; direction: ltr; margin-top: 14px; }
 .side { position: sticky; top: 96px; }
 .buy { background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius); padding: 26px; box-shadow: var(--shadow); }
+/* زر الاشتراك/الإضافة — نمط خفيف بحدّ رفيع بدل التعبئة الذهبية، مطابقًا للمرجع المعتمد */
+.buy :global(.btn-primary) {
+  background: #fff; color: #161616; border: 1px solid #E5E7EB;
+  border-radius: 8px; font-weight: 500;
+}
+.buy :global(.btn-primary)::after { content: "‹"; margin-inline-start: 6px; font-weight: 700; }
+.buy :global(.btn-primary):hover { background: #F9FAFB; border-color: #D2D6DB; transform: none; }
 .price { font-size: 2rem; font-weight: 700; color: var(--navy); margin-bottom: 6px; }
 .price small { font-size: 0.9rem; color: var(--muted); font-weight: 400; }
 .free { color: var(--green); }
 .billing { color: var(--muted); font-size: 0.88rem; margin-bottom: 20px; }
+
+/* حالة "مشترك بالفعل" — نفس نمط .tag.success الحقيقي، لكن كشارة نقطة+نص */
+.subscribedBadge {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 0.88rem; font-weight: 600; color: #085D3A;
+  background: #ECFDF3; border: 1px solid #ABEFC6; border-radius: 8px;
+  padding: 10px 14px; margin-bottom: 14px;
+}
+.subscribedDot { width: 8px; height: 8px; border-radius: 50%; background: #009C6D; flex-shrink: 0; }
 @media (max-width: 920px){ .layout { grid-template-columns: 1fr; } .side { position: static; } }
 
 .opDetail { padding: 16px 24px; background: #FAFBFC; border-bottom: 1px solid var(--line); }

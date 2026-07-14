@@ -7,6 +7,7 @@ import SwaggerViewer from '@/components/SwaggerViewer';
 import { getAuth } from '@/lib/api';
 import { useI18n } from '@/lib/i18n';
 import styles from './docs.module.css';
+import '@/styles/swagger-theme.css';
 
 // صفحة توثيق كاملة مستقلة — للمسجّلين فقط. تعرض Redoc أو Swagger UI.
 export default function ServiceDocs() {

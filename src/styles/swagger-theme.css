@@ -1,0 +1,71 @@
+/* سمة Swagger UI — منسوخة حرفيًّا من _swagger.scss الحقيقي (فرع body.lightMode، لأن موقعنا فاتح فقط) */
+.swagger-ui { direction: ltr; font-family: inherit; }
+.swagger-ui .information-container,
+.swagger-ui .scheme-container,
+.swagger-ui .schemes.wrapper { display: none !important; }
+.swagger-ui .wrapper { padding: 0 !important; }
+
+.swagger-ui .opblock-tag-section { border-radius: 16px; background-color: #fff; padding: 24px; margin-bottom: 30px; }
+.swagger-ui .opblock-tag { color: #000 !important; border-bottom: none; }
+.swagger-ui .opblock-summary-path { color: #000 !important; }
+.swagger-ui .opblock-summary-description { display: none; }
+
+.swagger-ui .opblock { padding: 24px; }
+.swagger-ui .opblock.opblock-get,
+.swagger-ui .opblock.opblock-post,
+.swagger-ui .opblock.opblock-put,
+.swagger-ui .opblock.opblock-delete,
+.swagger-ui .opblock.opblock-options,
+.swagger-ui .opblock.opblock-patch {
+  border-radius: 16px; border-color: #E5E7EB !important; background-color: #fff !important;
+}
+.swagger-ui .opblock .opblock-summary-method {
+  border-radius: 4px !important; border: 1px solid #ABEFC6 !important; background: #ECFDF3 !important;
+  color: #085D3A; font-size: 16px; font-weight: 500;
+}
+.swagger-ui .opblock .opblock-summary { border-color: transparent !important; }
+.swagger-ui .opblock .opblock-section-header {
+  margin-top: 16px; border-radius: 16px !important; background: #EDEDED !important; padding: 24px !important;
+}
+.swagger-ui .opblock .opblock-section-header .opblock-title { color: #000 !important; font-size: 16px !important; }
+.swagger-ui .opblock .opblock-section-header .try-out button { display: none; }
+.swagger-ui .opblock .parameters-container th,
+.swagger-ui .opblock .parameters-container td { color: #000 !important; }
+
+.swagger-ui .parameter__name, .swagger-ui .parameter__type, .swagger-ui .parameter__in { color: #000 !important; }
+.swagger-ui .parameter__name.required span { color: red !important; }
+.swagger-ui .parameter__name.required::after { color: red !important; }
+
+.swagger-ui .unlocked, .swagger-ui .locked { opacity: 1 !important; stroke: #000; margin-inline-end: 16px; }
+.swagger-ui .arrow { fill: #000; }
+.swagger-ui table thead tr th, .swagger-ui table thead tr td { color: #000 !important; }
+.swagger-ui .opblock-summary-control:focus { outline: none !important; }
+.swagger-ui h4, .swagger-ui .response, .swagger-ui .response-col_status,
+.swagger-ui .response-col_links, .swagger-ui .model-title, .swagger-ui .brace-open,
+.swagger-ui .property-row { color: #000 !important; }
+.swagger-ui input { color: #000 !important; }
+
+.swagger-ui .models { background-color: #fff !important; border-radius: 16px !important; padding: 24px !important; }
+.swagger-ui .models.is-open h4 { border-bottom: none !important; }
+.swagger-ui .models svg { fill: #000 !important; }
+.swagger-ui .models .models-control:focus { outline: none !important; }
+.swagger-ui .models span { color: #000 !important; }
+.swagger-ui .model-toggle.collapsed { color: #000 !important; }
+.swagger-ui section.models .model-container { border-radius: 16px; border-color: rgba(0,0,0,0.05) !important; background-color: rgba(0,0,0,0.05) !important; }
+
+.swagger-ui .authorization__btn { padding-inline-end: 10px; }
+.swagger-ui .opblock .opblock-summary .view-line-link.copy-to-clipboard { width: 24px; }
+.swagger-ui .opblock-description-wrapper p,
+.swagger-ui .opblock-external-docs-wrapper p,
+.swagger-ui .opblock-title_normal p,
+.swagger-ui .tab li { color: #384250 !important; }
+
+@media only screen and (max-width: 640px) {
+  .swagger-ui .opblock-tag-section { padding: 16px; }
+  .swagger-ui .table-container { padding: 10px !important; font-size: 12px !important; }
+  .swagger-ui .parameter__name, .swagger-ui .parameter__in { font-size: 12px !important; }
+  .swagger-ui .opblock { padding: 7px !important; }
+  .swagger-ui .opblock .opblock-summary-method { padding: 6px !important; font-size: 11px !important; }
+  .swagger-ui .opblock .opblock-section-header { padding: 16px !important; }
+  .swagger-ui .opblock .opblock-section-header .opblock-title { font-size: 13px !important; }
+}

@@ -33,7 +33,10 @@ export default function AdminLayout({ children }) {
     <RequireAuth role={['portal-admin', 'portal-superadmin']}>
       <div className={styles.shell}>
         <aside className={styles.sidebar}>
-          <div className={styles.brand}><span className={styles.mark}>{t('admin_nav.brand_mark')}</span><span>{t('nav.admin')}</span></div>
+          <div className={styles.brand}>
+            <img src="/images/techhub-logo-full.webp" alt={t('common.brand')} className={styles.brandLogo} />
+            <span>{t('nav.admin')}</span>
+          </div>
           {visibleNav.map((item) => (
             <Link
               key={item.href}

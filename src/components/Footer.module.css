@@ -1,12 +1,53 @@
-.footer { background: var(--navy); color: #C7D2E0; padding: 60px 0 28px; margin-top: 80px; }
-.top { display: grid; grid-template-columns: 1.6fr 1fr 1fr; gap: 36px; padding-bottom: 40px; border-bottom: 1px solid rgba(255,255,255,0.1); }
-.brand .logo { display: flex; align-items: center; gap: 12px; color: #fff; font-weight: 700; margin-bottom: 16px; }
-.mark { width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, var(--steel), var(--copper)); display: grid; place-items: center; }
-.brand p { font-size: 0.9rem; color: #9FB0C4; max-width: 300px; }
-.col h4 { color: #fff; font-size: 0.95rem; margin-bottom: 16px; }
+/* القيم أدناه منسوخة حرفيًّا من _index.module.scss الحقيقي لمكوّن الفوتر (لا تخمين) */
+.footer {
+  color: #fff;
+  margin-top: 80px;
+  padding: 60px;
+  background: linear-gradient(0deg, #009C6D -57.62%, #004E37 3.33%, #000 85.67%, #000 116%, #002218 194.48%, #009C6D 235.32%);
+}
+
+.top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 40px;
+  padding-top: 60px;
+}
+
+/* شعار تيك هب — نفس شعار الرأس، مطابق للفوتر الحقيقي (لا شعار NHC هنا) */
+.brand { display: flex; align-items: center; }
+.brandLogo { height: 70px; width: auto; }
+
+.col h4 { color: #fff; font-size: 17px; font-weight: 500; margin-bottom: 14px; }
 .col ul { list-style: none; }
-.col li { margin-bottom: 10px; }
-.col a { font-size: 0.9rem; color: #9FB0C4; transition: .2s; }
-.col a:hover { color: var(--copper-soft); }
-.bottom { padding-top: 24px; font-size: 0.85rem; color: #7C8DA3; }
-@media (max-width: 720px){ .top { grid-template-columns: 1fr; gap: 24px; } }
+.col li { margin-bottom: 14px; }
+.col a { font-size: 16px; font-weight: 400; color: #fff; transition: .2s; }
+.col a:hover { text-decoration: underline; }
+
+/* شارة رؤية 2030 الرسمية (SVG أبيض حقيقي) */
+.vision { display: flex; align-items: center; }
+.visionMark { width: 96px; height: 64px; }
+
+.social { display: flex; justify-content: center; gap: 42px; margin: 40px 0 30px; }
+.socialBtn {
+  display: grid; place-items: center;
+  color: #fff; transition: .2s;
+}
+.socialBtn:hover { opacity: 0.75; }
+
+.bottom {
+  text-align: center;
+  font-size: 14px;
+  font-weight: 400;
+  color: #BCFFBB;
+}
+
+@media (max-width: 900px) {
+  .top { flex-direction: column; align-items: center; text-align: center; }
+  .col ul { padding: 0; }
+}
+@media (max-width: 620px) {
+  .footer { padding: 16px; margin-top: 40px; }
+  .brandLogo { height: 50px; }
+}

@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
-import { getMyApps, createApp, addService, getProducts, ensureRegistered, saveProfile, getProfile, startPurchase, requestPromotion, getMyPromotions, getDeveloperProfile } from '@/lib/api';
+import { getMyApps, getMyProdApps, createApp, addService, getProducts, ensureRegistered, saveProfile, getProfile, startPurchase, requestPromotion, getMyPromotions, getDeveloperProfile } from '@/lib/api';
 import ServicePicker from '@/components/ServicePicker';
 import RequireAuth from '@/components/RequireAuth';
 import Header from '@/components/Header';
@@ -18,6 +18,7 @@ export default function PartnerPage() {
 function PartnerDashboard() {
   const { t } = useI18n();
   const [apps, setApps] = useState([]);
+  const [prodApps, setProdApps] = useState([]);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
@@ -32,6 +33,12 @@ function PartnerDashboard() {
       .finally(() => setLoading(false));
   }, []);
 
+  const loadProdApps = useCallback(() => {
+    getMyProdApps()
+      .then((d) => setProdApps(Array.isArray(d) ? d : []))
+      .catch(() => setProdApps([]));
+  }, []);
+
   const loadPromotions = useCallback(() => {
     getMyPromotions()
       .then((d) => setPromotions(Array.isArray(d?.requests) ? d.requests : []))
@@ -40,6 +47,7 @@ function PartnerDashboard() {
 
   useEffect(() => {
     loadApps();
+    loadProdApps();
     loadPromotions();
     getProducts().then((d) => setProducts(Array.isArray(d) ? d : [])).catch(() => {});
     // إن جاء الشريك من صفحة خدمة (?product=)، نفتح نافذة الطلب بالخدمة محدّدة مسبقًا
@@ -48,7 +56,7 @@ function PartnerDashboard() {
       const p = params.get('product');
       if (p) { setPreselectedProduct(p); setShowCreate(true); }
     } catch {}
-  }, [loadApps, loadPromotions]);
+  }, [loadApps, loadProdApps, loadPromotions]);
 
   // الشريك يطلب ترقية خدمة للإنتاج
   async function handlePromote(productName) {
@@ -97,6 +105,22 @@ function PartnerDashboard() {
               ))}
             </div>
           )}
+
+          {prodApps.length > 0 && (
+            <div className={styles.prodSection}>
+              <div className={styles.head}>
+                <div>
+                  <h2>{t('partner.production_title')}</h2>
+                  <p>{t('partner.production_subtitle')}</p>
+                </div>
+              </div>
+              <div className={styles.grid}>
+                {prodApps.map((app, i) => (
+                  <AppCard key={i} app={app} prod />
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -125,7 +149,8 @@ function PartnerDashboard() {
 }
 
 // بطاقة تطبيق — تعرض اسمه ومفاتيحه والخدمات المرتبطة وحالة ترقيتها للإنتاج
-function AppCard({ app, promotions = [], onPromote }) {
+// prod=true: بطاقة قراءة فقط لتطبيق بيئة الإنتاج (بلا أزرار ترقية، فهو أصلًا مفعّل هناك)
+function AppCard({ app, promotions = [], onPromote, prod = false }) {
   const { t } = useI18n();
   const [showKey, setShowKey] = useState(false);
   const [busyProduct, setBusyProduct] = useState(null);
@@ -159,7 +184,11 @@ function AppCard({ app, promotions = [], onPromote }) {
     <div className={styles.card}>
       <div className={styles.cardHead}>
         <h3>{app.name || app.appName}</h3>
-        <span className={styles.status}>{app.status || t('partner.status_active')}</span>
+        {prod ? (
+          <span className={styles.promoLive}>{t('partner.production_badge')}</span>
+        ) : (
+          <span className={styles.status}>{app.status || t('partner.status_active')}</span>
+        )}
       </div>
 
       {key && (
@@ -181,12 +210,19 @@ function AppCard({ app, promotions = [], onPromote }) {
       )}
 
       <div className={styles.products}>
-        <span className={styles.credLabel}>{t('partner.linked_services')}</span>
+        <span className={styles.credLabel}>{prod ? t('partner.linked_services_prod') : t('partner.linked_services')}</span>
         {products.length ? (
           <div className={styles.svcList}>
             {products.map((p, i) => {
               const name = typeof p === 'string' ? p : (p.productName || p.apiproduct);
               const status = typeof p === 'object' ? p.status : null;
+              if (prod) {
+                return (
+                  <div key={i} className={styles.svcRow}>
+                    <span className={`${styles.chip} ${styles.chipOk}`}>{name}</span>
+                  </div>
+                );
+              }
               const promo = promotionOf(name);
               return (
                 <div key={i} className={styles.svcRow}>
@@ -299,7 +335,7 @@ function CreateAppModal({ products, apps, initialProduct, onClose, onCreated, on
               gap: '10px', padding: '12px 14px', marginTop: '6px',
               background: '#F1F5FB', border: '1px solid #D5DCE5', borderRadius: '10px',
             }}>
-              <span style={{ fontWeight: 500, color: 'var(--navy, #0B1F3A)' }}>
+              <span style={{ fontWeight: 500, color: '#161616' }}>
                 {lockedProduct.displayName || lockedProduct.name}
               </span>
               <span style={{

@@ -7,10 +7,11 @@
 }
 .card {
   background: var(--paper);
+  border: 1px solid var(--line);
   border-radius: var(--radius);
   padding: 40px;
   width: 100%;
-  max-width: 420px;
+  max-width: 460px;
   box-shadow: var(--shadow);
 }
 .logo {
@@ -53,7 +54,40 @@
   outline: none;
   transition: border-color .2s;
 }
-.label input:focus { border-color: var(--steel); }
+.label input:focus { border-color: var(--green); }
+
+/* مقياس قوة كلمة المرور — 3 مقاطع، تتلوّن حسب عدد الشروط المستوفاة */
+.strengthMeter { display: flex; gap: 6px; margin-top: -10px; margin-bottom: 14px; }
+.strengthSeg { flex: 1; height: 4px; border-radius: 2px; background: var(--line); }
+.strengthWeak { background: #C0392B; }
+.strengthMedium { background: #C9A227; }
+.strengthStrong { background: var(--green); }
+
+/* قائمة شروط كلمة المرور — تتحدّث حيًّا أثناء الكتابة */
+.rules { margin-bottom: 18px; }
+.rulesTitle { font-size: 0.9rem; font-weight: 700; margin-bottom: 8px; }
+.rule {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: var(--ink);
+  padding: 3px 0;
+}
+.rule.ruleOk { color: var(--green); }
+.ruleMark {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  font-size: 11px;
+  color: var(--muted);
+}
+.ruleOk .ruleMark { color: var(--green); border-color: var(--green); }
+
 .error {
   background: #FBEAE8;
   color: #C0392B;
