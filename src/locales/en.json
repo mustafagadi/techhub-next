@@ -141,7 +141,11 @@
     "interest_hint": "Our team will contact you to arrange access.",
     "interest_sent": "Your interest has been submitted. Our team will contact you shortly.",
     "loading": "Loading…",
-    "quota_limit": "Usage limit: {value}"
+    "quota_limit": "Usage limit: {value}",
+    "tab_pricing": "Pricing",
+    "starting_at": "Starting from",
+    "view_plans": "View plans",
+    "tier_default": "Recommended"
   },
   "interest": {
     "title": "Express interest in «{service}»",

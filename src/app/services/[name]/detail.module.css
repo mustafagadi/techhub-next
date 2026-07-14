@@ -53,7 +53,21 @@
   padding: 10px 14px; margin-bottom: 14px;
 }
 .subscribedDot { width: 8px; height: 8px; border-radius: 50%; background: #009C6D; flex-shrink: 0; }
-@media (max-width: 920px){ .layout { grid-template-columns: 1fr; } .side { position: static; } }
+
+/* بطاقات مستويات التسعير — تبويب "الأسعار" لخدمة مجمّعة بعدّة مستويات */
+.tierGrid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+.tierCard {
+  background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius);
+  box-shadow: var(--shadow); padding: 26px; position: relative;
+}
+.tierDefaultBadge {
+  display: inline-block; font-size: 0.75rem; font-weight: 600; color: #085D3A;
+  background: #ECFDF3; border: 1px solid #ABEFC6; border-radius: 100px;
+  padding: 3px 10px; margin-bottom: 12px;
+}
+.tierLabel { font-size: 1.05rem; font-weight: 700; color: var(--navy); margin-bottom: 10px; }
+
+@media (max-width: 920px){ .layout { grid-template-columns: 1fr; } .side { position: static; } .tierGrid { grid-template-columns: 1fr; } }
 
 .opDetail { padding: 16px 24px; background: #FAFBFC; border-bottom: 1px solid var(--line); }
 .detailBlock { margin-bottom: 16px; }

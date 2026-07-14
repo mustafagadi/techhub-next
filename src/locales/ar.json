@@ -141,7 +141,11 @@
     "interest_hint": "سيتواصل معك الفريق لإتاحة الوصول للخدمة.",
     "interest_sent": "تم إرسال اهتمامك. سيتواصل معك الفريق قريبًا.",
     "loading": "جارٍ التحميل…",
-    "quota_limit": "حدّ الاستخدام: {value}"
+    "quota_limit": "حدّ الاستخدام: {value}",
+    "tab_pricing": "الأسعار",
+    "starting_at": "يبدأ من",
+    "view_plans": "عرض الباقات",
+    "tier_default": "موصى بها"
   },
   "interest": {
     "title": "إبداء اهتمام بـ «{service}»",

@@ -82,22 +82,35 @@ export default function ServiceDetail() {
   const [interestSent, setInterestSent] = useState(false);
   const [hasDocFile, setHasDocFile] = useState(false);
   const [subscribedApp, setSubscribedApp] = useState(null); // التطبيق المشترك بهذه الخدمة فعلًا، إن وُجد
+  const [subscribedTierApps, setSubscribedTierApps] = useState({}); // خريطة: اسم منتج Apigee (مستوى) → التطبيق المشترك به
+  const [interestTarget, setInterestTarget] = useState(null); // اسم منتج Apigee (خدمة بسيطة أو مستوى محدّد) لنافذة إبداء الاهتمام
 
   useEffect(() => { setIsAuthed(!!getAuth()?.token); }, []);
   useEffect(() => {
     docFileExists(name).then((r) => setHasDocFile(!!r?.exists)).catch(() => setHasDocFile(false));
   }, [name]);
 
-  // هل الشريك مشترك بالفعل في هذه الخدمة؟ نتحقق من قائمة تطبيقاته الحالية
+  // هل الشريك مشترك بالفعل في هذه الخدمة (أو أحد مستوياتها)؟ نتحقق من قائمة تطبيقاته الحالية
   useEffect(() => {
     if (!getAuth()?.token || getAuth()?.role !== 'portal-partner') return;
+    const productsOf = (app) => app.credentials?.[0]?.products || app.credentials?.[0]?.apiProducts || app.apiProducts || [];
+    const nameOf = (p) => (typeof p === 'string' ? p : (p.productName || p.apiproduct));
     getMyApps().then((apps) => {
-      const match = (Array.isArray(apps) ? apps : []).find((app) => {
-        const products = app.credentials?.[0]?.products || app.credentials?.[0]?.apiProducts || app.apiProducts || [];
-        return products.some((p) => (typeof p === 'string' ? p : (p.productName || p.apiproduct)) === name);
-      });
+      const list = Array.isArray(apps) ? apps : [];
+
+      const match = list.find((app) => productsOf(app).some((p) => nameOf(p) === name));
       setSubscribedApp(match || null);
-    }).catch(() => setSubscribedApp(null));
+
+      // خريطة كل منتجات Apigee المشترك بها فعليًّا → التطبيق الذي يحملها (لبطاقات المستويات)
+      const tierMap = {};
+      for (const app of list) {
+        for (const p of productsOf(app)) {
+          const n = nameOf(p);
+          if (n && !(n in tierMap)) tierMap[n] = app;
+        }
+      }
+      setSubscribedTierApps(tierMap);
+    }).catch(() => { setSubscribedApp(null); setSubscribedTierApps({}); });
   }, [name]);
 
   useEffect(() => {
@@ -127,6 +140,8 @@ export default function ServiceDetail() {
 
   const title = product?.displayName || product?.name || name;
   const price = product?.price;
+  // خدمة مجمّعة بعدّة مستويات تسعير حقيقية (كل مستوى منتج Apigee مستقل) — أكثر من مستوى واحد فقط
+  const sortedTiers = product?.tiers?.length > 1 ? [...product.tiers].sort((a, b) => a.sortOrder - b.sortOrder) : null;
 
   return (
     <>
@@ -166,7 +181,11 @@ export default function ServiceDetail() {
 
             <div className={styles.panel}>
               <div className={styles.tabs}>
-                {[['desc', t('service.tab_description')], ['auth', t('service.tab_auth')]].map(([k,l]) => (
+                {[
+                  ['desc', t('service.tab_description')],
+                  ['auth', t('service.tab_auth')],
+                  ...(sortedTiers ? [['pricing', t('service.tab_pricing')]] : []),
+                ].map(([k,l]) => (
                   <button key={k} className={`${styles.tab} ${tab===k ? styles.activeTab : ''}`} onClick={() => setTab(k)}>{l}</button>
                 ))}
                 {isAuthed && (
@@ -201,64 +220,102 @@ export default function ServiceDetail() {
                     <pre className={styles.code}>Authorization: Bearer {'{access_token}'}</pre>
                   </>
                 )}
+                {tab === 'pricing' && sortedTiers && (
+                  <div className={styles.tierGrid}>
+                    {sortedTiers.map((tier) => (
+                      <TierCard
+                        key={tier.apigeeProductName}
+                        tier={tier}
+                        locale={locale}
+                        isAuthed={isAuthed}
+                        subscribedApp={subscribedTierApps[tier.apigeeProductName]}
+                        onInterest={() => setInterestTarget(tier.apigeeProductName)}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </div>
 
           <aside className={styles.side}>
             <div className={styles.buy}>
-              <div className={styles.price}>
-                {price ? <>{price.toLocaleString(locale === 'ar' ? 'ar-SA' : 'en-US')} <small>{t('service.currency')}</small></> : <span className={styles.free}>{t('service.free')}</span>}
-              </div>
-              {price ? <div className={styles.billing}>{t('service.billing_quota')}</div> : null}
-              {product?.quotaDescription && (
-                <div className={styles.quota}>
-                  <span className={styles.quotaIcon}>⚡</span>
-                  {t('service.quota_limit', { value: product.quotaDescription })}
-                </div>
-              )}
-              {subscribedApp ? (
+              {sortedTiers ? (
                 <>
-                  <div className={styles.subscribedBadge}>
-                    <span className={styles.subscribedDot} />
-                    {t('service.already_subscribed')}
+                  <div className={styles.price}>
+                    {(() => {
+                      const minPrice = sortedTiers.reduce(
+                        (min, t) => (t.price != null && (min == null || t.price < min) ? t.price : min), null);
+                      return minPrice
+                        ? <>{minPrice.toLocaleString(locale === 'ar' ? 'ar-SA' : 'en-US')} <small>{t('service.currency')}</small></>
+                        : <span className={styles.free}>{t('service.free')}</span>;
+                    })()}
                   </div>
-                  <a
-                    href="/partner"
-                    className="btn btn-primary"
-                    style={{ width: '100%', justifyContent: 'center' }}
-                  >
-                    {t('service.manage_subscription')}
-                  </a>
-                  <p style={{ fontSize: '0.8rem', color: '#5A6B82', marginTop: '12px', textAlign: 'center' }}>
-                    {t('service.already_subscribed_hint', { app: subscribedApp.name || subscribedApp.appName })}
-                  </p>
-                </>
-              ) : isAuthed ? (
-                <>
+                  <div className={styles.billing}>{t('service.starting_at')}</div>
                   <button
                     className="btn btn-primary"
                     style={{ width: '100%', justifyContent: 'center' }}
-                    onClick={() => { window.location.href = '/partner?product=' + encodeURIComponent(name); }}
+                    onClick={() => setTab('pricing')}
                   >
-                    {price ? t('service.subscribe') : t('service.add_service')}
+                    {t('service.view_plans')}
                   </button>
-                  <p style={{ fontSize: '0.8rem', color: '#5A6B82', marginTop: '12px', textAlign: 'center' }}>
-                    {price ? t('service.hint_paid') : t('service.hint_free')}
-                  </p>
                 </>
               ) : (
                 <>
-                  <button
-                    className="btn btn-primary"
-                    style={{ width: '100%', justifyContent: 'center' }}
-                    onClick={() => setShowInterest(true)}
-                  >
-                    {t('service.interest_cta')}
-                  </button>
-                  <p style={{ fontSize: '0.8rem', color: '#5A6B82', marginTop: '12px', textAlign: 'center' }}>
-                    {t('service.interest_hint')}
-                  </p>
+                  <div className={styles.price}>
+                    {price ? <>{price.toLocaleString(locale === 'ar' ? 'ar-SA' : 'en-US')} <small>{t('service.currency')}</small></> : <span className={styles.free}>{t('service.free')}</span>}
+                  </div>
+                  {price ? <div className={styles.billing}>{t('service.billing_quota')}</div> : null}
+                  {product?.quotaDescription && (
+                    <div className={styles.quota}>
+                      <span className={styles.quotaIcon}>⚡</span>
+                      {t('service.quota_limit', { value: product.quotaDescription })}
+                    </div>
+                  )}
+                  {subscribedApp ? (
+                    <>
+                      <div className={styles.subscribedBadge}>
+                        <span className={styles.subscribedDot} />
+                        {t('service.already_subscribed')}
+                      </div>
+                      <a
+                        href="/partner"
+                        className="btn btn-primary"
+                        style={{ width: '100%', justifyContent: 'center' }}
+                      >
+                        {t('service.manage_subscription')}
+                      </a>
+                      <p style={{ fontSize: '0.8rem', color: '#5A6B82', marginTop: '12px', textAlign: 'center' }}>
+                        {t('service.already_subscribed_hint', { app: subscribedApp.name || subscribedApp.appName })}
+                      </p>
+                    </>
+                  ) : isAuthed ? (
+                    <>
+                      <button
+                        className="btn btn-primary"
+                        style={{ width: '100%', justifyContent: 'center' }}
+                        onClick={() => { window.location.href = '/partner?product=' + encodeURIComponent(name); }}
+                      >
+                        {price ? t('service.subscribe') : t('service.add_service')}
+                      </button>
+                      <p style={{ fontSize: '0.8rem', color: '#5A6B82', marginTop: '12px', textAlign: 'center' }}>
+                        {price ? t('service.hint_paid') : t('service.hint_free')}
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <button
+                        className="btn btn-primary"
+                        style={{ width: '100%', justifyContent: 'center' }}
+                        onClick={() => setShowInterest(true)}
+                      >
+                        {t('service.interest_cta')}
+                      </button>
+                      <p style={{ fontSize: '0.8rem', color: '#5A6B82', marginTop: '12px', textAlign: 'center' }}>
+                        {t('service.interest_hint')}
+                      </p>
+                    </>
+                  )}
                 </>
               )}
             </div>
@@ -266,11 +323,11 @@ export default function ServiceDetail() {
         </div>
       </div>
 
-      {showInterest && (
+      {(showInterest || interestTarget) && (
         <InterestModal
-          serviceName={name}
-          onClose={() => setShowInterest(false)}
-          onDone={() => { setShowInterest(false); setInterestSent(true); }}
+          serviceName={interestTarget || name}
+          onClose={() => { setShowInterest(false); setInterestTarget(null); }}
+          onDone={() => { setShowInterest(false); setInterestTarget(null); setInterestSent(true); }}
         />
       )}
       {interestSent && (
@@ -280,6 +337,53 @@ export default function ServiceDetail() {
       )}
       <Footer />
     </>
+  );
+}
+
+// بطاقة مستوى تسعير واحد ضمن خدمة مجمّعة — مرآة لنفس منطق CTA الثلاثي في الشريط الجانبي، لكن لكل مستوى على حدة
+function TierCard({ tier, locale, isAuthed, subscribedApp, onInterest }) {
+  const { t } = useI18n();
+  const numLocale = locale === 'ar' ? 'ar-SA' : 'en-US';
+  const isFree = !tier.price;
+
+  return (
+    <div className={styles.tierCard}>
+      {tier.isDefault && <span className={styles.tierDefaultBadge}>{t('service.tier_default')}</span>}
+      <h3 className={styles.tierLabel}>{tier.label}</h3>
+      <div className={styles.price}>
+        {isFree ? <span className={styles.free}>{t('service.free')}</span>
+                : <>{tier.price.toLocaleString(numLocale)} <small>{t('service.currency')}</small></>}
+      </div>
+      {tier.quotaDescription && (
+        <div className={styles.quota}>
+          <span className={styles.quotaIcon}>⚡</span>
+          {t('service.quota_limit', { value: tier.quotaDescription })}
+        </div>
+      )}
+      {subscribedApp ? (
+        <>
+          <div className={styles.subscribedBadge}>
+            <span className={styles.subscribedDot} />
+            {t('service.already_subscribed')}
+          </div>
+          <a href="/partner" className="btn btn-primary" style={{ width: '100%', justifyContent: 'center' }}>
+            {t('service.manage_subscription')}
+          </a>
+        </>
+      ) : isAuthed ? (
+        <button
+          className="btn btn-primary"
+          style={{ width: '100%', justifyContent: 'center' }}
+          onClick={() => { window.location.href = '/partner?product=' + encodeURIComponent(tier.apigeeProductName); }}
+        >
+          {isFree ? t('service.add_service') : t('service.subscribe')}
+        </button>
+      ) : (
+        <button className="btn btn-primary" style={{ width: '100%', justifyContent: 'center' }} onClick={onInterest}>
+          {t('service.interest_cta')}
+        </button>
+      )}
+    </div>
   );
 }
 
