@@ -10,6 +10,12 @@ import styles from '../admin.module.css';
 
 const PAGE_SIZE = 20;
 
+// Display label for an environment code ('prod'/'test') — the code itself still goes to the API as-is,
+// this is purely for what the admin sees in checkboxes/toasts.
+function envLabel(t, env) {
+  return t(env === 'prod' ? 'admin_services.env_prod' : 'admin_services.env_test');
+}
+
 export default function ServicesPage() {
   const { t } = useI18n();
   const canPublish = hasPermission('products.publish');
@@ -78,7 +84,7 @@ export default function ServicesPage() {
       const other = otherEnvironment();
       try {
         await replicateProduct(data.name, other);
-        notify(t('admin_services.create_success_synced', { name: data.displayName || data.name, env: other }));
+        notify(t('admin_services.create_success_synced', { name: data.displayName || data.name, env: envLabel(t, other) }));
       } catch {
         notify(t('admin_services.create_success_sync_failed', { name: data.displayName || data.name }), false);
       }
@@ -93,7 +99,7 @@ export default function ServicesPage() {
     try {
       const other = otherEnvironment();
       await replicateProduct(svc.name, other);
-      notify(t('admin_services.sync_success', { name: svc.displayName || svc.name, env: other }));
+      notify(t('admin_services.sync_success', { name: svc.displayName || svc.name, env: envLabel(t, other) }));
     } catch (err) {
       notify(err.message || t('admin_services.sync_failed'), false);
     } finally {
@@ -511,7 +517,7 @@ function TiersModal({ service, onClose, onChanged, notify }) {
         const other = otherEnvironment();
         try {
           await replicateProduct(service.name, other);
-          notify(t('admin_services.tier_add_success_synced', { env: other }));
+          notify(t('admin_services.tier_add_success_synced', { env: envLabel(t, other) }));
         } catch {
           notify(t('admin_services.tier_add_success_sync_failed'), false);
         }
@@ -663,7 +669,7 @@ function TiersModal({ service, onClose, onChanged, notify }) {
             onChange={(e) => setSyncNewTier(e.target.checked)}
             style={{ width: 'auto', display: 'inline-block', marginInlineEnd: 6 }}
           />
-          {t('admin_services.also_add_tier_other_env', { env: otherEnvironment() })}
+          {t('admin_services.also_add_tier_other_env', { env: envLabel(t, otherEnvironment()) })}
         </label>
 
         <div className={styles.modalActions}>
@@ -946,7 +952,7 @@ function CreateServiceModal({ onClose, onCreate }) {
             onChange={(e) => setSyncToOtherEnv(e.target.checked)}
             style={{ width: 'auto', display: 'inline-block', marginInlineEnd: 6 }}
           />
-          {t('admin_services.also_create_other_env', { env: otherEnvironment() })}
+          {t('admin_services.also_create_other_env', { env: envLabel(t, otherEnvironment()) })}
         </label>
 
         <div className={styles.modalActions}>

@@ -468,6 +468,8 @@
     "retroactive_group_note": "This service currently has a single price. Adding a tier will convert it into a multi-tier service — the fields below describe the existing (pre-tier) product.",
     "original_tier_slug_label": "Existing tier slug (optional)",
     "original_tier_label_label": "Existing tier label (optional)",
+    "env_prod": "Production",
+    "env_test": "Test",
     "also_create_other_env": "Also create in {env}",
     "also_add_tier_other_env": "Also add in {env}",
     "create_success_synced": "\"{name}\" created and synced to {env}.",
