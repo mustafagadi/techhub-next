@@ -3,8 +3,10 @@ import { useState, useEffect, useCallback } from 'react';
 import {
   getAllProducts, publishProduct, unpublishProduct, setPricing, setApprovalType, hasPermission,
   getAdminProxies, createTieredProduct, getProductTiers, updateProductMetadata, addTier, removeTier, renameTier, setDefaultTier,
+  replicateProduct, otherEnvironment,
 } from '@/lib/api';
 import { useI18n } from '@/lib/i18n';
+import EnvSwitcher from '@/components/EnvSwitcher';
 import styles from '../admin.module.css';
 
 const PAGE_SIZE = 20;
@@ -73,8 +75,31 @@ export default function ServicesPage() {
 
   async function handleCreateService(data) {
     await createTieredProduct(data);
-    notify(t('admin_services.create_success', { name: data.displayName || data.name }));
+    if (data.syncToOtherEnv) {
+      const other = otherEnvironment();
+      try {
+        await replicateProduct(data.name, other);
+        notify(t('admin_services.create_success_synced', { name: data.displayName || data.name, env: other }));
+      } catch {
+        notify(t('admin_services.create_success_sync_failed', { name: data.displayName || data.name }), false);
+      }
+    } else {
+      notify(t('admin_services.create_success', { name: data.displayName || data.name }));
+    }
     loadServices();
+  }
+
+  async function handleSync(svc) {
+    setBusy(svc.name);
+    try {
+      const other = otherEnvironment();
+      await replicateProduct(svc.name, other);
+      notify(t('admin_services.sync_success', { name: svc.displayName || svc.name, env: other }));
+    } catch (err) {
+      notify(err.message || t('admin_services.sync_failed'), false);
+    } finally {
+      setBusy(null);
+    }
   }
 
   async function handleSetPricing(svc, price, billingType, quotaLimit) {
@@ -105,7 +130,7 @@ export default function ServicesPage() {
     <>
       <div className={styles.topbar}>
         <h1>{t('nav.services')}</h1>
-        <span className={styles.env}>{t('overview.env_prod')}</span>
+        <EnvSwitcher />
       </div>
       <div className={styles.content}>
         <div className={styles.card}>
@@ -154,6 +179,9 @@ export default function ServicesPage() {
                     </button>{' '}
                     <button className={styles.priceBtn} onClick={() => setTiersModal(s)} disabled={busy === s.name}>
                       {t('admin_services.tiers_btn', { count: s.tierCount || 1 })}
+                    </button>{' '}
+                    <button className={styles.priceBtn} onClick={() => handleSync(s)} disabled={busy === s.name}>
+                      {busy === s.name ? '…' : t('admin_services.sync_btn')}
                     </button>
                   </td>
                 </tr>
@@ -395,6 +423,7 @@ function TiersModal({ service, onClose, onChanged, notify }) {
   const [newTier, setNewTier] = useState(newTierRow(false));
   const [originalTierSlug, setOriginalTierSlug] = useState('');
   const [originalTierLabel, setOriginalTierLabel] = useState('');
+  const [syncNewTier, setSyncNewTier] = useState(false);
   const [addBusy, setAddBusy] = useState(false);
   const [addError, setAddError] = useState('');
   const [confirmingSlug, setConfirmingSlug] = useState(null);
@@ -480,10 +509,21 @@ function TiersModal({ service, onClose, onChanged, notify }) {
         if (originalTierLabel.trim()) payload.originalTierLabel = originalTierLabel.trim();
       }
       await addTier(service.name, payload);
-      notify(t('admin_services.tier_add_success'));
+      if (syncNewTier) {
+        const other = otherEnvironment();
+        try {
+          await replicateProduct(service.name, other);
+          notify(t('admin_services.tier_add_success_synced', { env: other }));
+        } catch {
+          notify(t('admin_services.tier_add_success_sync_failed'), false);
+        }
+      } else {
+        notify(t('admin_services.tier_add_success'));
+      }
       setNewTier(newTierRow(false));
       setOriginalTierSlug('');
       setOriginalTierLabel('');
+      setSyncNewTier(false);
       await reload();
       onChanged();
     } catch (e) {
@@ -618,6 +658,15 @@ function TiersModal({ service, onClose, onChanged, notify }) {
           />
           {t('admin_services.tier_default_label')}
         </label>
+        <label className={styles.label}>
+          <input
+            type="checkbox"
+            checked={syncNewTier}
+            onChange={(e) => setSyncNewTier(e.target.checked)}
+            style={{ width: 'auto', display: 'inline-block', marginInlineEnd: 6 }}
+          />
+          {t('admin_services.also_add_tier_other_env', { env: otherEnvironment() })}
+        </label>
 
         <div className={styles.modalActions}>
           <button className="btn btn-primary" onClick={handleAddTier} disabled={addBusy}>
@@ -664,6 +713,7 @@ function CreateServiceModal({ onClose, onCreate }) {
   const [proxiesLoading, setProxiesLoading] = useState(true);
   const [selectedProxies, setSelectedProxies] = useState([]);
   const [tiers, setTiers] = useState([newTierRow(true)]);
+  const [syncToOtherEnv, setSyncToOtherEnv] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [submitted, setSubmitted] = useState(false); // true after the first submit attempt — drives the per-field "missing" highlighting below
@@ -737,6 +787,7 @@ function CreateServiceModal({ onClose, onCreate }) {
         isDefault: tr.isDefault,
         sortOrder: i,
       })),
+      syncToOtherEnv, // consumed by the page-level handler, not sent to the backend create endpoint
     };
   }
 
@@ -889,6 +940,16 @@ function CreateServiceModal({ onClose, onCreate }) {
         <button type="button" className={styles.btnGhost} onClick={addTier}>
           {t('admin_services.add_tier')}
         </button>
+
+        <label className={styles.label}>
+          <input
+            type="checkbox"
+            checked={syncToOtherEnv}
+            onChange={(e) => setSyncToOtherEnv(e.target.checked)}
+            style={{ width: 'auto', display: 'inline-block', marginInlineEnd: 6 }}
+          />
+          {t('admin_services.also_create_other_env', { env: otherEnvironment() })}
+        </label>
 
         <div className={styles.modalActions}>
           <button className="btn btn-primary" onClick={handleSubmit} disabled={busy}>

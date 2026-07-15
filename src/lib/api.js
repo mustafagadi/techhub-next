@@ -35,6 +35,10 @@ export function setEnvironment(env) {
 }
 export function getEnvironment() { return currentEnv; }
 
+// This deployment only ever has exactly two environments (test/prod, two separate Apigee orgs) —
+// used by the admin "sync to the other environment" actions to know their target without asking.
+export function otherEnvironment() { return getEnvironment() === 'prod' ? 'test' : 'prod'; }
+
 // ===== Authentication: storing and retrieving the login token =====
 // Stored in memory + sessionStorage (persists across page refresh, cleared when the tab is closed).
 const TOKEN_KEY = 'portal_auth';
@@ -329,6 +333,13 @@ export const renameTier = async (groupName, tierSlug, label) =>
 
 export const setDefaultTier = async (groupName, tierSlug) =>
   request(`/admin/products/${encodeURIComponent(groupName)}/tiers/${encodeURIComponent(tierSlug)}/default`, { method: 'PUT' });
+
+// Replicates a service (and all its tiers) into the other Apigee environment/org. Idempotent — safe to call
+// again on an already-synced service.
+export const replicateProduct = (name, targetEnvironment) =>
+  request(`/admin/products/${encodeURIComponent(name)}/replicate`, {
+    method: 'POST', body: JSON.stringify({ targetEnvironment }),
+  });
 
 export const publishProduct = (name) =>
   request(`/admin/products/${encodeURIComponent(name)}/publish`, { method: 'POST' });

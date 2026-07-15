@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { getAdminUsers, inviteAdminUser, setAdminUserPermissions, getAuth } from '@/lib/api';
 import RequireAuth from '@/components/RequireAuth';
 import { useI18n } from '@/lib/i18n';
+import EnvSwitcher from '@/components/EnvSwitcher';
 import styles from '../admin.module.css';
 
 // The seven granular permissions — must match PortalPermissions.All on the backend.
@@ -51,7 +52,7 @@ function AdminUsersInner() {
     <>
       <div className={styles.topbar}>
         <h1>{t('admin_nav.users')}</h1>
-        <span className={styles.env}>{t('overview.env_prod')}</span>
+        <EnvSwitcher />
       </div>
 
       <div className={styles.content}>

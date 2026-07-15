@@ -431,7 +431,16 @@
     "tier_add_failed": "تعذّر إضافة المستوى.",
     "retroactive_group_note": "تملك هذه الخدمة حاليًا سعرًا واحدًا. إضافة مستوى ستحوّلها إلى خدمة متعددة المستويات — الحقول أدناه تصف المنتج الحالي (قبل التعدد).",
     "original_tier_slug_label": "معرّف المستوى الحالي (اختياري)",
-    "original_tier_label_label": "اسم المستوى الحالي (اختياري)"
+    "original_tier_label_label": "اسم المستوى الحالي (اختياري)",
+    "also_create_other_env": "إنشاؤها أيضًا في {env}",
+    "also_add_tier_other_env": "إضافته أيضًا في {env}",
+    "create_success_synced": "تم إنشاء «{name}» ومزامنتها مع {env}.",
+    "create_success_sync_failed": "تم إنشاء «{name}»، لكن تعذّرت مزامنتها مع البيئة الأخرى. استخدم زر المزامنة لإعادة المحاولة.",
+    "tier_add_success_synced": "تمت إضافة المستوى ومزامنته مع {env}.",
+    "tier_add_success_sync_failed": "تمت إضافة المستوى، لكن تعذّرت المزامنة مع البيئة الأخرى. استخدم زر المزامنة لإعادة المحاولة.",
+    "sync_btn": "مزامنة",
+    "sync_success": "تمت مزامنة «{name}» مع {env}.",
+    "sync_failed": "تعذّرت مزامنة الخدمة."
   },
   "accept_invite": {
     "link_missing": "رابط الدعوة ناقص.",
