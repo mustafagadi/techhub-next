@@ -95,6 +95,11 @@
 .tierRow { border: 1px solid var(--line); border-radius: 10px; padding: 16px; margin-bottom: 14px; }
 .tierRowHead { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; font-size: 0.85rem; }
 .tierRowHead input[type="radio"] { accent-color: #009C6D; }
+
+/* Required-field marker (always shown) and missing-field highlight (shown after a failed submit attempt) */
+.requiredMark { color: #B91C1C; margin-inline-start: 3px; }
+.fieldMissing > input, .fieldMissing > select { border-color: #B91C1C; }
+.fieldMissingNote { color: #B91C1C; font-size: 0.78rem; margin-top: 4px; }
 .cardHeadActions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 
 /* ===== Production upgrade requests ===== */

@@ -307,6 +307,29 @@ export const getAdminProxies = async () => {
 //         tiers: [{ slug, label, price, billingType, quotaLimit, isDefault, sortOrder }] }
 export const createTieredProduct = (data) =>
   request('/admin/products/tiered', { method: 'POST', body: JSON.stringify(data) });
+
+// Reads a service with its tiers (or a single implicit tier if it isn't grouped)
+export const getProductTiers = (name) => request(`/admin/products/${encodeURIComponent(name)}/tiers`);
+
+// Updates a service's editable metadata: { displayName, description, environments: string[], apiProxies: string[] }
+export const updateProductMetadata = (name, data) =>
+  request(`/admin/products/${encodeURIComponent(name)}/metadata`, { method: 'PUT', body: JSON.stringify(data) });
+
+// Adds a tier to an existing service (retroactively groups it if it isn't grouped yet)
+export const addTier = (serviceName, data) =>
+  request(`/admin/products/${encodeURIComponent(serviceName)}/tiers`, { method: 'POST', body: JSON.stringify(data) });
+
+export const removeTier = async (groupName, tierSlug) =>
+  request(`/admin/products/${encodeURIComponent(groupName)}/tiers/${encodeURIComponent(tierSlug)}`, { method: 'DELETE' });
+
+export const renameTier = async (groupName, tierSlug, label) =>
+  request(`/admin/products/${encodeURIComponent(groupName)}/tiers/${encodeURIComponent(tierSlug)}/label`, {
+    method: 'PUT', body: JSON.stringify({ label }),
+  });
+
+export const setDefaultTier = async (groupName, tierSlug) =>
+  request(`/admin/products/${encodeURIComponent(groupName)}/tiers/${encodeURIComponent(tierSlug)}/default`, { method: 'PUT' });
+
 export const publishProduct = (name) =>
   request(`/admin/products/${encodeURIComponent(name)}/publish`, { method: 'POST' });
 export const unpublishProduct = (name) =>
