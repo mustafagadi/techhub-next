@@ -46,6 +46,11 @@ export default function AdminLayout({ children }) {
               {t(item.labelKey)}
             </Link>
           ))}
+          <div className={styles.sidebarFooter}>
+            <Link href="/" className={styles.navItem}>
+              {t('common.back_home')}
+            </Link>
+          </div>
         </aside>
         <div className={styles.main}>
           {children}

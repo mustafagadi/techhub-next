@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { getAuth, logout } from '@/lib/api';
 import { useI18n } from '@/lib/i18n';
-import EnvSwitcher from './EnvSwitcher';
 import LangSwitcher from './LangSwitcher';
 import styles from './Header.module.css';
 
@@ -36,14 +35,13 @@ export default function Header() {
           <div className={styles.links}>
             <Link href="/">{t('nav.home')}</Link>
             <Link href="/services">{t('nav.services')}</Link>
-            {auth?.role === 'portal-admin' && <Link href="/admin">{t('nav.admin')}</Link>}
+            {(auth?.role === 'portal-admin' || auth?.role === 'portal-superadmin') && <Link href="/admin">{t('nav.admin')}</Link>}
             {auth?.role === 'portal-partner' && <Link href="/partner">{t('nav.my_apps')}</Link>}
           </div>
           {auth ? (
             <div className={styles.userBox}>
               <a href="/#Contact" className={styles.contactBtn}>{t('nav.contact')}</a>
               <LangSwitcher />
-              <EnvSwitcher />
               <span className={styles.userEmail}>{auth.email}</span>
               <button className="btn btn-ghost" onClick={handleLogout}>{t('nav.logout')}</button>
             </div>
@@ -78,7 +76,7 @@ export default function Header() {
             <div className={styles.menuLinks}>
               <Link href="/">{t('nav.home')}</Link>
               <Link href="/services">{t('nav.services')}</Link>
-              {auth?.role === 'portal-admin' && <Link href="/admin">{t('nav.admin')}</Link>}
+              {(auth?.role === 'portal-admin' || auth?.role === 'portal-superadmin') && <Link href="/admin">{t('nav.admin')}</Link>}
               {auth?.role === 'portal-partner' && <Link href="/partner">{t('nav.my_apps')}</Link>}
             </div>
             <div className={styles.menuActions}>

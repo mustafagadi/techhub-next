@@ -4,7 +4,6 @@ import { getAllPromotions, approvePromotion, rejectPromotion } from '@/lib/api';
 import { fmtDateTime } from '@/lib/dates';
 import PermissionGate from '@/components/PermissionGate';
 import { useI18n } from '@/lib/i18n';
-import EnvSwitcher from '@/components/EnvSwitcher';
 import styles from '../admin.module.css';
 
 // The backend may return status as a number (0/1/2) or as text — we normalize it here.
@@ -75,7 +74,6 @@ export default function PromotionsPage() {
     <PermissionGate permission="promotions.approve">
       <div className={styles.topbar}>
         <h1>{t('admin_nav.promotions')}</h1>
-        <EnvSwitcher />
       </div>
 
       <div className={styles.content}>

@@ -6,7 +6,6 @@ import {
   replicateProduct, otherEnvironment,
 } from '@/lib/api';
 import { useI18n } from '@/lib/i18n';
-import EnvSwitcher from '@/components/EnvSwitcher';
 import styles from '../admin.module.css';
 
 const PAGE_SIZE = 20;
@@ -130,7 +129,6 @@ export default function ServicesPage() {
     <>
       <div className={styles.topbar}>
         <h1>{t('nav.services')}</h1>
-        <EnvSwitcher />
       </div>
       <div className={styles.content}>
         <div className={styles.card}>

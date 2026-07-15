@@ -3,8 +3,16 @@ import { useState, useEffect, useCallback } from 'react';
 import { getInterestRequests, updateInterestStatus, createPartnerAccount } from '@/lib/api';
 import PermissionGate from '@/components/PermissionGate';
 import { useI18n } from '@/lib/i18n';
-import EnvSwitcher from '@/components/EnvSwitcher';
 import styles from '../admin.module.css';
+
+// The backend serializes InterestStatus as text (JsonStringEnumConverter is registered globally in Program.cs),
+// but may still send a number in some paths — normalize to the PascalCase string form either way.
+const STATUS_BY_NUM = { 0: 'New', 1: 'Contacted', 2: 'Approved', 3: 'Rejected' };
+function normStatus(s) {
+  if (typeof s === 'number') return STATUS_BY_NUM[s] ?? String(s);
+  if (typeof s === 'string' && /^[0-3]$/.test(s)) return STATUS_BY_NUM[Number(s)];
+  return s ?? 'New';
+}
 
 export default function InterestPage() {
   const { t } = useI18n();
@@ -64,7 +72,6 @@ export default function InterestPage() {
     <PermissionGate permission="interest.manage">
       <div className={styles.topbar}>
         <h1>{t('admin_nav.interest')}</h1>
-        <EnvSwitcher />
       </div>
       <div className={styles.content}>
         <div className={styles.card}>
@@ -73,8 +80,8 @@ export default function InterestPage() {
             <thead><tr><th>{t('admin_interest.col_name')}</th><th>{t('admin_interest.col_company')}</th><th>{t('admin_interest.col_email')}</th><th>{t('orders.col_status')}</th><th>{t('access.col_action')}</th></tr></thead>
             <tbody>
               {interest.filter((it) => {
-                const s = it.status;
-                return s === 0 || s === 1 || s === 'new' || s === undefined || s === null;
+                const s = normStatus(it.status);
+                return s === 'New' || s === 'Contacted';
               }).map((it, i) => (
                 <tr key={i}>
                   <td>{it.fullName || it.name || it.FullName || `${it.firstName||''} ${it.lastName||''}`.trim() || '—'}</td>
@@ -200,11 +207,10 @@ function AccountModal({ interest, onClose, onCreate }) {
 
 function interestLabel(t, status) {
   const map = {
-    0: t('admin_interest.label_new'),
-    1: t('admin_interest.label_contacted'),
-    2: t('promotions.status_approved'),
-    3: t('promotions.status_rejected'),
+    New: t('admin_interest.label_new'),
+    Contacted: t('admin_interest.label_contacted'),
+    Approved: t('promotions.status_approved'),
+    Rejected: t('promotions.status_rejected'),
   };
-  if (typeof status === 'number') return map[status] || t('admin_interest.label_new');
-  return status || t('admin_interest.label_new');
+  return map[normStatus(status)] || t('admin_interest.label_new');
 }

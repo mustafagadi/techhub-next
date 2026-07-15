@@ -7,6 +7,7 @@
 .navItem { display: block; width: 100%; text-align: start; padding: 11px 14px; border-radius: 10px; font-size: 0.93rem; margin-bottom: 4px; background: none; border: none; color: #C7D2E0; cursor: pointer; font-family: inherit; transition: .2s; }
 .navItem:hover { background: rgba(255,255,255,0.06); color: #fff; }
 .active { background: rgba(0,156,109,0.18); color: #fff; }
+.sidebarFooter { margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.08); }
 .main { background: var(--cloud); }
 .topbar { background: var(--paper); border-bottom: 1px solid var(--line); padding: 0 32px; height: 68px; display: flex; align-items: center; justify-content: space-between; }
 .topbar h1 { font-size: 1.2rem; }

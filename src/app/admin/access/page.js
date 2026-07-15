@@ -3,7 +3,6 @@ import { useState, useEffect, useCallback } from 'react';
 import { getAccessRequests, approveAccess, rejectAccess } from '@/lib/api';
 import PermissionGate from '@/components/PermissionGate';
 import { useI18n } from '@/lib/i18n';
-import EnvSwitcher from '@/components/EnvSwitcher';
 import styles from '../admin.module.css';
 
 export default function AccessPage() {
@@ -56,7 +55,6 @@ export default function AccessPage() {
     <PermissionGate permission="access.approve">
       <div className={styles.topbar}>
         <h1>{t('admin_nav.access')}</h1>
-        <EnvSwitcher />
       </div>
       <div className={styles.content}>
         <div className={styles.card}>
