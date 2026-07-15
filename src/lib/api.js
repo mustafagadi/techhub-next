@@ -47,8 +47,12 @@ export function setAuth(token, email, role, permissions = []) {
   if (typeof window === 'undefined') return;
   if (token) {
     sessionStorage.setItem(TOKEN_KEY, JSON.stringify({ token, email, role, permissions }));
+    // middleware.js reads this cookie to gate /admin and /partner server-side before the page ships —
+    // it only carries the role (not the token), so it doesn't need to be httpOnly.
+    document.cookie = `portal_role=${role}; path=/; SameSite=Lax`;
   } else {
     sessionStorage.removeItem(TOKEN_KEY);
+    document.cookie = 'portal_role=; path=/; Max-Age=0; SameSite=Lax';
   }
 }
 
@@ -95,15 +99,31 @@ async function request(path, options = {}) {
 }
 
 // ===== Login and logout =====
+// 2-step login: step 1 validates credentials and emails an OTP code (no token yet); step 2 (verifyOtp)
+// verifies the code and returns the token. Also used to resend a code (re-submit the same email+password).
 export async function login(email, password) {
-  const res = await request('/auth/login', {
+  // The backend returns { otpRequired, email }
+  return request('/auth/login', {
     method: 'POST',
     body: JSON.stringify({ email, password }),
+  });
+}
+
+export async function verifyOtp(email, code) {
+  const res = await request('/auth/verify-otp', {
+    method: 'POST',
+    body: JSON.stringify({ email, code }),
   });
   // The backend returns { token, email, role, permissions }
   setAuth(res.token, res.email, res.role, res.permissions || []);
   return res;
 }
+
+export const forgotPassword = (email) =>
+  request('/auth/forgot-password', { method: 'POST', body: JSON.stringify({ email }) });
+
+export const resetPassword = (email, token, newPassword) =>
+  request('/auth/reset-password', { method: 'POST', body: JSON.stringify({ email, token, newPassword }) });
 
 // ===== Public catalog =====
 export const getProducts = () => request('/products');
