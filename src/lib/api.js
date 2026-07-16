@@ -426,3 +426,65 @@ export const getAdminInvite = (token) =>
 // Accept the admin invite and create the password (public).
 export const acceptAdminInvite = (token, password) =>
   request('/admin/users/invites/accept', { method: 'POST', body: JSON.stringify({ token, password }) });
+
+// ===== Self-service partner signup =====
+// Submits the signup wizard in one multipart request: text fields + the 3 required documents.
+// fields: { fullName, email, companyName, password }; files: { cr, vat, authLetter } (File objects).
+export async function submitSignup(fields, files) {
+  const form = new FormData();
+  form.append('fullName', fields.fullName);
+  form.append('email', fields.email);
+  form.append('companyName', fields.companyName);
+  form.append('password', fields.password);
+  form.append('crDocument', files.cr);
+  form.append('vatDocument', files.vat);
+  form.append('authLetterDocument', files.authLetter);
+
+  const res = await fetch(`${resolveBase()}/signup`, { method: 'POST', body: form });
+  if (!res.ok) {
+    let message = fallbackError(res.status);
+    try { const body = await res.json(); message = body.message || message; } catch {}
+    const err = new Error(message);
+    err.status = res.status;
+    throw err;
+  }
+  return res.json();
+}
+
+export const verifyEmail = (email, token) =>
+  request('/signup/verify-email', { method: 'POST', body: JSON.stringify({ email, token }) });
+
+export const resendVerification = (email) =>
+  request('/signup/resend-verification', { method: 'POST', body: JSON.stringify({ email }) });
+
+// ===== Admin: partner signup review queue =====
+export const getPartnerSignups = async (status) => {
+  const res = await request(`/admin/partner-signups${status ? `?status=${encodeURIComponent(status)}` : ''}`);
+  if (Array.isArray(res)) return res;
+  return res?.requests || [];
+};
+export const approvePartnerSignup = (id) =>
+  request(`/admin/partner-signups/${encodeURIComponent(id)}/approve`, { method: 'POST' });
+export const rejectPartnerSignup = (id, note = '') =>
+  request(`/admin/partner-signups/${encodeURIComponent(id)}/reject`, { method: 'POST', body: JSON.stringify({ note }) });
+
+// Downloads one of the 3 uploaded documents (docType: cr | vat | authLetter). The endpoint is admin-only
+// (Bearer token), so a plain <a href> can't carry auth — fetch it and trigger the browser download manually.
+export async function downloadPartnerSignupDocument(id, docType) {
+  const headers = {};
+  const auth = getAuth();
+  if (auth?.token) headers['Authorization'] = `Bearer ${auth.token}`;
+
+  const res = await fetch(`${resolveBase()}/admin/partner-signups/${encodeURIComponent(id)}/documents/${encodeURIComponent(docType)}`, { headers });
+  if (!res.ok) throw new Error(fallbackError(res.status));
+
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = '';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
