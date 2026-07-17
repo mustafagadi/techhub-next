@@ -3,7 +3,7 @@ import Analytics from '@/components/Analytics';
 import { I18nProvider } from '@/lib/i18n';
 
 export const metadata = {
-  title: 'Developer Portal | Municipal & Real-Estate API Solutions',
+  title: 'تك هب | حلول تقنية عقارية',
   description: 'A unified API platform connecting your systems to municipal and real-estate services.',
 };
 

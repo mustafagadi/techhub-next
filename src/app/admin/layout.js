@@ -15,6 +15,7 @@ const NAV = [
   { href: '/admin/access', labelKey: 'admin_nav.access', permission: 'access.approve' },
   { href: '/admin/interest', labelKey: 'admin_nav.interest', permission: 'interest.manage' },
   { href: '/admin/partner-signups', labelKey: 'admin_nav.partner_signups', permission: 'partnersignups.manage' },
+  { href: '/admin/partner-compliance', labelKey: 'admin_nav.partner_compliance', permission: 'partnercompliance.manage' },
   { href: '/admin/promotions', labelKey: 'admin_nav.promotions', permission: 'promotions.approve' },
   { href: '/admin/users', labelKey: 'admin_nav.users', superAdminOnly: true },
 ];

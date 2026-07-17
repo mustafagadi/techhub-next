@@ -5,6 +5,18 @@
 
 .empty { text-align: center; padding: 80px 20px; color: var(--muted); background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius); }
 
+.complianceModalText {
+  background: #FBF3E2;
+  color: #8A6512;
+  border: 1px solid #F0DDA8;
+  padding: 16px 18px;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 20px; }
 
 .prodSection { margin-top: 48px; padding-top: 32px; border-top: 1px solid var(--line); }

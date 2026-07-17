@@ -488,3 +488,76 @@ export async function downloadPartnerSignupDocument(id, docType) {
   a.remove();
   URL.revokeObjectURL(url);
 }
+
+// ===== Partner compliance gate (post-approval: NDA/MOU, cybersecurity, server authorization) =====
+// Authenticated multipart POST — like fetch() via request(), but Content-Type is left for the browser
+// to set (with the multipart boundary) since we're sending a FormData body.
+async function requestForm(path, form) {
+  const headers = { 'X-Apigee-Environment': currentEnv };
+  const auth = getAuth();
+  if (auth?.token) headers['Authorization'] = `Bearer ${auth.token}`;
+
+  const res = await fetch(`${resolveBase()}${path}`, { method: 'POST', body: form, headers });
+  if (!res.ok) {
+    let message = fallbackError(res.status);
+    try { const body = await res.json(); message = body.message || message; } catch {}
+    const err = new Error(message);
+    err.status = res.status;
+    throw err;
+  }
+  return res.json();
+}
+
+export const getComplianceStatus = () => request('/partner-compliance');
+
+// files: { nda, mou } (File objects)
+export const submitNdaMou = (files) => {
+  const form = new FormData();
+  form.append('ndaDocument', files.nda);
+  form.append('mouDocument', files.mou);
+  return requestForm('/partner-compliance/nda-mou', form);
+};
+
+// fields: the 8 cybersecurity fields; file: the signed document (File object)
+export const submitCybersecurity = (fields, file) => {
+  const form = new FormData();
+  Object.entries(fields).forEach(([key, value]) => form.append(key, value));
+  form.append('document', file);
+  return requestForm('/partner-compliance/cybersecurity', form);
+};
+
+// ===== Admin: partner compliance review queue =====
+export const getPartnerComplianceList = async () => {
+  const res = await request('/admin/partner-compliance');
+  if (Array.isArray(res)) return res;
+  return res?.requests || [];
+};
+export const approveNdaMou = (userId) =>
+  request(`/admin/partner-compliance/${encodeURIComponent(userId)}/approve-nda-mou`, { method: 'POST' });
+export const approveCybersecurity = (userId) =>
+  request(`/admin/partner-compliance/${encodeURIComponent(userId)}/approve-cybersecurity`, { method: 'POST' });
+export const markServerAuthorized = (userId, ticketNumber = '') =>
+  request(`/admin/partner-compliance/${encodeURIComponent(userId)}/mark-server-authorized`, {
+    method: 'POST', body: JSON.stringify({ ticketNumber }),
+  });
+
+// Downloads one of the compliance documents (docType: nda | mou | cybersecurity) — same
+// fetch-then-trigger-download pattern as downloadPartnerSignupDocument (auth needs a real header, not a URL).
+export async function downloadComplianceDocument(userId, docType) {
+  const headers = {};
+  const auth = getAuth();
+  if (auth?.token) headers['Authorization'] = `Bearer ${auth.token}`;
+
+  const res = await fetch(`${resolveBase()}/admin/partner-compliance/${encodeURIComponent(userId)}/documents/${encodeURIComponent(docType)}`, { headers });
+  if (!res.ok) throw new Error(fallbackError(res.status));
+
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = '';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}

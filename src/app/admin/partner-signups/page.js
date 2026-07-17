@@ -97,7 +97,7 @@ export default function PartnerSignupsPage() {
                 <tr key={r.id}>
                   <td>{r.fullName}</td>
                   <td>{r.companyName}</td>
-                  <td style={{ direction: 'ltr' }}>{r.email}</td>
+                  <td><span style={{ direction: 'ltr', unicodeBidi: 'isolate' }}>{r.email}</span></td>
                   <td><span className={styles[BADGE_BY_STATUS[r.status] || 'badgeWait']}>{statusLabel(r.status)}</span></td>
                   <td>
                     <button className={styles.priceBtn} onClick={() => handleDownload(r.id, 'cr')}>{t('admin_partner_signups.doc_cr')}</button>{' '}

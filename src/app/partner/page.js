@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
-import { getMyApps, getMyProdApps, createApp, addService, getProducts, ensureRegistered, saveProfile, getProfile, startPurchase, requestPromotion, getMyPromotions, getDeveloperProfile } from '@/lib/api';
+import { useRouter } from 'next/navigation';
+import { getMyApps, getMyProdApps, createApp, addService, getProducts, ensureRegistered, saveProfile, getProfile, startPurchase, requestPromotion, getMyPromotions, getDeveloperProfile, getComplianceStatus } from '@/lib/api';
 import ServicePicker from '@/components/ServicePicker';
 import RequireAuth from '@/components/RequireAuth';
 import Header from '@/components/Header';
@@ -17,6 +18,7 @@ export default function PartnerPage() {
 
 function PartnerDashboard() {
   const { t } = useI18n();
+  const router = useRouter();
   const [apps, setApps] = useState([]);
   const [prodApps, setProdApps] = useState([]);
   const [products, setProducts] = useState([]);
@@ -25,6 +27,8 @@ function PartnerDashboard() {
   const [toast, setToast] = useState(null);
   const [preselectedProduct, setPreselectedProduct] = useState('');
   const [promotions, setPromotions] = useState([]);
+  const [complianceIncomplete, setComplianceIncomplete] = useState(false);
+  const [showComplianceModal, setShowComplianceModal] = useState(false);
 
   const loadApps = useCallback(() => {
     getMyApps()
@@ -50,6 +54,14 @@ function PartnerDashboard() {
     loadProdApps();
     loadPromotions();
     getProducts().then((d) => setProducts(Array.isArray(d) ? d : [])).catch(() => {});
+    // Only self-signup partners have a compliance row at all — no row means no gate applies (backward compatible).
+    getComplianceStatus()
+      .then((d) => {
+        const incomplete = !!d?.exists && !d?.view?.isComplete;
+        setComplianceIncomplete(incomplete);
+        if (incomplete) setShowComplianceModal(true);
+      })
+      .catch(() => {});
     // If the partner arrived from a service page (?product=), open the request modal with the service pre-selected
     try {
       const params = new URLSearchParams(window.location.search);
@@ -136,6 +148,15 @@ function PartnerDashboard() {
             loadApps();
           }}
           onError={(msg) => notify(msg, false)}
+        />
+      )}
+
+      {showComplianceModal && (
+        <ComplianceRequiredModal
+          onConfirm={() => {
+            setShowComplianceModal(false);
+            router.push('/partner/compliance');
+          }}
         />
       )}
 
@@ -392,6 +413,25 @@ function CreateAppModal({ products, apps, initialProduct, onClose, onCreated, on
                   : t('partner.modal_request_service'))}
           </button>
           <button className={styles.cancel} onClick={onClose}>{t('common.cancel')}</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Shown right after sign-in whenever the partner's compliance steps (NDA/MOU, cybersecurity, server
+// authorization) aren't complete yet. The only way out is the confirm button, which takes them straight
+// to the compliance page — same gate the backend enforces on subscribing, just surfaced earlier.
+function ComplianceRequiredModal({ onConfirm }) {
+  const { t } = useI18n();
+  return (
+    <div className={styles.overlay}>
+      <div className={styles.modal}>
+        <p className={styles.complianceModalText}>{t('partner.compliance_banner')}</p>
+        <div className={styles.modalActions}>
+          <button className="btn btn-primary" style={{ width: '100%', justifyContent: 'center' }} onClick={onConfirm}>
+            {t('partner.compliance_modal_ok')}
+          </button>
         </div>
       </div>
     </div>

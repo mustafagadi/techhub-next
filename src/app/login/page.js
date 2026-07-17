@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { login, verifyOtp, setAuth } from '@/lib/api';
+import { login, verifyOtp } from '@/lib/api';
 import { useI18n } from '@/lib/i18n';
 import styles from './login.module.css';
 
@@ -229,43 +229,9 @@ export default function LoginPage() {
           </button>
         </form>
 
-        {/* Quick login for local development only — saves a fake session without a database, bypassing OTP. */}
-        <div className={styles.devBox}>
-          <div className={styles.devLabel}>{t('login.dev_quick')}</div>
-          <div className={styles.devButtons}>
-            <button
-              type="button"
-              className={styles.devBtn}
-              onClick={() => {
-                setAuth('localdev-token', 'partner@local.test', 'portal-partner');
-                router.push('/partner');
-              }}
-            >
-              {t('login.dev_as_partner')}
-            </button>
-            <button
-              type="button"
-              className={styles.devBtn}
-              onClick={() => {
-                setAuth('localdev-token', 'admin@local.test', 'portal-admin', []);
-                router.push('/admin');
-              }}
-            >
-              {t('login.dev_as_admin')}
-            </button>
-            <button
-              type="button"
-              className={styles.devBtn}
-              onClick={() => {
-                setAuth('localdev-token', 'superadmin@local.test', 'portal-superadmin', []);
-                router.push('/admin');
-              }}
-            >
-              {t('login.dev_as_superadmin')}
-            </button>
-          </div>
-          <div className={styles.devHint}>{t('login.dev_only')}</div>
-        </div>
+        <p className={styles.signupPrompt}>
+          {t('login.no_account')} <Link href="/signup">{t('login.signup_link')}</Link>
+        </p>
 
         <Link href="/" className={styles.back}>{t('common.back_home')}</Link>
       </div>

@@ -86,7 +86,7 @@ export default function InterestPage() {
                 <tr key={i}>
                   <td>{it.fullName || it.name || it.FullName || `${it.firstName||''} ${it.lastName||''}`.trim() || '—'}</td>
                   <td>{it.company || it.companyName}</td>
-                  <td style={{ direction: 'ltr' }}>{it.email}</td>
+                  <td><span style={{ direction: 'ltr', unicodeBidi: 'isolate' }}>{it.email}</span></td>
                   <td>{interestLabel(t, it.status)}</td>
                   <td>
                     <button className={styles.ok} onClick={() => setAccountModal(it)} disabled={busy === it.id}>

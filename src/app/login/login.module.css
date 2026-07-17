@@ -121,9 +121,11 @@
 .card :global(.btn.btn-primary):hover { background: var(--navy-soft); transform: none; }
 .card :global(.btn.btn-primary):disabled { opacity: 0.6; }
 
-.devBox { margin-top: 20px; padding: 16px; border: 1px solid var(--line); border-radius: 10px; background: var(--cloud); }
-.devLabel { font-size: 0.82rem; font-weight: 600; color: var(--muted); margin-bottom: 10px; text-align: center; }
-.devButtons { display: flex; gap: 10px; }
-.devBtn { flex: 1; padding: 9px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); font-family: inherit; font-size: 0.88rem; cursor: pointer; }
-.devBtn:hover { border-color: var(--green); background: #fff; }
-.devHint { font-size: 0.72rem; color: var(--muted); text-align: center; margin-top: 8px; }
+.signupPrompt {
+  text-align: center;
+  margin-top: 22px;
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+.signupPrompt a { color: var(--green); font-weight: 600; }
+.signupPrompt a:hover { text-decoration: underline; }
