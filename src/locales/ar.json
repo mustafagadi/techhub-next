@@ -199,6 +199,8 @@
     "request_service": "+ طلب خدمة",
     "compliance_banner": "يجب استكمال إجراءات الامتثال لتتمكن من الاشتراك في الخدمات.",
     "compliance_modal_ok": "موافق",
+    "usage_of_limit": "{used} من {limit} طلب هذا الشهر",
+    "usage_unlimited": "{used} طلب هذا الشهر",
     "empty": "لا توجد تطبيقات بعد. اطلب أول تطبيق للبدء.",
     "promote_success": "أُرسل طلب ترقية «{name}» للبيئة الفعلية. بانتظار موافقة المسؤول.",
     "promote_failed": "تعذّر إرسال طلب الترقية.",

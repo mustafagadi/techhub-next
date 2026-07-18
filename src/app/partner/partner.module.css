@@ -26,7 +26,7 @@
 .card { background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius); padding: 24px; }
 .cardHead { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
 .cardHead h3 { font-size: 1.15rem; }
-.status { font-size: 0.74rem; padding: 4px 12px; border-radius: 100px; background: #ECFDF3; color: #085D3A; }
+.status { composes: ok from '../../styles/chips.module.css'; font-size: 0.74rem; padding: 4px 12px; border-radius: 100px; }
 
 .cred { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
 .credLabel { font-size: 0.8rem; color: var(--muted); font-weight: 600; display: block; margin-bottom: 6px; width: 100%; }
@@ -35,10 +35,19 @@
 .reveal:hover { border-color: #009C6D; }
 
 .products { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--line); }
+
+/* Current-month usage under each linked service */
+.usageWrap { margin: 6px 2px 12px; }
+.usageTrack { height: 6px; background: var(--cloud); border-radius: 100px; overflow: hidden; }
+.usageFill { height: 100%; border-radius: 100px; transition: width .3s; }
+.usageFillOk { background: var(--green); }
+.usageFillWarn { background: #B7791F; }
+.usageFillOver { background: #C0392B; }
+.usageText { display: block; margin-top: 4px; font-size: 0.76rem; color: var(--muted); }
 .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
 .chip { font-size: 0.78rem; padding: 4px 12px; border-radius: 100px; }
-.chipOk { background: #ECFDF3; color: #085D3A; }
-.chipPending { background: #FBF3E2; color: #B7791F; }
+.chipOk { composes: ok from '../../styles/chips.module.css'; }
+.chipPending { composes: pending from '../../styles/chips.module.css'; }
 .muted { color: var(--muted); font-size: 0.85rem; }
 
 /* The modal */
@@ -50,6 +59,30 @@
 .label > input, .label > select { display: block; width: 100%; margin-top: 6px; padding: 11px 14px; border: 1px solid var(--line); border-radius: 10px; font-family: inherit; font-size: 0.95rem; outline: none; }
 .label > input:focus, .label > select:focus { border-color: #009C6D; }
 .note { font-size: 0.85rem; color: var(--muted); background: var(--cloud); padding: 12px 14px; border-radius: 8px; margin-bottom: 20px; }
+
+/* "Where to add the service" radio group inside the request modal */
+.radioGroup { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+.radioOpt {
+  display: flex; align-items: center; gap: 10px;
+  font-weight: 400; font-size: 0.92rem; cursor: pointer;
+}
+.radioOpt input[type='radio'] { accent-color: #009C6D; width: 16px; height: 16px; cursor: pointer; }
+.radioChild { margin-inline-start: 26px; }
+.appSelect {
+  appearance: none; -webkit-appearance: none;
+  display: block; width: 100%;
+  padding: 10px 14px; padding-inline-end: 38px;
+  border: 1px solid var(--line); border-radius: 10px;
+  background-color: #fff; color: var(--ink);
+  font-family: inherit; font-size: 0.92rem; cursor: pointer;
+  outline: none; transition: border-color 0.15s;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%235a6b82' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-size: 12px;
+  background-position: right 14px center;
+}
+:global(html[dir='rtl']) .appSelect { background-position: left 14px center; }
+.appSelect:hover { border-color: #b4becd; }
+.appSelect:focus { border-color: #009C6D; }
 .modalActions { display: flex; gap: 12px; }
 .cancel { padding: 11px 22px; border: 1px solid var(--line); border-radius: 10px; background: var(--paper); cursor: pointer; font-family: inherit; }
 .cancel:hover { border-color: var(--muted); }

@@ -43,7 +43,7 @@ export default function Header() {
               <a href="/#Contact" className={styles.contactBtn}>{t('nav.contact')}</a>
               <LangSwitcher />
               <span className={styles.userEmail}>{auth.email}</span>
-              <button className="btn btn-ghost" onClick={handleLogout}>{t('nav.logout')}</button>
+              <button className={`btn ${styles.logoutBtn}`} onClick={handleLogout}>{t('nav.logout')}</button>
             </div>
           ) : (
             <div className={styles.userBox}>

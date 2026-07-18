@@ -76,15 +76,21 @@ export function hasPermission(code) {
   return Array.isArray(auth.permissions) && auth.permissions.includes(code);
 }
 
+// Builds request headers with the login token automatically injected (if present),
+// merged over the given base headers. Single source for the Authorization header.
+function authHeaders(base = {}) {
+  const headers = { ...base };
+  const auth = getAuth();
+  if (auth?.token) headers['Authorization'] = `Bearer ${auth.token}`;
+  return headers;
+}
+
 async function request(path, options = {}) {
-  const headers = {
+  const headers = authHeaders({
     'Content-Type': 'application/json',
     'X-Apigee-Environment': currentEnv,
     ...(options.headers || {}),
-  };
-  // Automatically inject the login token into every request (if present)
-  const auth = getAuth();
-  if (auth?.token) headers['Authorization'] = `Bearer ${auth.token}`;
+  });
 
   const res = await fetch(`${resolveBase()}${path}`, { ...options, headers });
   if (!res.ok) {
@@ -153,9 +159,7 @@ async function uploadFile(path, file, method = 'PUT') {
   const form = new FormData();
   form.append('file', file);
 
-  const headers = { 'X-Apigee-Environment': currentEnv };
-  const auth = getAuth();
-  if (auth?.token) headers['Authorization'] = `Bearer ${auth.token}`;
+  const headers = authHeaders({ 'X-Apigee-Environment': currentEnv });
 
   const res = await fetch(`${resolveBase()}${path}`, { method, headers, body: form });
   if (!res.ok) {
@@ -270,6 +274,10 @@ export const getApp = (appName) => {
   const auth = getAuth();
   return request(`/partners/${encodeURIComponent(auth.email)}/apps/${encodeURIComponent(appName)}`, { ...STAGE });
 };
+
+// Current-month gateway usage per subscribed product (from Apigee analytics), with quota limits where
+// configured. Returns [{ productName, used, quotaLimit, quotaInterval, quotaTimeUnit, quotaDescription }].
+export const getMyUsage = () => request('/partners/usage', { ...STAGE });
 
 // Developer profile as registered in Apigee (stage environment) → { registered, firstName, lastName, company }
 export const getDeveloperProfile = async () => {
@@ -489,9 +497,7 @@ export const rejectPartnerSignup = (id, note = '') =>
 // Downloads one of the 3 uploaded documents (docType: cr | vat | authLetter). The endpoint is admin-only
 // (Bearer token), so a plain <a href> can't carry auth — fetch it and trigger the browser download manually.
 export async function downloadPartnerSignupDocument(id, docType) {
-  const headers = {};
-  const auth = getAuth();
-  if (auth?.token) headers['Authorization'] = `Bearer ${auth.token}`;
+  const headers = authHeaders();
 
   const res = await fetch(`${resolveBase()}/admin/partner-signups/${encodeURIComponent(id)}/documents/${encodeURIComponent(docType)}`, { headers });
   if (!res.ok) throw new Error(fallbackError(res.status));
@@ -511,9 +517,7 @@ export async function downloadPartnerSignupDocument(id, docType) {
 // Authenticated multipart POST — like fetch() via request(), but Content-Type is left for the browser
 // to set (with the multipart boundary) since we're sending a FormData body.
 async function requestForm(path, form) {
-  const headers = { 'X-Apigee-Environment': currentEnv };
-  const auth = getAuth();
-  if (auth?.token) headers['Authorization'] = `Bearer ${auth.token}`;
+  const headers = authHeaders({ 'X-Apigee-Environment': currentEnv });
 
   const res = await fetch(`${resolveBase()}${path}`, { method: 'POST', body: form, headers });
   if (!res.ok) {
@@ -562,9 +566,7 @@ export const markServerAuthorized = (userId, ticketNumber = '') =>
 // Downloads one of the compliance documents (docType: nda | mou | cybersecurity) — same
 // fetch-then-trigger-download pattern as downloadPartnerSignupDocument (auth needs a real header, not a URL).
 export async function downloadComplianceDocument(userId, docType) {
-  const headers = {};
-  const auth = getAuth();
-  if (auth?.token) headers['Authorization'] = `Bearer ${auth.token}`;
+  const headers = authHeaders();
 
   const res = await fetch(`${resolveBase()}/admin/partner-compliance/${encodeURIComponent(userId)}/documents/${encodeURIComponent(docType)}`, { headers });
   if (!res.ok) throw new Error(fallbackError(res.status));

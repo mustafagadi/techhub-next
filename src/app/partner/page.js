@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { getMyApps, getMyProdApps, createApp, addService, getProducts, ensureRegistered, saveProfile, getProfile, startPurchase, requestPromotion, getMyPromotions, getDeveloperProfile, getComplianceStatus } from '@/lib/api';
+import { getMyApps, getMyProdApps, createApp, addService, getProducts, ensureRegistered, saveProfile, getProfile, startPurchase, requestPromotion, getMyPromotions, getDeveloperProfile, getComplianceStatus, getMyUsage } from '@/lib/api';
 import ServicePicker from '@/components/ServicePicker';
 import RequireAuth from '@/components/RequireAuth';
 import Header from '@/components/Header';
@@ -29,6 +29,8 @@ function PartnerDashboard() {
   const [promotions, setPromotions] = useState([]);
   const [complianceIncomplete, setComplianceIncomplete] = useState(false);
   const [showComplianceModal, setShowComplianceModal] = useState(false);
+  // productName -> { used, quotaLimit, quotaDescription } from Apigee analytics (display only)
+  const [usage, setUsage] = useState({});
 
   const loadApps = useCallback(() => {
     getMyApps()
@@ -54,6 +56,13 @@ function PartnerDashboard() {
     loadProdApps();
     loadPromotions();
     getProducts().then((d) => setProducts(Array.isArray(d) ? d : [])).catch(() => {});
+    getMyUsage()
+      .then((list) => {
+        const map = {};
+        (Array.isArray(list) ? list : []).forEach((u) => { map[(u.productName || '').toLowerCase()] = u; });
+        setUsage(map);
+      })
+      .catch(() => {});
     // Only self-signup partners have a compliance row at all — no row means no gate applies (backward compatible).
     getComplianceStatus()
       .then((d) => {
@@ -113,7 +122,7 @@ function PartnerDashboard() {
           ) : (
             <div className={styles.grid}>
               {apps.map((app, i) => (
-                <AppCard key={i} app={app} promotions={promotions} onPromote={handlePromote} />
+                <AppCard key={i} app={app} promotions={promotions} onPromote={handlePromote} usage={usage} />
               ))}
             </div>
           )}
@@ -171,7 +180,8 @@ function PartnerDashboard() {
 
 // App card — shows its name, keys, linked services, and their production promotion status
 // prod=true: a read-only card for a production-environment app (no promotion buttons, since it's already active there)
-function AppCard({ app, promotions = [], onPromote, prod = false }) {
+// usage: productName(lowercase) -> { used, quotaLimit, quotaDescription } — current-month gateway usage
+function AppCard({ app, promotions = [], onPromote, prod = false, usage = {} }) {
   const { t } = useI18n();
   const [showKey, setShowKey] = useState(false);
   const [busyProduct, setBusyProduct] = useState(null);
@@ -245,28 +255,32 @@ function AppCard({ app, promotions = [], onPromote, prod = false }) {
                 );
               }
               const promo = promotionOf(name);
+              const u = usage[(name || '').toLowerCase()];
               return (
-                <div key={i} className={styles.svcRow}>
-                  <span className={`${styles.chip} ${status === 'approved' ? styles.chipOk : styles.chipPending}`}>
-                    {name} {status === 'approved' ? '✓' : status === 'pending' ? t('partner.pending_suffix') : ''}
-                  </span>
+                <div key={i}>
+                  <div className={styles.svcRow}>
+                    <span className={`${styles.chip} ${status === 'approved' ? styles.chipOk : styles.chipPending}`}>
+                      {name} {status === 'approved' ? '✓' : status === 'pending' ? t('partner.pending_suffix') : ''}
+                    </span>
 
-                  {promo === 'Approved' ? (
-                    <span className={styles.promoLive}>{t('partner.promo_live')}</span>
-                  ) : promo === 'Pending' ? (
-                    <span className={styles.promoPending}>{t('partner.promo_pending')}</span>
-                  ) : promo === 'Rejected' ? (
-                    <span className={styles.promoRejected}>{t('partner.promo_rejected')}</span>
-                  ) : (
-                    <button
-                      className={styles.promoBtn}
-                      onClick={() => promote(name)}
-                      disabled={busyProduct === name || status !== 'approved'}
-                      title={status !== 'approved' ? t('partner.promote_disabled_hint') : t('partner.promote_hint')}
-                    >
-                      {busyProduct === name ? t('partner.promote_sending') : t('partner.promote_btn')}
-                    </button>
-                  )}
+                    {promo === 'Approved' ? (
+                      <span className={styles.promoLive}>{t('partner.promo_live')}</span>
+                    ) : promo === 'Pending' ? (
+                      <span className={styles.promoPending}>{t('partner.promo_pending')}</span>
+                    ) : promo === 'Rejected' ? (
+                      <span className={styles.promoRejected}>{t('partner.promo_rejected')}</span>
+                    ) : (
+                      <button
+                        className={styles.promoBtn}
+                        onClick={() => promote(name)}
+                        disabled={busyProduct === name || status !== 'approved'}
+                        title={status !== 'approved' ? t('partner.promote_disabled_hint') : t('partner.promote_hint')}
+                      >
+                        {busyProduct === name ? t('partner.promote_sending') : t('partner.promote_btn')}
+                      </button>
+                    )}
+                  </div>
+                  {u && <UsageBar usage={u} t={t} />}
                 </div>
               );
             })}
@@ -275,6 +289,35 @@ function AppCard({ app, promotions = [], onPromote, prod = false }) {
           <span className={styles.muted}>{t('partner.no_linked_services')}</span>
         )}
       </div>
+    </div>
+  );
+}
+
+// Current-month usage for one subscribed service. With a quota: progress bar (amber from 80%, red at
+// 100%); without one: just the count. Numbers come from Apigee analytics, so they can lag a few minutes.
+function UsageBar({ usage, t }) {
+  const used = usage.used ?? 0;
+  const limit = usage.quotaLimit;
+
+  if (!limit) {
+    return (
+      <div className={styles.usageWrap}>
+        <span className={styles.usageText}>{t('partner.usage_unlimited', { used: used.toLocaleString() })}</span>
+      </div>
+    );
+  }
+
+  const pct = Math.min(100, Math.round((used / limit) * 100));
+  const level = pct >= 100 ? styles.usageFillOver : pct >= 80 ? styles.usageFillWarn : styles.usageFillOk;
+  return (
+    <div className={styles.usageWrap}>
+      <div className={styles.usageTrack}>
+        <div className={`${styles.usageFill} ${level}`} style={{ width: `${pct}%` }} />
+      </div>
+      <span className={styles.usageText}>
+        {t('partner.usage_of_limit', { used: used.toLocaleString(), limit: limit.toLocaleString() })}
+        {usage.quotaDescription ? ` — ${usage.quotaDescription}` : ''}
+      </span>
     </div>
   );
 }
@@ -379,19 +422,21 @@ function CreateAppModal({ products, apps, initialProduct, onClose, onCreated, on
         {hasApps && (
           <div className={styles.label}>
             {t('partner.modal_where_label')}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '8px' }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 'normal', cursor: 'pointer' }}>
+            <div className={styles.radioGroup}>
+              <label className={styles.radioOpt}>
                 <input type="radio" name="target" checked={target === 'existing'} onChange={() => setTarget('existing')} />
                 <span>{t('partner.modal_existing_app')}</span>
               </label>
               {target === 'existing' && (
-                <select value={selectedApp} onChange={(e) => setSelectedApp(e.target.value)} style={{ marginInlineStart: '24px' }}>
-                  {apps.map((a, i) => (
-                    <option key={i} value={a.name || a.appName}>{a.name || a.appName}</option>
-                  ))}
-                </select>
+                <div className={styles.radioChild}>
+                  <select className={styles.appSelect} value={selectedApp} onChange={(e) => setSelectedApp(e.target.value)}>
+                    {apps.map((a, i) => (
+                      <option key={i} value={a.name || a.appName}>{a.name || a.appName}</option>
+                    ))}
+                  </select>
+                </div>
               )}
-              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 'normal', cursor: 'pointer' }}>
+              <label className={styles.radioOpt}>
                 <input type="radio" name="target" checked={target === 'new'} onChange={() => setTarget('new')} />
                 <span>{t('partner.modal_new_app')}</span>
               </label>

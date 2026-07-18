@@ -67,4 +67,10 @@
 .contactBtn:hover { border-color: rgba(0,0,0,0.4); background: rgba(0,0,0,0.04); }
 .onHome .contactBtn { border-color: rgba(255,255,255,0.25); color: #fff; }
 .onHome .contactBtn:hover { border-color: rgba(255,255,255,0.5); background: rgba(255,255,255,0.06); }
+
+/* Logout: dark on the white header, white on the dark home header (same scheme as .contactBtn) */
+.logoutBtn { background: transparent; color: #161616; border: 1px solid rgba(0,0,0,0.2); }
+.logoutBtn:hover { border-color: rgba(0,0,0,0.4); background: rgba(0,0,0,0.04); }
+.onHome .logoutBtn { color: #fff; border-color: rgba(255,255,255,0.25); }
+.onHome .logoutBtn:hover { border-color: rgba(255,255,255,0.5); background: rgba(255,255,255,0.08); }
 @media (max-width: 700px){ .contactBtn { display: none; } }

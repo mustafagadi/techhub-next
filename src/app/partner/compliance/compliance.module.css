@@ -21,9 +21,9 @@
 .cardHint { color: var(--muted); font-size: 0.88rem; margin-bottom: 16px; }
 
 .badge { font-size: 0.74rem; padding: 4px 12px; border-radius: 100px; white-space: nowrap; }
-.badgeOk { background: #ECFDF3; color: #085D3A; }
-.badgePending { background: #FBF3E2; color: #B7791F; }
-.badgeTodo { background: #F1F5F9; color: var(--muted); }
+.badgeOk { composes: ok from '../../../styles/chips.module.css'; }
+.badgePending { composes: pending from '../../../styles/chips.module.css'; }
+.badgeTodo { composes: neutral from '../../../styles/chips.module.css'; }
 
 .templateLinks { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 20px; }
 .templateLink {

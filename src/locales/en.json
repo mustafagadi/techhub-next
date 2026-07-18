@@ -199,6 +199,8 @@
     "request_service": "+ Request service",
     "compliance_banner": "Compliance procedures are pending — complete them to unlock subscribing to services.",
     "compliance_modal_ok": "OK",
+    "usage_of_limit": "{used} of {limit} requests this month",
+    "usage_unlimited": "{used} requests this month",
     "empty": "No applications yet. Request your first app to get started.",
     "promote_success": "Promotion request for «{name}» sent for production. Awaiting admin approval.",
     "promote_failed": "Could not send the promotion request.",
