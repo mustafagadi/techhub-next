@@ -190,6 +190,7 @@
     "submit": "Submit",
     "submitting": "Submitting…",
     "fill_all": "Please complete all fields.",
+    "phone_invalid": "Mobile number must start with 05 and be 10 digits.",
     "failed": "Could not submit the request. Please try again."
   },
   "partner": {
@@ -498,8 +499,9 @@
     "back_home_btn": "Back to home",
     "done_title": "Your account has been created ✓",
     "redirecting": "You'll be redirected to the sign-in page…",
+    "under_review": "We've received your documents. Our team will review them, and you'll get an email once your account is approved and ready to sign in.",
     "title": "Create your account",
-    "welcome": "Welcome{name}, create a password for your account.",
+    "welcome": "Welcome{name}, create a password for your account and upload the required documents.",
     "confirm_password_label": "Confirm password",
     "password_placeholder": "At least 8 characters",
     "creating": "Creating…",
@@ -653,6 +655,7 @@
     "field_manager_mobile": "Manager's mobile number",
     "cybersecurity_file_label": "Signed cybersecurity document",
     "cybersecurity_fields_required": "Please fill in all fields and upload the signed document.",
+    "manager_mobile_invalid": "Manager's mobile number must start with 05 and be 10 digits.",
     "cybersecurity_submitted": "Document received. Awaiting review.",
     "step3_title": "Server & IP authorization",
     "step3_hint": "Our team files a ServiceNow request to authorize your servers using the information you submitted above.",
@@ -679,7 +682,16 @@
     "server_auth_marked": "Server authorization marked done for \"{name}\".",
     "approve_success": "Step approved for \"{name}\".",
     "approve_failed": "Could not approve this step.",
-    "empty": "No compliance requests."
+    "empty": "No compliance requests.",
+    "col_account": "Account",
+    "account_active": "Active",
+    "account_deactivated": "Deactivated",
+    "deactivate": "Deactivate",
+    "reactivate": "Reactivate",
+    "deactivate_confirm": "Deactivate the account for \"{name}\"? They won't be able to log in until reactivated. Their signup and compliance history is kept.",
+    "deactivate_success": "Account deactivated for \"{name}\".",
+    "reactivate_success": "Account reactivated for \"{name}\".",
+    "deactivate_failed": "Could not update the account status."
   },
   "terms": {
     "title": "Terms & Conditions",

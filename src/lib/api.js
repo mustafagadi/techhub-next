@@ -398,8 +398,26 @@ export const getInvite = (token) =>
   request(`/invites/${encodeURIComponent(token)}`);
 
 // Accept the invite and create the password (public).
-export const acceptInvite = (token, password) =>
-  request('/invites/accept', { method: 'POST', body: JSON.stringify({ token, password }) });
+// Accept the invite: password + the same 3 required documents as self-signup (multipart).
+// files: { cr, vat, authLetter } (File objects). The account then awaits admin document review.
+export async function acceptInvite(token, password, files) {
+  const form = new FormData();
+  form.append('token', token);
+  form.append('password', password);
+  form.append('crDocument', files.cr);
+  form.append('vatDocument', files.vat);
+  form.append('authLetterDocument', files.authLetter);
+
+  const res = await fetch(`${resolveBase()}/invites/accept`, { method: 'POST', body: form });
+  if (!res.ok) {
+    let message = fallbackError(res.status);
+    try { const body = await res.json(); message = body.message || message; } catch {}
+    const err = new Error(message);
+    err.status = res.status;
+    throw err;
+  }
+  return res.json();
+}
 
 // ===== Health and environments =====
 export const getEnvironments = () => request('/health/environments');
@@ -561,3 +579,12 @@ export async function downloadComplianceDocument(userId, docType) {
   a.remove();
   URL.revokeObjectURL(url);
 }
+
+// ===== Admin: partner account deactivation =====
+// Deactivating blocks the partner's login but keeps their signup/compliance history intact — see
+// AdminPartnersController. There's no delete endpoint by design; the backend's foreign keys refuse to
+// allow it while those records exist.
+export const deactivatePartner = (userId) =>
+  request(`/admin/partners/${encodeURIComponent(userId)}/deactivate`, { method: 'POST' });
+export const reactivatePartner = (userId) =>
+  request(`/admin/partners/${encodeURIComponent(userId)}/reactivate`, { method: 'POST' });

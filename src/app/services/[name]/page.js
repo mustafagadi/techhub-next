@@ -401,6 +401,12 @@ function InterestModal({ serviceName, onClose, onDone }) {
       setError(t('interest.fill_all'));
       return;
     }
+    // Saudi mobile format: starts with 05, exactly 10 digits (mirrors the backend check)
+    const phoneDigits = form.phoneNumber.replace(/\D/g, '');
+    if (phoneDigits.length !== 10 || !phoneDigits.startsWith('05')) {
+      setError(t('interest.phone_invalid'));
+      return;
+    }
     setBusy(true);
     setError(null);
     try {
@@ -442,7 +448,8 @@ function InterestModal({ serviceName, onClose, onDone }) {
           <input style={input} type="email" dir="ltr" value={form.email} onChange={(e) => update('email', e.target.value)} />
         </label>
         <label style={label}>{t('interest.phone')}
-          <input style={input} type="tel" dir="ltr" value={form.phoneNumber} onChange={(e) => update('phoneNumber', e.target.value)} />
+          <input style={input} type="tel" dir="ltr" placeholder="05XXXXXXXX" maxLength={10}
+            value={form.phoneNumber} onChange={(e) => update('phoneNumber', e.target.value.replace(/\D/g, ''))} />
         </label>
         {error && <p style={{ color: '#C0392B', fontSize: '0.85rem', marginBottom: 14 }}>{error}</p>}
         <div style={{ display: 'flex', gap: 12 }}>

@@ -168,6 +168,12 @@ function CybersecurityCard({ view, t, onSubmitted, onError }) {
       onError(t('partner_compliance.cybersecurity_fields_required'));
       return;
     }
+    // Saudi mobile format: starts with 05, exactly 10 digits (mirrors the backend check)
+    const mobileDigits = fields.managerMobile.replace(/\D/g, '');
+    if (mobileDigits.length !== 10 || !mobileDigits.startsWith('05')) {
+      onError(t('partner_compliance.manager_mobile_invalid'));
+      return;
+    }
     setBusy(true);
     try {
       await submitCybersecurity(fields, doc);

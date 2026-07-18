@@ -1,10 +1,13 @@
 'use client';
-import { useState, useEffect, useMemo, Suspense } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useState, useEffect, useMemo, useRef, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { getInvite, acceptInvite, saveProfile } from '@/lib/api';
 import { useI18n } from '@/lib/i18n';
+import signupStyles from '../signup/signup.module.css';
 import styles from './accept-invite.module.css';
+
+const ALLOWED_DOC_TYPES = '.pdf,.png,.jpg,.jpeg';
 
 // Password strength requirements — computed live while typing (matches the Figma design)
 function passwordRules(pw) {
@@ -18,7 +21,6 @@ function passwordRules(pw) {
 
 function AcceptInviteInner() {
   const { t } = useI18n();
-  const router = useRouter();
   const params = useSearchParams();
   const token = params.get('token');
 
@@ -31,6 +33,14 @@ function AcceptInviteInner() {
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState(false);
+
+  // Invited partners upload the same 3 documents as self-signups — see AcceptInviteRequest on the backend.
+  const [cr, setCr] = useState(null);
+  const [vat, setVat] = useState(null);
+  const [authLetter, setAuthLetter] = useState(null);
+  const crInputRef = useRef(null);
+  const vatInputRef = useRef(null);
+  const authLetterInputRef = useRef(null);
 
   // Fetch invite data when the page opens
   useEffect(() => {
@@ -56,10 +66,11 @@ function AcceptInviteInner() {
     setError('');
     if (!Object.values(rules).every(Boolean)) { setError(t('accept_invite.password_requirements_not_met')); return; }
     if (password !== confirm) { setError(t('accept_invite.password_mismatch')); return; }
+    if (!cr || !vat || !authLetter) { setError(t('signup.all_documents_required')); return; }
 
     setBusy(true);
     try {
-      await acceptInvite(token, password);
+      await acceptInvite(token, password, { cr, vat, authLetter });
       // Save the invite data into the profile so it's auto-filled on first login
       if (invite) {
         saveProfile({
@@ -69,7 +80,6 @@ function AcceptInviteInner() {
         });
       }
       setDone(true);
-      setTimeout(() => router.push('/login'), 2500);
     } catch (err) {
       setError(err.message || t('accept_invite.account_failed'));
     } finally {
@@ -97,7 +107,8 @@ function AcceptInviteInner() {
     return (
       <div className={styles.card}>
         <h1>{t('accept_invite.done_title')}</h1>
-        <p className={styles.sub}>{t('accept_invite.redirecting')}</p>
+        <p className={styles.sub}>{t('accept_invite.under_review')}</p>
+        <Link href="/" className="btn btn-primary">{t('accept_invite.back_home_btn')}</Link>
       </div>
     );
   }
@@ -158,12 +169,41 @@ function AcceptInviteInner() {
           />
         </label>
 
+        <FileField label={t('signup.cr_label')} hint={t('signup.file_hint')} file={cr} inputRef={crInputRef} onChange={setCr} t={t} />
+        <FileField label={t('signup.vat_label')} hint={t('signup.file_hint')} file={vat} inputRef={vatInputRef} onChange={setVat} t={t} />
+        <FileField label={t('signup.auth_letter_label')} hint={t('signup.file_hint')} file={authLetter} inputRef={authLetterInputRef} onChange={setAuthLetter} t={t} />
+
         {error && <div className={styles.error}>{error}</div>}
 
         <button type="submit" className="btn btn-primary" disabled={busy} style={{ width: '100%', justifyContent: 'center' }}>
           {busy ? t('accept_invite.creating') : t('accept_invite.create_account')}
         </button>
       </form>
+    </div>
+  );
+}
+
+// Same file-upload UI as the signup wizard (signup.module.css classes), so both intake flows look identical.
+function FileField({ label, hint, file, inputRef, onChange, t }) {
+  return (
+    <div className={signupStyles.fileField}>
+      <label className={signupStyles.label}>{label}</label>
+      <p className={signupStyles.fileHint}>{hint}</p>
+      <div className={signupStyles.fileRow}>
+        <button type="button" className={signupStyles.browseBtn} onClick={() => inputRef.current?.click()}>
+          {t('signup.browse')}
+        </button>
+        <span className={`${signupStyles.fileName} ${!file ? signupStyles.fileNamePlaceholder : ''}`}>
+          {file ? file.name : t('signup.no_file_selected')}
+        </span>
+      </div>
+      <input
+        ref={inputRef}
+        type="file"
+        accept={ALLOWED_DOC_TYPES}
+        className={signupStyles.fileInput}
+        onChange={(e) => onChange(e.target.files?.[0] || null)}
+      />
     </div>
   );
 }

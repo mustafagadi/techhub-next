@@ -22,6 +22,12 @@
 .table { width: 100%; border-collapse: collapse; }
 .table th, .table td { text-align: start; padding: 14px 24px; font-size: 0.92rem; border-bottom: 1px solid var(--line); }
 .table th { color: var(--muted); font-weight: 600; font-size: 0.82rem; background: #FAFBFC; }
+
+/* Multi-line cells (status badge + actions): top-align every cell so rows with different content
+   heights don't scatter vertically, and stack each cell's pieces on a consistent rhythm. */
+.alignTop td { vertical-align: top; }
+.cellStack { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+.cellRow { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .empty { text-align: center; color: var(--muted); }
 .ok { padding: 6px 14px; border-radius: 8px; font-size: 0.82rem; font-weight: 600; background: var(--green); color: #fff; border: none; cursor: pointer; }
 .no { padding: 6px 14px; border-radius: 8px; font-size: 0.82rem; font-weight: 600; background: #fff; color: #C0392B; border: 1px solid #FBEAE8; cursor: pointer; }
