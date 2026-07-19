@@ -144,3 +144,24 @@
 .rejectBtn { background: #fff; color: #B23B3B; border-color: #E5C5C5; }
 .rejectBtn:hover:not(:disabled) { background: #FBEAEA; }
 .approveBtn:disabled, .rejectBtn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ===== Dashboard (overview) ===== */
+.stats4 { grid-template-columns: repeat(4, 1fr); }
+@media (max-width: 1100px) { .stats4 { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 560px) { .stats4 { grid-template-columns: 1fr; } }
+.dashGrid { display: grid; grid-template-columns: 2fr 1fr; gap: 18px; margin-top: 18px; align-items: start; }
+.dashGrid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 18px; align-items: start; }
+@media (max-width: 1000px) { .dashGrid, .dashGrid2 { grid-template-columns: 1fr; } }
+.panelBody { padding: 20px 24px; }
+.rangeTabs { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.rangeTab { padding: 5px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); cursor: pointer; font-family: inherit; font-size: 0.8rem; color: var(--muted); transition: 0.15s; }
+.rangeTab:hover { border-color: #009C6D; color: #085D3A; }
+.rangeTabActive { background: #0D121C; color: #fff; border-color: #0D121C; }
+.rangeTabActive:hover { color: #fff; border-color: #0D121C; }
+.unavailable { background: #FBF3E2; color: #8A6512; border: 1px solid #F0DDA8; padding: 12px 14px; border-radius: 8px; font-size: 0.88rem; }
+.trafficTotals { display: flex; gap: 24px; margin-bottom: 14px; font-size: 0.9rem; color: var(--muted); flex-wrap: wrap; }
+.trafficTotals b { color: var(--ink); font-variant-numeric: tabular-nums; direction: ltr; display: inline-block; }
+.miniTable { width: 100%; border-collapse: collapse; }
+.miniTable th, .miniTable td { padding: 10px 14px; text-align: start; font-size: 0.85rem; border-bottom: 1px solid var(--line); }
+.miniTable th { color: var(--muted); font-weight: 600; background: var(--cloud); }
+.miniTable tr:last-child td { border-bottom: none; }

@@ -44,6 +44,7 @@
 .usageFillWarn { background: #B7791F; }
 .usageFillOver { background: #C0392B; }
 .usageText { display: block; margin-top: 4px; font-size: 0.76rem; color: var(--muted); }
+.sparkRow { display: block; margin-top: 6px; }
 .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
 .chip { font-size: 0.78rem; padding: 4px 12px; border-radius: 100px; }
 .chipOk { composes: ok from '../../styles/chips.module.css'; }

@@ -1,7 +1,8 @@
 'use client';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { getMyApps, getMyProdApps, createApp, addService, getProducts, ensureRegistered, saveProfile, getProfile, startPurchase, requestPromotion, getMyPromotions, getDeveloperProfile, getComplianceStatus, getMyUsage } from '@/lib/api';
+import { getMyApps, getMyProdApps, createApp, addService, getProducts, ensureRegistered, saveProfile, getProfile, startPurchase, requestPromotion, getMyPromotions, getDeveloperProfile, getComplianceStatus, getMyUsage, getMyDailyUsage } from '@/lib/api';
+import { Sparkline } from '@/components/MiniCharts';
 import ServicePicker from '@/components/ServicePicker';
 import RequireAuth from '@/components/RequireAuth';
 import Header from '@/components/Header';
@@ -31,6 +32,7 @@ function PartnerDashboard() {
   const [showComplianceModal, setShowComplianceModal] = useState(false);
   // productName -> { used, quotaLimit, quotaDescription } from Apigee analytics (display only)
   const [usage, setUsage] = useState({});
+  const [dailyUsage, setDailyUsage] = useState({});
 
   const loadApps = useCallback(() => {
     getMyApps()
@@ -61,6 +63,14 @@ function PartnerDashboard() {
         const map = {};
         (Array.isArray(list) ? list : []).forEach((u) => { map[(u.productName || '').toLowerCase()] = u; });
         setUsage(map);
+      })
+      .catch(() => {});
+    // 30-day daily series for the sparklines (empty while Apigee analytics are unreachable)
+    getMyDailyUsage(30)
+      .then((list) => {
+        const map = {};
+        (Array.isArray(list) ? list : []).forEach((s) => { map[(s.productName || '').toLowerCase()] = s.points || []; });
+        setDailyUsage(map);
       })
       .catch(() => {});
     // Only self-signup partners have a compliance row at all — no row means no gate applies (backward compatible).
@@ -122,7 +132,7 @@ function PartnerDashboard() {
           ) : (
             <div className={styles.grid}>
               {apps.map((app, i) => (
-                <AppCard key={i} app={app} promotions={promotions} onPromote={handlePromote} usage={usage} />
+                <AppCard key={i} app={app} promotions={promotions} onPromote={handlePromote} usage={usage} dailyUsage={dailyUsage} />
               ))}
             </div>
           )}
@@ -181,7 +191,7 @@ function PartnerDashboard() {
 // App card — shows its name, keys, linked services, and their production promotion status
 // prod=true: a read-only card for a production-environment app (no promotion buttons, since it's already active there)
 // usage: productName(lowercase) -> { used, quotaLimit, quotaDescription } — current-month gateway usage
-function AppCard({ app, promotions = [], onPromote, prod = false, usage = {} }) {
+function AppCard({ app, promotions = [], onPromote, prod = false, usage = {}, dailyUsage = {} }) {
   const { t } = useI18n();
   const [showKey, setShowKey] = useState(false);
   const [busyProduct, setBusyProduct] = useState(null);
@@ -280,7 +290,7 @@ function AppCard({ app, promotions = [], onPromote, prod = false, usage = {} }) 
                       </button>
                     )}
                   </div>
-                  {u && <UsageBar usage={u} t={t} />}
+                  {u && <UsageBar usage={u} t={t} points={dailyUsage[(name || '').toLowerCase()]} />}
                 </div>
               );
             })}
@@ -295,14 +305,19 @@ function AppCard({ app, promotions = [], onPromote, prod = false, usage = {} }) 
 
 // Current-month usage for one subscribed service. With a quota: progress bar (amber from 80%, red at
 // 100%); without one: just the count. Numbers come from Apigee analytics, so they can lag a few minutes.
-function UsageBar({ usage, t }) {
+function UsageBar({ usage, t, points }) {
   const used = usage.used ?? 0;
   const limit = usage.quotaLimit;
+  // 30-day trend, shown only when there was actual traffic (a flat zero line is just noise)
+  const spark = points?.some((p) => p.calls > 0)
+    ? <span className={styles.sparkRow} title={t('partner.usage_trend_hint')}><Sparkline points={points} /></span>
+    : null;
 
   if (!limit) {
     return (
       <div className={styles.usageWrap}>
         <span className={styles.usageText}>{t('partner.usage_unlimited', { used: used.toLocaleString() })}</span>
+        {spark}
       </div>
     );
   }
@@ -318,6 +333,7 @@ function UsageBar({ usage, t }) {
         {t('partner.usage_of_limit', { used: used.toLocaleString(), limit: limit.toLocaleString() })}
         {usage.quotaDescription ? ` — ${usage.quotaDescription}` : ''}
       </span>
+      {spark}
     </div>
   );
 }
@@ -334,6 +350,18 @@ function CreateAppModal({ products, apps, initialProduct, onClose, onCreated, on
   const [target, setTarget] = useState(hasApps ? 'existing' : 'new');
   const [selectedApp, setSelectedApp] = useState(hasApps ? (apps[0].name || apps[0].appName || '') : '');
   const [busy, setBusy] = useState(false);
+  const targetTouched = useRef(false);
+
+  // The modal can open before the parent's app list finishes loading (e.g. arriving via ?product=
+  // from a service page), in which case the defaults above lock in on an empty list. Re-sync once
+  // the real list arrives — but only if the partner hasn't already picked a target themselves.
+  useEffect(() => {
+    if (hasApps && !targetTouched.current) {
+      setTarget('existing');
+      setSelectedApp((prev) => prev || apps[0].name || apps[0].appName || '');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hasApps]);
 
   async function handleCreate() {
     if (!selectedProduct) return;
@@ -424,7 +452,7 @@ function CreateAppModal({ products, apps, initialProduct, onClose, onCreated, on
             {t('partner.modal_where_label')}
             <div className={styles.radioGroup}>
               <label className={styles.radioOpt}>
-                <input type="radio" name="target" checked={target === 'existing'} onChange={() => setTarget('existing')} />
+                <input type="radio" name="target" checked={target === 'existing'} onChange={() => { targetTouched.current = true; setTarget('existing'); }} />
                 <span>{t('partner.modal_existing_app')}</span>
               </label>
               {target === 'existing' && (
@@ -437,7 +465,7 @@ function CreateAppModal({ products, apps, initialProduct, onClose, onCreated, on
                 </div>
               )}
               <label className={styles.radioOpt}>
-                <input type="radio" name="target" checked={target === 'new'} onChange={() => setTarget('new')} />
+                <input type="radio" name="target" checked={target === 'new'} onChange={() => { targetTouched.current = true; setTarget('new'); }} />
                 <span>{t('partner.modal_new_app')}</span>
               </label>
             </div>

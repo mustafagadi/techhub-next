@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { getProduct, getProxyOperations, getProductSpec, getAuth, submitInterest, docFileExists, docFileUrl, getMyApps } from '@/lib/api';
+import { getProduct, getProxyOperations, getProductSpec, getAuth, submitInterest, getDocFiles, docFileUrl, getMyApps } from '@/lib/api';
 import { useI18n } from '@/lib/i18n';
 import styles from './detail.module.css';
 
@@ -80,14 +80,19 @@ export default function ServiceDetail() {
   const [isAuthed, setIsAuthed] = useState(false);
   const [showInterest, setShowInterest] = useState(false);
   const [interestSent, setInterestSent] = useState(false);
-  const [hasDocFile, setHasDocFile] = useState(false);
+  const [docFile, setDocFile] = useState(null); // most recently uploaded doc file for this service, if any
   const [subscribedApp, setSubscribedApp] = useState(null); // The app actually subscribed to this service, if any
   const [subscribedTierApps, setSubscribedTierApps] = useState({}); // Map: Apigee product name (tier) → the app subscribed to it
   const [interestTarget, setInterestTarget] = useState(null); // Apigee product name (simple service or specific tier) for the interest modal
 
   useEffect(() => { setIsAuthed(!!getAuth()?.token); }, []);
   useEffect(() => {
-    docFileExists(name).then((r) => setHasDocFile(!!r?.exists)).catch(() => setHasDocFile(false));
+    getDocFiles(name)
+      .then((r) => {
+        const files = Array.isArray(r?.files) ? r.files : [];
+        setDocFile(files.length ? files[files.length - 1] : null);
+      })
+      .catch(() => setDocFile(null));
   }, [name]);
 
   // Is the partner already subscribed to this service (or one of its tiers)? We check their current app list
@@ -198,10 +203,10 @@ export default function ServiceDetail() {
                 {tab === 'desc' && (
                   <>
                     <p>{product?.description || t('service.desc_fallback')}</p>
-                    {hasDocFile ? (
+                    {docFile ? (
                       <a
-                        href={docFileUrl(name)}
-                        className="btn btn-primary"
+                        href={docFileUrl(name, docFile.fileId)}
+                        className={styles.docDownload}
                         style={{ marginTop: 12, display: 'inline-block' }}
                         download
                       >

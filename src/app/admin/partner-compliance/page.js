@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
 import {
   getPartnerComplianceList, approveNdaMou, approveCybersecurity, markServerAuthorized,
   downloadComplianceDocument, deactivatePartner, reactivatePartner,
@@ -127,7 +128,14 @@ export default function AdminPartnerCompliancePage() {
             <tbody>
               {requests.map((r) => (
                 <tr key={r.userId}>
-                  <td>{r.companyName}</td>
+                  <td>
+                    <div className={styles.cellStack}>
+                      <span>{r.companyName}</span>
+                      <Link href={`/admin/partners/${encodeURIComponent(r.userId)}`} className={styles.priceBtn}>
+                        {t('admin_partner_compliance.view_profile')}
+                      </Link>
+                    </div>
+                  </td>
                   <td><span style={{ direction: 'ltr', unicodeBidi: 'isolate' }}>{r.email}</span></td>
                   <td>
                     <div className={styles.cellStack}>

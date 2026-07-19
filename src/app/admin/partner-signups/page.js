@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
 import { getPartnerSignups, approvePartnerSignup, rejectPartnerSignup, downloadPartnerSignupDocument } from '@/lib/api';
 import PermissionGate from '@/components/PermissionGate';
 import { useI18n } from '@/lib/i18n';
@@ -89,6 +90,7 @@ export default function PartnerSignupsPage() {
                 <th>{t('admin_interest.col_email')}</th>
                 <th>{t('orders.col_status')}</th>
                 <th>{t('admin_partner_signups.col_documents')}</th>
+                <th></th>
                 <th>{t('access.col_action')}</th>
               </tr>
             </thead>
@@ -103,6 +105,11 @@ export default function PartnerSignupsPage() {
                     <button className={styles.priceBtn} onClick={() => handleDownload(r.id, 'cr')}>{t('admin_partner_signups.doc_cr')}</button>{' '}
                     <button className={styles.priceBtn} onClick={() => handleDownload(r.id, 'vat')}>{t('admin_partner_signups.doc_vat')}</button>{' '}
                     <button className={styles.priceBtn} onClick={() => handleDownload(r.id, 'authLetter')}>{t('admin_partner_signups.doc_auth_letter')}</button>
+                  </td>
+                  <td>
+                    <Link href={`/admin/partners/${encodeURIComponent(r.userId)}`} className={styles.priceBtn}>
+                      {t('admin_partner_signups.view_profile')}
+                    </Link>
                   </td>
                   <td>
                     {r.status === 'PendingReview' ? (
@@ -120,8 +127,8 @@ export default function PartnerSignupsPage() {
                   </td>
                 </tr>
               ))}
-              {loading && <tr><td colSpan="6" className={styles.empty}>{t('access.loading_requests')}</td></tr>}
-              {!loading && !requests.length && <tr><td colSpan="6" className={styles.empty}>{t('admin_partner_signups.empty')}</td></tr>}
+              {loading && <tr><td colSpan="7" className={styles.empty}>{t('access.loading_requests')}</td></tr>}
+              {!loading && !requests.length && <tr><td colSpan="7" className={styles.empty}>{t('admin_partner_signups.empty')}</td></tr>}
             </tbody>
           </table>
         </div>

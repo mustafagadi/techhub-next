@@ -181,13 +181,13 @@ export const importPostman = (name, file) =>
 export const uploadDocFile = (name, file) =>
   uploadFile(`/admin/products/${encodeURIComponent(name)}/doc-file`, file, 'PUT');
 
-// Does this service have an uploaded documentation file?
-export const docFileExists = (name) =>
-  request(`/products/${encodeURIComponent(name)}/doc-file/exists`);
+// Documentation files uploaded for a service — { files: [{ fileId, fileName, contentType }, ...] }
+export const getDocFiles = (name) =>
+  request(`/products/${encodeURIComponent(name)}/doc-files`);
 
-// Direct download link for the documentation file (the browser opens it for download).
-export const docFileUrl = (name) =>
-  `${resolveBase()}/products/${encodeURIComponent(name)}/doc-file`;
+// Direct download link for one uploaded documentation file (the browser opens it for download).
+export const docFileUrl = (name, fileId) =>
+  `${resolveBase()}/products/${encodeURIComponent(name)}/doc-files/${encodeURIComponent(fileId)}`;
 
 // Upload a ready-made OpenAPI file
 export const uploadSpec = (name, file) =>
@@ -278,6 +278,13 @@ export const getApp = (appName) => {
 // Current-month gateway usage per subscribed product (from Apigee analytics), with quota limits where
 // configured. Returns [{ productName, used, quotaLimit, quotaInterval, quotaTimeUnit, quotaDescription }].
 export const getMyUsage = () => request('/partners/usage', { ...STAGE });
+
+// Daily per-product call series for the partner dashboard sparklines (empty when analytics are down)
+export const getMyDailyUsage = (days = 30) => request(`/partners/usage/daily?days=${days}`, { ...STAGE });
+
+// ===== Admin dashboard =====
+export const getDashboardSummary = () => request('/admin/dashboard/summary');
+export const getDashboardTraffic = (days = 30) => request(`/admin/dashboard/traffic?days=${days}`);
 
 // Developer profile as registered in Apigee (stage environment) → { registered, firstName, lastName, company }
 export const getDeveloperProfile = async () => {
@@ -581,6 +588,13 @@ export async function downloadComplianceDocument(userId, docType) {
   a.remove();
   URL.revokeObjectURL(url);
 }
+
+// ===== Admin: combined read-only partner overview (signup + compliance) =====
+// Visible to an admin holding EITHER partnersignups.manage OR partnercompliance.manage — see
+// AdminPartnerOverviewController. Carries no actions of its own; approve/reject/mark-complete still
+// only happen from the respective review-queue pages.
+export const getPartnerOverview = (userId) =>
+  request(`/admin/partners/${encodeURIComponent(userId)}/overview`);
 
 // ===== Admin: partner account deactivation =====
 // Deactivating blocks the partner's login but keeps their signup/compliance history intact — see

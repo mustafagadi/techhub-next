@@ -201,6 +201,7 @@
     "compliance_modal_ok": "موافق",
     "usage_of_limit": "{used} من {limit} طلب هذا الشهر",
     "usage_unlimited": "{used} طلب هذا الشهر",
+    "usage_trend_hint": "الطلبات اليومية خلال آخر 30 يومًا",
     "empty": "لا توجد تطبيقات بعد. اطلب أول تطبيق للبدء.",
     "promote_success": "أُرسل طلب ترقية «{name}» للبيئة الفعلية. بانتظار موافقة المسؤول.",
     "promote_failed": "تعذّر إرسال طلب الترقية.",
@@ -299,6 +300,40 @@
     "env_prod": "● بيئة prod",
     "total_services": "إجمالي الخدمات",
     "pending_access": "طلبات إتاحة معلّقة"
+  },
+  "dashboard": {
+    "title": "لوحة المعلومات",
+    "pending_signups": "طلبات تسجيل بانتظار المراجعة",
+    "pending_compliance": "خطوات امتثال بانتظار المراجعة",
+    "pending_promotions": "طلبات ترقية معلّقة",
+    "new_interest": "طلبات اهتمام جديدة",
+    "active_partners": "شركاء نشطون",
+    "deactivated_partners": "حسابات موقوفة",
+    "paid_month": "إيرادات هذا الشهر (ر.س)",
+    "paid_total": "إجمالي الإيرادات (ر.س)",
+    "funnel_title": "مسار اكتساب الشركاء",
+    "funnel_interest": "طلبات الاهتمام",
+    "funnel_signups": "طلبات التسجيل",
+    "funnel_approved": "تسجيلات معتمدة",
+    "funnel_compliance": "امتثال مكتمل",
+    "traffic_title": "حركة استخدام الخدمات",
+    "traffic_unavailable": "تحليلات Apigee غير متاحة مؤقتًا. بقية اللوحة تعمل كالمعتاد — ستظهر الحركة تلقائيًا عند عودة الاتصال.",
+    "traffic_calls": "الطلبات",
+    "traffic_errors": "الأخطاء",
+    "days_7": "7 أيام",
+    "days_30": "30 يومًا",
+    "days_90": "90 يومًا",
+    "top_products": "أكثر الخدمات استخدامًا",
+    "top_partners": "أكثر الشركاء استخدامًا",
+    "recent_signups": "أحدث طلبات التسجيل",
+    "recent_orders": "أحدث الطلبات المالية",
+    "col_company": "الشركة",
+    "col_email": "البريد",
+    "col_status": "الحالة",
+    "col_date": "التاريخ",
+    "col_service": "الخدمة",
+    "col_amount": "المبلغ",
+    "note_reporting": "الأرقام واردة من تحليلات Apigee لأغراض العرض؛ تفعيل الحدّ في البوابة بانتظار سياسة الحصة (Quota)."
   },
   "access": {
     "approved": "تمت الموافقة على الطلب.",
@@ -622,7 +657,8 @@
     "status_PendingEmailVerification": "بانتظار تأكيد البريد",
     "status_PendingReview": "بانتظار المراجعة",
     "status_Approved": "مقبول",
-    "status_Rejected": "مرفوض"
+    "status_Rejected": "مرفوض",
+    "view_profile": "عرض الملف"
   },
     "partner_compliance": {
         "title": "إجراءات الامتثال",
@@ -693,7 +729,15 @@
     "deactivate_confirm": "تعطيل حساب «{name}»؟ لن يتمكن من تسجيل الدخول حتى تتم إعادة تفعيله. تبقى سجلات التسجيل والامتثال محفوظة.",
     "deactivate_success": "تم تعطيل حساب «{name}».",
     "reactivate_success": "تمت إعادة تفعيل حساب «{name}».",
-    "deactivate_failed": "تعذّر تحديث حالة الحساب."
+    "deactivate_failed": "تعذّر تحديث حالة الحساب.",
+    "view_profile": "عرض الملف"
+  },
+  "admin_partner_overview": {
+    "title": "نظرة عامة على الشريك",
+    "load_failed": "تعذّر تحميل نظرة الشريك.",
+    "no_signup": "لا يوجد طلب تسجيل مسجّل لهذا الحساب.",
+    "no_compliance": "لم يبدأ تتبّع الامتثال بعد — يبدأ فور الموافقة على طلب التسجيل.",
+    "manage_link": "الإدارة ←"
   },
   "terms": {
     "title": "الشروط والأحكام",

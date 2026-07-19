@@ -201,6 +201,7 @@
     "compliance_modal_ok": "OK",
     "usage_of_limit": "{used} of {limit} requests this month",
     "usage_unlimited": "{used} requests this month",
+    "usage_trend_hint": "Daily calls over the last 30 days",
     "empty": "No applications yet. Request your first app to get started.",
     "promote_success": "Promotion request for «{name}» sent for production. Awaiting admin approval.",
     "promote_failed": "Could not send the promotion request.",
@@ -299,6 +300,40 @@
     "env_prod": "● prod environment",
     "total_services": "Total services",
     "pending_access": "Pending access requests"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "pending_signups": "Signups awaiting review",
+    "pending_compliance": "Compliance steps to review",
+    "pending_promotions": "Pending promotion requests",
+    "new_interest": "New interest requests",
+    "active_partners": "Active partners",
+    "deactivated_partners": "Deactivated partners",
+    "paid_month": "Revenue this month (SAR)",
+    "paid_total": "Total revenue (SAR)",
+    "funnel_title": "Partner acquisition funnel",
+    "funnel_interest": "Interest requests",
+    "funnel_signups": "Signups submitted",
+    "funnel_approved": "Signups approved",
+    "funnel_compliance": "Compliance complete",
+    "traffic_title": "API traffic",
+    "traffic_unavailable": "Apigee analytics are temporarily unreachable. The rest of the dashboard is unaffected — traffic will reappear automatically once the connection returns.",
+    "traffic_calls": "Calls",
+    "traffic_errors": "Errors",
+    "days_7": "7 days",
+    "days_30": "30 days",
+    "days_90": "90 days",
+    "top_products": "Top services by calls",
+    "top_partners": "Top partners by calls",
+    "recent_signups": "Latest signup requests",
+    "recent_orders": "Latest orders",
+    "col_company": "Company",
+    "col_email": "Email",
+    "col_status": "Status",
+    "col_date": "Date",
+    "col_service": "Service",
+    "col_amount": "Amount",
+    "note_reporting": "Numbers come from Apigee analytics for visibility; gateway-level quota enforcement is pending the Quota policy."
   },
   "access": {
     "approved": "Request approved.",
@@ -622,7 +657,8 @@
     "status_PendingEmailVerification": "Awaiting email verification",
     "status_PendingReview": "Awaiting review",
     "status_Approved": "Approved",
-    "status_Rejected": "Rejected"
+    "status_Rejected": "Rejected",
+    "view_profile": "View profile"
   },
   "partner_compliance": {
     "title": "Compliance procedures",
@@ -693,7 +729,15 @@
     "deactivate_confirm": "Deactivate the account for \"{name}\"? They won't be able to log in until reactivated. Their signup and compliance history is kept.",
     "deactivate_success": "Account deactivated for \"{name}\".",
     "reactivate_success": "Account reactivated for \"{name}\".",
-    "deactivate_failed": "Could not update the account status."
+    "deactivate_failed": "Could not update the account status.",
+    "view_profile": "View profile"
+  },
+  "admin_partner_overview": {
+    "title": "Partner overview",
+    "load_failed": "Could not load this partner's overview.",
+    "no_signup": "No signup request on file for this account.",
+    "no_compliance": "Compliance tracking hasn't started yet — it begins once the signup is approved.",
+    "manage_link": "Manage →"
   },
   "terms": {
     "title": "Terms & Conditions",

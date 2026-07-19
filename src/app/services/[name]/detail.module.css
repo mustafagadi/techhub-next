@@ -18,6 +18,10 @@
 .layout { display: grid; grid-template-columns: 1fr 320px; gap: 32px; padding: 36px 0 80px; align-items: start; }
 .panel { background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; margin-bottom: 24px; }
 .panelHead { padding: 18px 24px; border-bottom: 1px solid var(--line); font-weight: 600; display: flex; justify-content: space-between; align-items: center; }
+
+/* Outline/ghost action button — matches the admin "Generate from Proxy" button style */
+.docDownload { padding: 10px 20px; border: 1px solid #009C6D; border-radius: 10px; background: var(--paper); color: #009C6D; font-weight: 600; text-decoration: none; }
+.docDownload:hover { background: var(--cloud); }
 .muted { font-size: 0.82rem; color: var(--muted); }
 .op { display: flex; align-items: center; gap: 14px; padding: 14px 24px; border-bottom: 1px solid var(--line); }
 .method { font-size: 0.72rem; font-weight: 700; padding: 4px 10px; border-radius: 6px; min-width: 54px; text-align: center; color: #fff; background: var(--muted); }
