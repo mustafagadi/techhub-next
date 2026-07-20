@@ -209,7 +209,23 @@ function CybersecurityCard({ view, t, onSubmitted, onError }) {
       </div>
 
       {locked ? (
-        <p className={styles.lockedNote}>{approved ? t('partner_compliance.step_approved_note') : t('partner_compliance.awaiting_review')}</p>
+        <>
+          <p className={styles.lockedNote}>{approved ? t('partner_compliance.step_approved_note') : t('partner_compliance.awaiting_review')}</p>
+          {/* The submitted values, read-only — so the partner can always see exactly what they sent. */}
+          <div className={styles.fieldsGrid} style={{ marginTop: 16 }}>
+            {FIELD_KEYS.map(([key, labelKey]) => (
+              <label key={key} className={styles.label}>
+                {t(`partner_compliance.field_${labelKey}`)}
+                <input
+                  type="text"
+                  value={view?.[key] || ''}
+                  disabled
+                  style={key === 'platformLink' || key === 'stagingIpAddress' || key === 'managerMobile' ? { direction: 'ltr', textAlign: 'left' } : undefined}
+                />
+              </label>
+            ))}
+          </div>
+        </>
       ) : (
         <>
           <div className={styles.fieldsGrid}>

@@ -132,6 +132,27 @@ export default function PartnerOverviewPage() {
                     {view.compliance.cybersecuritySubmitted && (
                       <button className={styles.priceBtn} onClick={() => handleDownloadCompliance('cybersecurity')}>{t('admin_partner_compliance.doc_cybersecurity')}</button>
                     )}
+                    {view.compliance.cybersecuritySubmitted && (
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '8px 24px', marginTop: 6 }}>
+                        {[
+                          ['platformName', 'platform_name'],
+                          ['platformLink', 'platform_link'],
+                          ['stagingIpAddress', 'staging_ip'],
+                          ['unifiedEstablishmentNumber', 'unified_establishment_number'],
+                          ['commercialRegistrationNumber', 'commercial_registration_number'],
+                          ['managerIdNumber', 'manager_id_number'],
+                          ['managerHijriBirthDate', 'manager_hijri_birth_date'],
+                          ['managerMobile', 'manager_mobile'],
+                        ].map(([key, labelKey]) => (
+                          <div key={key} style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                            <span className={styles.muted} style={{ fontSize: '0.78rem' }}>{t(`partner_compliance.field_${labelKey}`)}</span>
+                            <span style={key === 'platformLink' || key === 'stagingIpAddress' || key === 'managerMobile' ? { direction: 'ltr', unicodeBidi: 'isolate', textAlign: 'start' } : undefined}>
+                              {view.compliance[key] || '—'}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                   <div className={styles.cellStack}>
                     <span className={styles.muted}>{t('admin_partner_compliance.col_server_auth')}</span>

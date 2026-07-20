@@ -233,15 +233,16 @@ export function getProfile() {
 
 // Ensures the partner is registered in Apigee before creating an app.
 // If already registered (409), ignores the error and continues. The email comes from the backend token.
+// Blank fields are sent as-is: the backend fills the company from the portal's own signup record
+// (AspNetUsers.CompanyName) and derives names from the email — no client-side placeholder values,
+// which used to permanently register partners as "Portal Partner / Partner".
 export async function ensureRegistered(profile = {}) {
-  const auth = getAuth();
   const saved = getProfile() || {};
-  const company = profile.companyName || saved.companyName || auth?.company || 'Partner';
   try {
     await registerPartner({
-      firstName: profile.firstName || saved.firstName || 'Portal',
-      lastName: profile.lastName || saved.lastName || 'Partner',
-      companyName: company,
+      firstName: profile.firstName || saved.firstName || '',
+      lastName: profile.lastName || saved.lastName || '',
+      companyName: profile.companyName || saved.companyName || '',
     });
   } catch (err) {
     // 409 = already registered → not an error, continue
@@ -568,6 +569,11 @@ export const approveCybersecurity = (userId) =>
 export const markServerAuthorized = (userId, ticketNumber = '') =>
   request(`/admin/partner-compliance/${encodeURIComponent(userId)}/mark-server-authorized`, {
     method: 'POST', body: JSON.stringify({ ticketNumber }),
+  });
+// Admin correction of the partner-submitted cybersecurity fields (does not touch approval status).
+export const updateCybersecurityFields = (userId, fields) =>
+  request(`/admin/partner-compliance/${encodeURIComponent(userId)}/cybersecurity-fields`, {
+    method: 'PUT', body: JSON.stringify(fields),
   });
 
 // Downloads one of the compliance documents (docType: nda | mou | cybersecurity) — same

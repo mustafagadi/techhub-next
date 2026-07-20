@@ -3,11 +3,76 @@ import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import {
   getPartnerComplianceList, approveNdaMou, approveCybersecurity, markServerAuthorized,
-  downloadComplianceDocument, deactivatePartner, reactivatePartner,
+  downloadComplianceDocument, deactivatePartner, reactivatePartner, updateCybersecurityFields,
 } from '@/lib/api';
 import PermissionGate from '@/components/PermissionGate';
 import { useI18n } from '@/lib/i18n';
 import styles from '../admin.module.css';
+
+// Same keys as the partner-side form — reuses the partner_compliance.field_* labels.
+const CYBER_FIELDS = [
+  ['platformName', 'platform_name'],
+  ['platformLink', 'platform_link'],
+  ['stagingIpAddress', 'staging_ip'],
+  ['unifiedEstablishmentNumber', 'unified_establishment_number'],
+  ['commercialRegistrationNumber', 'commercial_registration_number'],
+  ['managerIdNumber', 'manager_id_number'],
+  ['managerHijriBirthDate', 'manager_hijri_birth_date'],
+  ['managerMobile', 'manager_mobile'],
+];
+
+function CyberFieldsModal({ item, t, onClose, onSaved, onError }) {
+  const [values, setValues] = useState(() =>
+    Object.fromEntries(CYBER_FIELDS.map(([key]) => [key, item[key] || ''])));
+  const [saving, setSaving] = useState(false);
+
+  async function handleSave() {
+    if (Object.values(values).some((v) => !v.trim())) {
+      onError(t('partner_compliance.cybersecurity_fields_required'));
+      return;
+    }
+    const mobileDigits = values.managerMobile.replace(/\D/g, '');
+    if (mobileDigits.length !== 10 || !mobileDigits.startsWith('05')) {
+      onError(t('partner_compliance.manager_mobile_invalid'));
+      return;
+    }
+    setSaving(true);
+    try {
+      await updateCybersecurityFields(item.userId, values);
+      onSaved();
+    } catch (err) {
+      onError(err.message || t('admin_partner_compliance.fields_save_failed'));
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className={styles.overlay} onClick={onClose}>
+      <div className={styles.modal} style={{ maxWidth: 640 }} onClick={(e) => e.stopPropagation()}>
+        <h2>{t('admin_partner_compliance.fields_modal_title', { name: item.companyName })}</h2>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 16px' }}>
+          {CYBER_FIELDS.map(([key, labelKey]) => (
+            <label key={key} className={styles.label}>
+              {t(`partner_compliance.field_${labelKey}`)}
+              <input
+                type="text"
+                value={values[key]}
+                onChange={(e) => setValues((v) => ({ ...v, [key]: e.target.value }))}
+                style={key === 'platformLink' || key === 'stagingIpAddress' || key === 'managerMobile' ? { direction: 'ltr', textAlign: 'left' } : undefined}
+              />
+            </label>
+          ))}
+        </div>
+        <div className={styles.modalActions}>
+          <button className={styles.ok} onClick={handleSave} disabled={saving}>
+            {saving ? t('admin_partner_compliance.fields_saving') : t('admin_partner_compliance.fields_save')}
+          </button>
+          <button className={styles.no} onClick={onClose} disabled={saving}>{t('common.cancel')}</button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function AdminPartnerCompliancePage() {
   const { t } = useI18n();
@@ -16,6 +81,7 @@ export default function AdminPartnerCompliancePage() {
   const [busy, setBusy] = useState(null);
   const [toast, setToast] = useState(null);
   const [ticketInputs, setTicketInputs] = useState({});
+  const [fieldsModal, setFieldsModal] = useState(null);
 
   const load = useCallback(() => {
     setLoading(true);
@@ -161,7 +227,10 @@ export default function AdminPartnerCompliancePage() {
                         {t(`admin_partner_compliance.status_${r.cybersecurityApproved ? 'approved' : r.cybersecuritySubmitted ? 'pending' : 'not_submitted'}`)}
                       </span>
                       {r.cybersecuritySubmitted && (
-                        <button className={styles.priceBtn} onClick={() => handleDownload(r.userId, 'cybersecurity')}>{t('admin_partner_compliance.doc_cybersecurity')}</button>
+                        <div className={styles.cellRow}>
+                          <button className={styles.priceBtn} onClick={() => handleDownload(r.userId, 'cybersecurity')}>{t('admin_partner_compliance.doc_cybersecurity')}</button>
+                          <button className={styles.priceBtn} onClick={() => setFieldsModal(r)}>{t('admin_partner_compliance.edit_fields')}</button>
+                        </div>
                       )}
                       {r.cybersecuritySubmitted && !r.cybersecurityApproved && (
                         <button className={styles.ok} onClick={() => handleApproveCybersecurity(r)} disabled={busy === r.userId}>
@@ -224,6 +293,20 @@ export default function AdminPartnerCompliancePage() {
           </table>
         </div>
       </div>
+
+      {fieldsModal && (
+        <CyberFieldsModal
+          item={fieldsModal}
+          t={t}
+          onClose={() => setFieldsModal(null)}
+          onSaved={() => {
+            setFieldsModal(null);
+            notify(t('admin_partner_compliance.fields_updated', { name: fieldsModal.companyName }));
+            load();
+          }}
+          onError={(msg) => notify(msg, false)}
+        />
+      )}
 
       {toast && (
         <div className={`${styles.toast} ${toast.ok ? styles.toastOk : styles.toastErr}`}>

@@ -55,6 +55,7 @@
   transition: border-color .2s;
 }
 .label input:focus { border-color: var(--green); }
+.label input:disabled { background: #F8FAFC; color: #475569; cursor: default; }
 
 .fileField { margin-bottom: 18px; }
 .fileRow { display: flex; align-items: center; gap: 12px; }
