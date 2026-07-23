@@ -382,6 +382,12 @@ export const publishProduct = (name) =>
 export const unpublishProduct = (name) =>
   request(`/admin/products/${encodeURIComponent(name)}/unpublish`, { method: 'POST' });
 
+// Curated catalog highlight (star badge on the public card)
+export const setProductFeatured = (name, featured) =>
+  request(`/admin/products/${encodeURIComponent(name)}/featured`, {
+    method: 'PUT', body: JSON.stringify({ featured }),
+  });
+
 // Set the approval type: 'manual' (awaits approval) or 'auto' (automatic)
 export const setApprovalType = (name, approvalType) =>
   request(`/admin/products/${encodeURIComponent(name)}/approval-type`, {
@@ -448,6 +454,9 @@ export const getAdminUsers = async () => {
 // Sends an email invite to a new admin (email/role/permissions) — no password here, the invitee chooses it themselves
 export const inviteAdminUser = (data) =>
   request('/admin/users', { method: 'POST', body: JSON.stringify(data) });
+// The backend is the single source of truth for which permissions exist (PortalPermissions.All)
+export const getPermissionCatalog = () =>
+  request('/admin/users/permissions').then((r) => r?.permissions || []);
 export const setAdminUserPermissions = (userId, permissions) =>
   request(`/admin/users/${encodeURIComponent(userId)}/permissions`, {
     method: 'PUT', body: JSON.stringify({ permissions }),

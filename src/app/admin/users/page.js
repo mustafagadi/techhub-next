@@ -1,20 +1,18 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
-import { getAdminUsers, inviteAdminUser, setAdminUserPermissions, getAuth } from '@/lib/api';
+import { getAdminUsers, inviteAdminUser, setAdminUserPermissions, getPermissionCatalog, getAuth } from '@/lib/api';
 import RequireAuth from '@/components/RequireAuth';
 import { useI18n } from '@/lib/i18n';
 import styles from '../admin.module.css';
 
-// The seven granular permissions — must match PortalPermissions.All on the backend.
-const PERMISSIONS = [
-  { code: 'products.publish', labelKey: 'permissions.products_publish' },
-  { code: 'products.pricing', labelKey: 'permissions.products_pricing' },
-  { code: 'products.approval', labelKey: 'permissions.products_approval' },
-  { code: 'docs.manage', labelKey: 'permissions.docs_manage' },
-  { code: 'access.approve', labelKey: 'permissions.access_approve' },
-  { code: 'interest.manage', labelKey: 'permissions.interest_manage' },
-  { code: 'promotions.approve', labelKey: 'permissions.promotions_approve' },
-];
+// The catalog of granular permissions comes from the backend (GET /admin/users/permissions), so this
+// page can never drift from PortalPermissions.All. Labels are i18n keys derived from the code
+// ("products.publish" → permissions.products_publish); an unlabeled new permission falls back to its code.
+function permissionLabel(t, code) {
+  const key = `permissions.${code.replace(/\./g, '_')}`;
+  const label = t(key);
+  return label === key ? code : label;
+}
 
 export default function AdminUsersPage() {
   return (
@@ -28,6 +26,7 @@ function AdminUsersInner() {
   const { t } = useI18n();
   const myEmail = getAuth()?.email;
   const [users, setUsers] = useState([]);
+  const [catalog, setCatalog] = useState([]);
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState(null);
   const [showCreate, setShowCreate] = useState(false);
@@ -41,6 +40,7 @@ function AdminUsersInner() {
       .finally(() => setLoading(false));
   }, []);
   useEffect(() => { load(); }, [load]);
+  useEffect(() => { getPermissionCatalog().then(setCatalog).catch(() => setCatalog([])); }, []);
 
   function notify(message, ok = true) {
     setToast({ message, ok });
@@ -115,6 +115,7 @@ function AdminUsersInner() {
 
       {showCreate && (
         <CreateAdminModal
+          catalog={catalog}
           onClose={() => setShowCreate(false)}
           onCreated={() => {
             setShowCreate(false);
@@ -128,6 +129,7 @@ function AdminUsersInner() {
       {editUser && (
         <EditPermissionsModal
           user={editUser}
+          catalog={catalog}
           onClose={() => setEditUser(null)}
           onSaved={() => {
             setEditUser(null);
@@ -147,7 +149,7 @@ function AdminUsersInner() {
   );
 }
 
-function CreateAdminModal({ onClose, onCreated, onError }) {
+function CreateAdminModal({ catalog, onClose, onCreated, onError }) {
   const { t } = useI18n();
   const [email, setEmail] = useState('');
   const [role, setRole] = useState('portal-admin');
@@ -189,10 +191,10 @@ function CreateAdminModal({ onClose, onCreated, onError }) {
           <div className={styles.label}>
             {t('admin_users.permissions_label')}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '8px' }}>
-              {PERMISSIONS.map((p) => (
-                <label key={p.code} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 'normal', cursor: 'pointer' }}>
-                  <input type="checkbox" checked={permissions.includes(p.code)} onChange={() => togglePermission(p.code)} />
-                  <span>{t(p.labelKey)}</span>
+              {catalog.map((code) => (
+                <label key={code} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 'normal', cursor: 'pointer' }}>
+                  <input type="checkbox" checked={permissions.includes(code)} onChange={() => togglePermission(code)} />
+                  <span>{permissionLabel(t, code)}</span>
                 </label>
               ))}
             </div>
@@ -210,7 +212,7 @@ function CreateAdminModal({ onClose, onCreated, onError }) {
   );
 }
 
-function EditPermissionsModal({ user, onClose, onSaved, onError }) {
+function EditPermissionsModal({ user, catalog, onClose, onSaved, onError }) {
   const { t } = useI18n();
   const [permissions, setPermissions] = useState(user.permissions || []);
   const [busy, setBusy] = useState(false);
@@ -237,10 +239,10 @@ function EditPermissionsModal({ user, onClose, onSaved, onError }) {
         <h2>{t('admin_users.edit_permissions_title')}</h2>
         <p className={styles.modalNote} style={{ direction: 'ltr', textAlign: 'left' }}>{user.email}</p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '20px' }}>
-          {PERMISSIONS.map((p) => (
-            <label key={p.code} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
-              <input type="checkbox" checked={permissions.includes(p.code)} onChange={() => togglePermission(p.code)} />
-              <span>{t(p.labelKey)}</span>
+          {catalog.map((code) => (
+            <label key={code} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+              <input type="checkbox" checked={permissions.includes(code)} onChange={() => togglePermission(code)} />
+              <span>{permissionLabel(t, code)}</span>
             </label>
           ))}
         </div>

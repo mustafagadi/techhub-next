@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import {
   getAllProducts, publishProduct, unpublishProduct, setPricing, setApprovalType, hasPermission,
   getAdminProxies, createTieredProduct, getProductTiers, updateProductMetadata, addTier, removeTier, renameTier, setDefaultTier,
-  replicateProduct, otherEnvironment,
+  replicateProduct, otherEnvironment, setProductFeatured,
 } from '@/lib/api';
 import { useI18n } from '@/lib/i18n';
 import styles from '../admin.module.css';
@@ -52,6 +52,23 @@ export default function ServicesPage() {
         await publishProduct(name);
         notify(t('admin_services.published_success', { name: svc.displayName || name }));
       }
+      loadServices();
+    } catch (err) {
+      notify(err.message || t('access.action_failed'), false);
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function toggleFeatured(svc) {
+    const name = svc.name;
+    const next = !svc.featured;
+    setBusy(name);
+    try {
+      await setProductFeatured(name, next);
+      notify(next
+        ? t('admin_services.featured_on_success', { name: svc.displayName || name })
+        : t('admin_services.featured_off_success', { name: svc.displayName || name }));
       loadServices();
     } catch (err) {
       notify(err.message || t('access.action_failed'), false);
@@ -152,7 +169,7 @@ export default function ServicesPage() {
               />
             </div>
           </div>
-          <table className={styles.table}>
+          <table className={`${styles.table} ${styles.alignTop}`}>
             <thead><tr><th>{t('orders.col_service')}</th><th>{t('admin_services.col_price')}</th><th>{t('service_card.published')}</th><th>{t('access.col_action')}</th></tr></thead>
             <tbody>
               {pageItems.map((s, i) => {
@@ -163,30 +180,42 @@ export default function ServicesPage() {
                   <td>{s.price ? `${s.price} ${t('service.currency')}` : t('orders.free')}</td>
                   <td>{published ? t('admin_services.yes') : t('admin_services.no')}</td>
                   <td>
-                    {canPublish && (
-                      <button className={published ? styles.no : styles.ok} onClick={() => togglePublish(s)} disabled={busy === s.name}>
-                        {busy === s.name ? '…' : (published ? t('partner.hide') : t('admin_services.publish'))}
+                    <div className={styles.cellRow}>
+                      {canPublish && (
+                        <button className={published ? styles.no : styles.ok} onClick={() => togglePublish(s)} disabled={busy === s.name}>
+                          {busy === s.name ? '…' : (published ? t('partner.hide') : t('admin_services.publish'))}
+                        </button>
+                      )}
+                      {canPublish && (
+                        <button
+                          className={styles.priceBtn}
+                          onClick={() => toggleFeatured(s)}
+                          disabled={busy === s.name}
+                          title={t(s.featured ? 'admin_services.unfeature_title' : 'admin_services.feature_title')}
+                        >
+                          {s.featured ? '★' : '☆'} {t('admin_services.featured_btn')}
+                        </button>
+                      )}
+                      {canPrice && (
+                        <button className={styles.priceBtn} onClick={() => setPricingModal(s)} disabled={busy === s.name}>
+                          {t('admin_services.pricing_btn')}
+                        </button>
+                      )}
+                      {canApproval && (
+                        <button className={styles.priceBtn} onClick={() => toggleApproval(s)} disabled={busy === s.name} title={t('admin_services.approval_toggle_title')}>
+                          {(s.approvalType || '').toLowerCase() === 'manual' ? t('admin_services.approval_manual') : t('admin_services.approval_auto')}
+                        </button>
+                      )}
+                      <button className={styles.priceBtn} onClick={() => setEditModal(s)} disabled={busy === s.name}>
+                        {t('admin_services.edit_btn')}
                       </button>
-                    )}{' '}
-                    {canPrice && (
-                      <button className={styles.priceBtn} onClick={() => setPricingModal(s)} disabled={busy === s.name}>
-                        {t('admin_services.pricing_btn')}
+                      <button className={styles.priceBtn} onClick={() => setTiersModal(s)} disabled={busy === s.name}>
+                        {t('admin_services.tiers_btn', { count: s.tierCount || 1 })}
                       </button>
-                    )}{' '}
-                    {canApproval && (
-                      <button className={styles.priceBtn} onClick={() => toggleApproval(s)} disabled={busy === s.name} title={t('admin_services.approval_toggle_title')}>
-                        {(s.approvalType || '').toLowerCase() === 'manual' ? t('admin_services.approval_manual') : t('admin_services.approval_auto')}
+                      <button className={styles.priceBtn} onClick={() => handleSync(s)} disabled={busy === s.name}>
+                        {busy === s.name ? '…' : t('admin_services.sync_btn')}
                       </button>
-                    )}{' '}
-                    <button className={styles.priceBtn} onClick={() => setEditModal(s)} disabled={busy === s.name}>
-                      {t('admin_services.edit_btn')}
-                    </button>{' '}
-                    <button className={styles.priceBtn} onClick={() => setTiersModal(s)} disabled={busy === s.name}>
-                      {t('admin_services.tiers_btn', { count: s.tierCount || 1 })}
-                    </button>{' '}
-                    <button className={styles.priceBtn} onClick={() => handleSync(s)} disabled={busy === s.name}>
-                      {busy === s.name ? '…' : t('admin_services.sync_btn')}
-                    </button>
+                    </div>
                   </td>
                 </tr>
                 );

@@ -7,34 +7,205 @@
 .pageHead h1 { font-size: 48px; font-weight: 600; margin-bottom: 8px; color: #161616; }
 /* The real .descPage in light mode */
 .pageHead p { color: #384250; font-size: 18px; font-weight: 400; }
-.toolbar { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; margin: 32px 0; }
-.search { flex: 1; min-width: 240px; background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: 0 16px; height: 52px; display: flex; align-items: center; box-shadow: var(--shadow); }
-.search input { border: none; outline: none; width: 100%; font-family: inherit; font-size: 0.98rem; background: transparent; color: var(--ink); }
-/* Filter chips — matching the shape of the real .catName (32px pill, 16px/500 text), with the "active" state colored solid black,
-   consistent with the real site's style across all its core elements (linkAPI, buttons, the active tab) */
-.filters { display: flex; gap: 8px; flex-wrap: wrap; }
-.chip {
-  height: 32px; padding: 0 16px; border-radius: 9999px; border: 1px solid #E5E7EB;
-  background: #fff; cursor: pointer; font-size: 16px; font-weight: 500; font-family: inherit;
-  color: #161616; transition: .2s; display: inline-flex; align-items: center;
+
+/* ===== Toolbar: search + filter (start side), sort + view toggle (end side) ===== */
+.toolbar { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin: 32px 0 8px; }
+.search {
+  flex: 1; min-width: 260px; max-width: 480px; background: #fff; border: 1px solid #E5E7EB;
+  border-radius: 10px; padding: 0 14px; height: 44px; display: flex; align-items: center; gap: 8px;
 }
-.chip:hover { border-color: #009C6D; color: #009C6D; }
-.active { background: #0D121C; color: #fff; border-color: #0D121C; }
-.active:hover { color: #fff; }
-.count { color: var(--muted); font-size: 0.9rem; margin-bottom: 18px; }
-.grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; padding-bottom: 60px; }
-.empty { text-align: center; padding: 80px 20px; color: var(--muted); grid-column: 1/-1; }
+.search input { border: none; outline: none; width: 100%; font-family: inherit; font-size: 0.95rem; background: transparent; color: var(--ink); }
+.searchIcon { color: #9DA4AE; font-size: 1.2rem; }
+
+.filterWrap { position: relative; }
+.toolBtn {
+  height: 44px; padding: 0 16px; border: 1px solid #E5E7EB; border-radius: 10px; background: #fff;
+  font-family: inherit; font-size: 0.95rem; font-weight: 500; color: #161616; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 8px; transition: .2s;
+}
+.toolBtn:hover { border-color: #009C6D; color: #009C6D; }
+.filterMenu {
+  position: absolute; top: 50px; inset-inline-start: 0; z-index: 30; background: #fff;
+  border: 1px solid #E5E7EB; border-radius: 12px; box-shadow: 0 12px 40px -12px rgba(11,31,58,0.25);
+  padding: 14px 16px; min-width: 230px; display: flex; flex-direction: column; gap: 8px;
+}
+.filterGroupTitle { font-size: 0.8rem; font-weight: 700; color: #9DA4AE; margin-top: 4px; }
+.filterOption { display: flex; align-items: center; gap: 8px; font-size: 0.92rem; cursor: pointer; color: #161616; }
+.filterDone {
+  margin-top: 8px; height: 34px; border: none; border-radius: 8px; background: #0D121C; color: #fff;
+  font-family: inherit; font-size: 0.88rem; cursor: pointer;
+}
+
+.toolbarEnd { display: flex; align-items: center; gap: 10px; margin-inline-start: auto; }
+.sortWrap { display: inline-flex; align-items: center; gap: 8px; }
+.sortLabel { font-size: 0.9rem; color: #384250; }
+.sortWrap select {
+  height: 44px; border: 1px solid #E5E7EB; border-radius: 10px; background: #fff; padding: 0 10px;
+  font-family: inherit; font-size: 0.92rem; color: #161616; outline: none; cursor: pointer;
+}
+.viewToggle { display: inline-flex; border: 1px solid #E5E7EB; border-radius: 10px; overflow: hidden; }
+.viewToggle button {
+  width: 40px; height: 44px; border: none; background: #fff; cursor: pointer; font-size: 1rem; color: #9DA4AE;
+}
+.viewToggle button + button { border-inline-start: 1px solid #E5E7EB; }
+.viewActive { background: #0D121C !important; color: #fff !important; }
+
+/* ===== Active filter chips ===== */
+.chipsRow { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 10px 0 0; }
+.activeChip {
+  height: 32px; padding: 0 12px; border: 1px solid #E5E7EB; border-radius: 9999px; background: #F3F4F6;
+  font-family: inherit; font-size: 0.88rem; font-weight: 500; color: #161616; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 6px; transition: .2s;
+}
+.activeChip:hover { border-color: #C0392B; color: #C0392B; }
+.clearAll {
+  border: none; background: none; font-family: inherit; font-size: 0.88rem; color: #384250;
+  text-decoration: underline; cursor: pointer;
+}
+.clearAll:hover { color: #009C6D; }
+
+.count { color: var(--muted); font-size: 0.9rem; margin: 14px 0 18px; }
+
+/* ===== Cards ===== */
+.grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.listView { display: grid; grid-template-columns: 1fr; gap: 14px; }
 @media (max-width: 920px){ .grid { grid-template-columns: repeat(2,1fr); } }
 @media (max-width: 560px){ .grid { grid-template-columns: 1fr; } }
 
-.errorBox { text-align: center; padding: 48px 24px; background: #FBEAE8; color: #C0392B; border-radius: 12px; font-size: 0.95rem; margin-top: 16px; }
-
-.catBar { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
-.catChip {
-  height: 32px; padding: 0 16px; border: 1px solid #E5E7EB; border-radius: 9999px;
-  background: #fff; font-family: inherit; font-size: 16px; font-weight: 500;
-  cursor: pointer; color: #161616; display: inline-flex; align-items: center; transition: .2s;
+.card {
+  background: #fff; border: 1px solid #E5E7EB; border-radius: 16px; padding: 18px;
+  display: flex; flex-direction: column; transition: .25s;
 }
-.catChip:hover { border-color: #009C6D; color: #009C6D; }
-.catActive { background: #0D121C; color: #fff; border-color: #0D121C; }
-.catActive:hover { color: #fff; }
+.card:hover { box-shadow: 0 10px 40px -12px rgba(11,31,58,0.18); }
+
+/* Per spec: 32px tall, space-between — width is left fluid (352px in the design is the fixed-card
+   frame width at that breakpoint; this card lives in a responsive 3/2/1-column grid instead). */
+.cardTop { display: flex; justify-content: space-between; align-items: center; height: 32px; gap: 8px; margin-bottom: 14px; }
+.statusAvailable {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-weight: 500; font-size: 16px; line-height: 24px; letter-spacing: 0; text-align: right;
+  color: var(--color-spring-green-31, #009C6D);
+}
+.statusDot { font-size: 0.6rem; line-height: 1; } /* inherits the green above */
+/* Shared "Tag" component label type (Size=Medium, common to every Style variant below):
+   font-family is the site's default (IBM Plex Sans Arabic, inherited) — the spec's "Font 1" is a
+   placeholder for that same default, not a distinct typeface. */
+.cardTag, .cardTagNew, .cardTagInfo {
+  font-weight: 500; font-size: 16px; line-height: 24px; letter-spacing: 0; text-align: center;
+}
+/* Outline pill, per the approved close-up (not a green-filled tag) */
+.cardTag {
+  color: #161616; background: #fff; border: 1px solid #D2D6DB;
+  padding: 0 14px; height: 28px; display: inline-flex; align-items: center; border-radius: 9999px;
+  max-width: 55%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+/* The "جديد" badge — same outline-pill shape as .cardTag, in the brand green to read as a highlight */
+.cardTagNew {
+  color: #067647; background: #ECFDF3; border: 1px solid #ABEFC6;
+  padding: 0 14px; height: 28px; display: inline-flex; align-items: center; border-radius: 9999px;
+}
+/* "البيئة الاختبارية" — informational tag ("Info" style per spec). Text color (#175CD3) wasn't in
+   the given swatch (only background/border were) — inferred from the same info-tag token family.
+   Height/padding/radius/gap match the spec; width is left to hug the label instead of the spec's
+   fixed 109px so a longer translation or a font substitution can never clip the text. */
+.cardTagInfo {
+  color: #175CD3; background: #EFF8FF; border: 1px solid #B2DDFF;
+  height: 32px; padding: 0 16px; display: inline-flex; align-items: center; justify-content: center;
+  gap: 4px; border-radius: 9999px; white-space: nowrap;
+}
+
+.cardTitle { font-size: 18px; font-weight: 700; color: #161616; margin-bottom: 6px; }
+.cardDesc {
+  color: #4D5761; font-size: 15px; line-height: 23px; flex: 1; margin-bottom: 16px;
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden;
+}
+
+/* Provider-style label (category + logo, underlined) at the start; price at the end */
+.cardMeta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; gap: 10px; }
+.cardProvider { display: inline-flex; align-items: center; gap: 6px; min-height: 22px; }
+.cardProvider img { max-height: 20px; max-width: 24px; }
+.cardProviderName { font-size: 0.85rem; color: #384250; text-decoration: underline; text-underline-offset: 3px; }
+.cardPrice { white-space: nowrap; text-align: right; }
+/* The number: Basis Grotesque Arabic Pro isn't loaded in this project (no webfont license/file
+   available — only IBM Plex Sans Arabic is), so it falls back to the body font; every other value
+   below (weight, size, line-height, tracking, color) matches the spec exactly. */
+.cardPriceNumber {
+  font-family: 'Basis Grotesque Arabic Pro', 'IBM Plex Sans Arabic', sans-serif;
+  font-weight: 700; font-size: 24px; line-height: 28px; letter-spacing: -0.02em;
+  color: var(--color-text-primary, #0B4332);
+}
+.cardPriceCurrency {
+  font-family: 'IBM Plex Sans Arabic', sans-serif;
+  font-weight: 700; font-size: 18px; line-height: 28px; letter-spacing: 0;
+  color: var(--color-text-primary, #0B4332);
+}
+.cardFree { color: #009C6D; font-weight: 700; font-size: 1rem; }
+.cardBilling { font-size: 0.72rem; font-weight: 400; color: #9DA4AE; }
+
+/* Star + operations chip at the start (right in RTL), the arrow action at the end (left) */
+.cardFoot { display: flex; justify-content: space-between; align-items: center; padding-top: 4px; }
+.cardFootStart { display: inline-flex; align-items: center; gap: 8px; }
+.cardStar {
+  width: 34px; height: 34px; border-radius: 8px; background: #FFFAEB; border: 1px solid #FEDF89;
+  color: #F79009; display: inline-flex; align-items: center; justify-content: center; font-size: 1rem;
+}
+.cardGo {
+  width: 42px; height: 42px; border-radius: 10px; background: #0D121C; color: #fff !important;
+  display: inline-flex; align-items: center; justify-content: center; font-size: 1.05rem; transition: background .15s;
+}
+.cardGo:hover { background: #1F2A37; }
+/* Sample/fallback cards: same look, but inert (not a real product to browse) */
+.cardGoDisabled { background: #D2D6DB; cursor: default; pointer-events: none; }
+/* In LTR the same glyph would point backwards — mirror it */
+:global([dir="ltr"]) .cardGo { transform: scaleX(-1); }
+.cardOps {
+  display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 12px;
+  border: 1px solid #E5E7EB; border-radius: 8px; font-size: 0.85rem; color: #384250; background: #fff;
+}
+
+/* ===== Pagination ===== */
+.pagination { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin: 26px 0 10px; }
+/* Width/height aren't fixed — the spec's 128×24 fits this one string ("عرض 1-20 من 128"); real
+   ranges/totals vary in length as the catalog changes. */
+.pageInfo { color: var(--color-text-secondary, #161616); font-weight: 400; font-size: 16px; line-height: 24px; letter-spacing: 0; }
+/* Per spec: Size="Large" → 40px controls, 8px gap; width/padding are left fluid (291px in the
+   design is this control's frame at one specific page count — the page-number set grows/shrinks
+   with real data, e.g. more digits at page 999). */
+.pageNav { display: flex; align-items: center; gap: 8px; }
+.pageNav button {
+  min-width: 40px; height: 40px; padding: 0 8px; border: none; border-radius: 8px; background: none;
+  font-family: inherit; font-size: 0.92rem; color: #384250; cursor: pointer; transition: .15s;
+}
+.pageNav button:hover:not(:disabled) { background: #F3F4F6; }
+.pageNav button:disabled { opacity: 0.35; cursor: default; }
+/* ‹/› are authored for LTR; under RTL the prev/next buttons swap physical sides (prev ends up on
+   the right, next on the left, since page 1 sits at the start/right — see pageNumbers), so the
+   glyphs must mirror too, or "prev" would visually point away from page 1. Same technique as .cardGo. */
+:global([dir="rtl"]) .pagePrev, :global([dir="rtl"]) .pageNext { display: inline-block; transform: scaleX(-1); }
+.pageActive { font-weight: 700; color: #161616 !important; border-bottom: 2px solid #009C6D !important; }
+.pageGap {
+  min-width: 40px; height: 40px; padding: 0 8px; color: #9DA4AE; border: 1px solid #E5E7EB;
+  border-radius: 8px; display: inline-flex; align-items: center; justify-content: center;
+}
+
+/* ===== CTA banner ===== */
+.ctaBanner {
+  margin: 40px 0 60px; border-radius: 16px; padding: 40px 44px; color: #fff;
+  background: linear-gradient(120deg, #06231A 0%, #0B4332 60%, #0E5B41 100%);
+  display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap;
+}
+.ctaBanner h2 { font-size: 1.6rem; font-weight: 700; margin-bottom: 6px; }
+.ctaBanner p { opacity: 0.85; font-size: 1rem; }
+.ctaBtn {
+  background: #fff; color: #0B4332 !important; height: 44px; padding: 0 22px; border-radius: 8px;
+  display: inline-flex; align-items: center; gap: 8px; font-weight: 700; font-size: 0.95rem; transition: .2s;
+}
+.ctaBtn:hover { transform: translateY(-1px); box-shadow: 0 8px 24px -8px rgba(0,0,0,0.4); }
+
+.empty { text-align: center; padding: 80px 20px; color: var(--muted); grid-column: 1/-1; }
+.errorBox { text-align: center; padding: 48px 24px; background: #FBEAE8; color: #C0392B; border-radius: 12px; font-size: 0.95rem; margin-top: 16px; }
+/* Slim, non-blocking — the grid below still renders (sample services), this just says so */
+.fallbackNotice {
+  display: flex; align-items: center; gap: 8px; padding: 10px 16px; margin-bottom: 16px;
+  background: #FFFAEB; border: 1px solid #FEDF89; color: #93370D; border-radius: 10px; font-size: 0.88rem;
+}
