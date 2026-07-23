@@ -1,0 +1,43 @@
+# Staging deployment — frontend only (the backend, CleanApigeePortal, is a separate repo/deploy).
+#
+# Usage (on the target host, with this repo checked out):
+#   cp deploy/.env.staging.example deploy/.env.staging   # fill in real values
+#   docker compose -f deploy/docker-compose.staging.yml --env-file deploy/.env.staging up -d --build
+#
+# Required variables: see .env.staging.example for the full list with comments.
+
+name: techhub-frontend-staging
+
+services:
+  frontend:
+    build:
+      context: ..
+      args:
+        # Baked into the build at this step — the client bundle and Next rewrites both point at
+        # the STAGING backend from here on; rebuild (not just restart) to change this.
+        BACKEND_URL: ${BACKEND_URL}
+        NEXT_PUBLIC_API_BASE: ${NEXT_PUBLIC_API_BASE:-/api}
+        NEXT_PUBLIC_GA_ID: ${NEXT_PUBLIC_GA_ID:-}
+    # Tag with the deploying commit's short SHA (IMAGE_TAG=$(git rev-parse --short HEAD)) so old
+    # images stay on the host — rollback is then just setting IMAGE_TAG back and `up -d` (no --build).
+    image: techhub-frontend:${IMAGE_TAG:-staging}
+    restart: unless-stopped
+    ports:
+      # Bound to localhost by default — TLS terminates at a reverse proxy in front of this host.
+      # Set BIND_ADDRESS=0.0.0.0 only if that proxy runs on a different machine.
+      - "${BIND_ADDRESS:-127.0.0.1}:${PORT:-3000}:3000"
+    environment:
+      # Runtime-only — read by server components, safe to change without rebuilding.
+      API_BASE_SERVER: ${API_BASE_SERVER}
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
+        reservations:
+          memory: 128M

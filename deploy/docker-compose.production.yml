@@ -1,0 +1,39 @@
+# Production deployment — frontend only (the backend, CleanApigeePortal, is a separate repo/deploy).
+#
+# Same shape as docker-compose.staging.yml — the only real difference is which backend origin
+# BACKEND_URL/API_BASE_SERVER point at (set in .env.production, not in this file).
+#
+# Usage (on the target host, with this repo checked out):
+#   cp deploy/.env.production.example deploy/.env.production   # fill in real values
+#   docker compose -f deploy/docker-compose.production.yml --env-file deploy/.env.production up -d --build
+#
+# Required variables: see .env.production.example for the full list with comments.
+
+name: techhub-frontend-production
+
+services:
+  frontend:
+    build:
+      context: ..
+      args:
+        BACKEND_URL: ${BACKEND_URL}
+        NEXT_PUBLIC_API_BASE: ${NEXT_PUBLIC_API_BASE:-/api}
+        NEXT_PUBLIC_GA_ID: ${NEXT_PUBLIC_GA_ID:-}
+    image: techhub-frontend:${IMAGE_TAG:-production}
+    restart: unless-stopped
+    ports:
+      - "${BIND_ADDRESS:-127.0.0.1}:${PORT:-3000}:3000"
+    environment:
+      API_BASE_SERVER: ${API_BASE_SERVER}
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
+        reservations:
+          memory: 128M

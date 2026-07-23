@@ -3,11 +3,6 @@
 واجهة أمامية لبوابة المطوّرين، مبنية بـ **Next.js 14 (App Router)** و**JavaScript** و**CSS Modules**،
 بالعربية واتجاه RTL. تتصل بالخلفية (ApigeePortal.Api) لعرض الكتالوج والتوثيق وإدارة البوابة.
 
-## مهم — هذا هيكل للبناء عليه
-أُنشئ هذا المشروع كهيكل صحيح **لم يُبنَ أو يُختبر في بيئة Node**. قبل الاعتماد عليه:
-شغّله محليًا (`npm install` ثم `npm run dev`)، اختبر كل صفحة، وعدّل ما يلزم.
-قد تظهر تعديلات بسيطة عند أول تشغيل.
-
 ## التشغيل
 ```bash
 npm install
@@ -37,6 +32,24 @@ src/
 `next.config.js` يوجّه `/api/*` إلى `http://localhost:5080/api/*` أثناء التطوير.
 عدّل الوجهة حسب خادمك. كل الاستدعاءات تمرّ من `src/lib/api.js`، وترسل ترويسة
 `X-Apigee-Environment` لاختيار البيئة (prod/test).
+
+## النشر (CI/CD وثلاث بيئات)
+
+خط أنابيب `.gitlab-ci.yml` في جذر المستودع: تثبيت + lint + اختبار (`npm test`) على
+كل دفعة، ثم بناء صورة Docker ودفعها إلى Container Registry الخاص بالمشروع على
+الفرع الرئيسي والوسوم فقط، ثم مهمتا نشر يدويتان (`deploy-staging`/
+`deploy-production`) عبر SSH — تتطلبان متغيّرات CI/CD لم تُضبط بعد؛ التفاصيل في
+`deploy/ENVIRONMENTS.md`.
+
+مجلد `deploy/` يحوي ملفات docker-compose جاهزة لبيئتي Staging وProduction (كل
+بيئة تشير إلى نسخة الخلفية الخاصة بها عبر `BACKEND_URL`/`API_BASE_SERVER`):
+
+```bash
+cp deploy/.env.staging.example deploy/.env.staging   # املأ القيم الحقيقية
+docker compose -f deploy/docker-compose.staging.yml --env-file deploy/.env.staging up -d --build
+```
+
+الخلفية (`CleanApigeePortal`) مستودع منفصل بنشر مستقل عن هذه الملفات.
 
 ## ملاحظات للإكمال
 - **الصور والشعارات**: استبدل الشعار النصّي (حرف "ب") والعناصر العامة بأصولكم الرسمية،

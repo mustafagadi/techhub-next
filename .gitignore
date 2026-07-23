@@ -1,7 +1,13 @@
 node_modules/
 .next/
 out/
+
+# Real secrets/config — never commit. Only *.example templates are safe to share.
+.env
 .env.local
+deploy/.env.staging
+deploy/.env.production
+
 .DS_Store
 *.log
 .vs/
