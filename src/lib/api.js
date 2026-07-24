@@ -132,26 +132,33 @@ export const resetPassword = (email, token, newPassword) =>
   request('/auth/reset-password', { method: 'POST', body: JSON.stringify({ email, token, newPassword }) });
 
 // ===== Public catalog =====
-export const getProducts = () => request('/products');
+// Always the production catalog, regardless of whatever environment an admin session may have
+// switched to elsewhere (the EnvSwitcher on admin pages mutates the shared `currentEnv` for the
+// whole browser tab). Without this override, an admin who toggled to "test" earlier would see the
+// public catalog pages behave differently than an anonymous visitor or partner — e.g. hitting the
+// sample-data fallback only because the test Apigee org is unreachable, not the real prod one.
+const CATALOG = { headers: { 'X-Apigee-Environment': 'prod' } };
+
+export const getProducts = () => request('/products', CATALOG);
 
 // [Approach B] List of proxies for the catalog with subscribability status
 export const getProxies = async () => {
-  const res = await request('/products/proxies');
+  const res = await request('/products/proxies', CATALOG);
   if (Array.isArray(res)) return res;
   return res?.proxies || [];
 };
 
 // [Approach B] Operations of a single proxy directly (from its bundle in Apigee)
 export const getProxyOperations = (proxyName) =>
-  request(`/products/proxy/${encodeURIComponent(proxyName)}/operations`);
+  request(`/products/proxy/${encodeURIComponent(proxyName)}/operations`, CATALOG);
 
 // [Approach B] OpenAPI spec generated from a proxy (for full documentation and schemas)
 export const getProxySpec = (proxyName) =>
-  request(`/products/proxy/${encodeURIComponent(proxyName)}/generated-spec`);
+  request(`/products/proxy/${encodeURIComponent(proxyName)}/generated-spec`, CATALOG);
 
-export const getProduct = (name) => request(`/products/${encodeURIComponent(name)}`);
-export const getProductSpec = (name) => request(`/products/${encodeURIComponent(name)}/spec`);
-export const getProductOperations = (name) => request(`/products/${encodeURIComponent(name)}/operations`);
+export const getProduct = (name) => request(`/products/${encodeURIComponent(name)}`, CATALOG);
+export const getProductSpec = (name) => request(`/products/${encodeURIComponent(name)}/spec`, CATALOG);
+export const getProductOperations = (name) => request(`/products/${encodeURIComponent(name)}/operations`, CATALOG);
 
 // ===== File uploads (multipart) =====
 // Separate function from request: doesn't set Content-Type (the browser sets it with the boundary), but keeps authentication.
